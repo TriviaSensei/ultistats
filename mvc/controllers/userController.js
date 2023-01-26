@@ -18,6 +18,44 @@ exports.sortByName = (req, res, next) => {
 	next();
 };
 
+exports.handleManagerRequest = catchAsync(async (req, res, next) => {
+	const team = await Team.findById(req.body.id);
+	if (!team) return next(new AppError('Team ID not found.', 404));
+
+	let request;
+	team.requestedManagers = team.requestedManagers.filter((r) => {
+		if (r.id === res.locals.user._id) {
+			request = { ...r };
+			return false;
+		}
+		return true;
+	});
+
+	if (!request) return next(new AppError('Request not found', 404));
+
+	if (req.body.accept) {
+		if (team.managers.includes(res.locals.user._id))
+			return next(new AppError('You are already a manager of this team.', 400));
+
+		team.mangers.push(res.locals.user._id);
+		team.markModified('managers');
+	}
+
+	team.markModified('requestedManagers');
+	await team.save();
+
+	res.locals.user.teamRequests = res.locals.user.teamRequests.filter((r) => {
+		return r.id !== team._id;
+	});
+	res.locals.user.markModified('teamRequests');
+	await res.locals.user.save();
+
+	res.status(200).json({
+		status: 'success',
+		message: `You are now a manager of ${team.name} (${team.season}).`,
+	});
+});
+
 exports.updateMe = catchAsync(async (req, res, next) => {
 	//error if user tries to POST password data
 	if (req.body.password || req.body.passwordConfirm) {
