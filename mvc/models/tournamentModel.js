@@ -26,6 +26,25 @@ const tournamentSchema = new mongoose.Schema({
 		ref: 'Formats',
 		required: [true, 'You must specify the tournament format.'],
 	},
+	timeouts: {
+		type: Number,
+		enum: [0, 1, 2, 3, 4],
+	},
+	cap: {
+		type: Number,
+		default: 15,
+		min: [7, 'The minimum point cap is 7'],
+	},
+	winBy: {
+		type: Number,
+		default: 1,
+		enum: [1, 2],
+	},
+	hardCap: {
+		type: Number,
+		default: 15,
+		min: [7, 'The minimum point cap is 7'],
+	},
 	games: {
 		type: [mongoose.Schema.ObjectId],
 		ref: 'Games',

@@ -325,27 +325,27 @@ exports.getUser = catchAsync(async (req, res, next) => {
 	}
 });
 
-// exports.restrictTo = (...roles) => {
-// 	return (req, res, next) => {
-// 		//roles is an array (e.g. ['admin','user'])
-// 		//access is granted if the logged-in user has a role in the roles array
+exports.restrictTo = (...roles) => {
+	return (req, res, next) => {
+		//roles is an array (e.g. ['admin','user'])
+		//access is granted if the logged-in user has a role in the roles array
 
-// 		if (!res.locals.user) {
-// 			return res.redirect('/login');
-// 		}
+		if (!res.locals.user) {
+			return res.redirect('/login');
+		}
 
-// 		if (!roles.includes(res.locals.user.role)) {
-// 			return next(
-// 				new AppError(
-// 					'You do not have the necessary permission to perform this action',
-// 					403
-// 				)
-// 			);
-// 		}
+		if (!roles.includes(res.locals.user.role)) {
+			return next(
+				new AppError(
+					'You do not have the necessary permission to perform this action',
+					403
+				)
+			);
+		}
 
-// 		next();
-// 	};
-// };
+		next();
+	};
+};
 
 exports.forgotPassword = catchAsync(async (req, res, next) => {
 	//get the user email address

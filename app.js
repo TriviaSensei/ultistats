@@ -7,6 +7,12 @@ const rateLimit = require('express-rate-limit');
 
 const errorHandler = require('./mvc/controllers/errorController');
 
+const formatRouter = require('./mvc/routes/formatRoutes');
+const gameRouter = require('./mvc/routes/gameRoutes');
+const teamRouter = require('./mvc/routes/teamRoutes');
+const tournamentRouter = require('./mvc/routes/tournamentRoutes');
+const userRouter = require('./mvc/routes/userRoutes');
+
 // const viewRouter = require('./routes/viewRoutes');
 
 const app = express();
@@ -46,6 +52,18 @@ app.use(cookieParser());
 // app.use('/api/v1/venues/', venueRouter);
 // app.use('/api/v1/gigs/', gigRouter);
 // app.use('/', viewRouter);
+
+// app.use('/', viewRouter);
+app.use('/api/v1/formats/', formatRouter);
+app.use('/api/v1/games/', gameRouter);
+app.use('/api/v1/teams/', teamRouter);
+app.use('/api/v1/tournaments/', tournamentRouter);
+app.use('/api/v1/users/', userRouter);
+
+app.all('*', (req, res, next) => {
+	//any argument passed to a next() function is assumed to be an error; skips all other middleware and goes to the error handler.
+	next(new AppError(`Could not find ${req.originalUrl}.`, 404));
+});
 
 const limiter = rateLimit({
 	max: 3,

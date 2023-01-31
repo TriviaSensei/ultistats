@@ -1,7 +1,7 @@
 const User = require('../models/userModel');
 const factory = require('./handlerFactory');
-const catchAsync = require('../utils/catchAsync');
-const AppError = require('../utils/appError');
+const catchAsync = require('../../utils/catchAsync');
+const AppError = require('../../utils/appError');
 
 const filterObj = (obj, ...allowedFields) => {
 	const newObj = {};
@@ -23,6 +23,7 @@ exports.handleManagerRequest = catchAsync(async (req, res, next) => {
 	if (!team) return next(new AppError('Team ID not found.', 404));
 
 	let request;
+	//remove the request from the team's queue
 	team.requestedManagers = team.requestedManagers.filter((r) => {
 		if (r.id === res.locals.user._id) {
 			request = { ...r };
@@ -33,26 +34,38 @@ exports.handleManagerRequest = catchAsync(async (req, res, next) => {
 
 	if (!request) return next(new AppError('Request not found', 404));
 
+	//if this is an acceptance...
 	if (req.body.accept) {
+		//check if the user is already a manager on the team
 		if (team.managers.includes(res.locals.user._id))
 			return next(new AppError('You are already a manager of this team.', 400));
 
+		//push the user into the team's manager list
 		team.mangers.push(res.locals.user._id);
 		team.markModified('managers');
+
+		//push the team into the user's managed teams list
+		res.locals.user.teams.push(team._id);
+		res.locals.user.markModified('teams');
 	}
 
+	//save the team
 	team.markModified('requestedManagers');
 	await team.save();
 
+	//remove the request from the user's request queue
 	res.locals.user.teamRequests = res.locals.user.teamRequests.filter((r) => {
 		return r.id !== team._id;
 	});
+	//save the user
 	res.locals.user.markModified('teamRequests');
 	await res.locals.user.save();
 
 	res.status(200).json({
 		status: 'success',
-		message: `You are now a manager of ${team.name} (${team.season}).`,
+		message: req.body.accept
+			? `You are now a manager of ${team.name} (${team.season}).`
+			: `Request deleted.`,
 	});
 });
 

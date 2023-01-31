@@ -52,6 +52,12 @@ const userSchema = new mongoose.Schema({
 	active: Boolean,
 	activationToken: String,
 	activationTokenExpires: Date,
+	role: {
+		type: String,
+		required: [true, 'You must specify a role'],
+		enum: ['user', 'admin'],
+		default: 'user',
+	},
 	teams: {
 		type: [mongoose.Schema.ObjectId],
 		ref: 'Teams',
