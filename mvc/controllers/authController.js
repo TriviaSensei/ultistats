@@ -174,7 +174,6 @@ exports.confirmRegistration = catchAsync(async (req, res, next) => {
 });
 
 exports.login = catchAsync(async (req, res, next) => {
-	console.log(req.body);
 	const { email, password } = req.body;
 	//check if email and password exists
 	if (!email || !password) {
@@ -185,8 +184,6 @@ exports.login = catchAsync(async (req, res, next) => {
 	const user = await User.findOne({ email: email.toLowerCase() }).select(
 		'+password'
 	);
-
-	console.log(user);
 
 	if (!user || !(await user.correctPassword(password, user.password))) {
 		// return next(new AppError('Incorrect email or password', 401));
@@ -220,7 +217,6 @@ exports.logout = (req, res) => {
 		httpOnly: true,
 	});
 	res.status(200).json({ status: 'success' });
-	console.log('logged out');
 };
 
 exports.protect = catchAsync(async (req, res, next) => {
