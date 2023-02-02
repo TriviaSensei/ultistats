@@ -102,12 +102,25 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 	});
 });
 
+exports.getMe = catchAsync(async (req, res, next) => {
+	if (!res.locals.user)
+		return next(new AppError('You are not logged in.', 403));
+	res.status(200).json({
+		status: 'success',
+		data: res.locals.user,
+	});
+});
+
 exports.getUser = catchAsync(async (req, res, next) => {
 	let user = await User.findById(req.params.id).select([
 		'-email',
 		'-password',
 		'-passwordConfirm',
 		'-passwordChangedAt',
+		'-activationToken',
+		'-activationTokenExpires',
+		'-teams',
+		'-teamRequests',
 	]);
 
 	if (!user) {

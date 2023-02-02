@@ -25,6 +25,15 @@ const formatSchema = new mongoose.Schema({
 		type: Number,
 		required: [true, 'Players per team is required.'],
 	},
+	periods: {
+		type: Number,
+		default: 2,
+		required: [true, 'Number of periods is required.'],
+	},
+	defaultPointCap: {
+		type: Number,
+		default: 15,
+	},
 });
 
 const Formats = mongoose.model('Formats', formatSchema, 'formats');

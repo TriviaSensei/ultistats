@@ -123,6 +123,7 @@ exports.signup = catchAsync(async (req, res, next) => {
 	const emailRes = await new Email(
 		newUser,
 		`${url}/${activationToken}`,
+		process.env.EMAIL_FROM,
 		`Activate your UltiStats account`
 	).sendWelcome();
 
@@ -158,21 +159,22 @@ exports.signup = catchAsync(async (req, res, next) => {
 	});
 });
 
-// exports.confirmRegistration = catchAsync(async (req, res, next) => {
-// 	const user = await User.findOne({
-// 		activationToken: req.params.token,
-// 	});
-// 	if (!user) {
-// 		return next(new AppError('Token not found.', 404));
-// 	}
-// 	user.active = true;
-// 	user.activationToken = undefined;
-// 	user.activationTokenExpires = undefined;
-// 	await user.save({ validateBeforeSave: false });
-// 	createAndSendToken(user, 201, req, res);
-// });
+exports.confirmRegistration = catchAsync(async (req, res, next) => {
+	const user = await User.findOne({
+		activationToken: req.params.token,
+	});
+	if (!user) {
+		return next(new AppError('Token not found.', 404));
+	}
+	user.active = true;
+	user.activationToken = undefined;
+	user.activationTokenExpires = undefined;
+	await user.save({ validateBeforeSave: false });
+	createAndSendToken(user, 201, req, res);
+});
 
 exports.login = catchAsync(async (req, res, next) => {
+	console.log(req.body);
 	const { email, password } = req.body;
 	//check if email and password exists
 	if (!email || !password) {
@@ -183,6 +185,8 @@ exports.login = catchAsync(async (req, res, next) => {
 	const user = await User.findOne({ email: email.toLowerCase() }).select(
 		'+password'
 	);
+
+	console.log(user);
 
 	if (!user || !(await user.correctPassword(password, user.password))) {
 		// return next(new AppError('Incorrect email or password', 401));
@@ -458,25 +462,18 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
 
 exports.activateAccount = catchAsync(async (req, res, next) => {
 	const user = await User.findOne({
-		activationToken: req.body.activationToken,
+		activationToken: req.params.token,
 	});
 	if (!user) {
 		return next(new AppError('Invalid activation token.', 404));
 	}
 
-	user.password = req.body.password;
-	user.passwordConfirm = req.body.passwordConfirm;
-	user.activationToken = '';
-	user.activationTokenExpires = null;
-
-	if (req.body.password !== req.body.passwordConfirm) {
-		return next(new AppError('Passwords do not match.', 400));
-	}
-
 	user.active = true;
 	user.activationToken = '';
 	user.activationTokenExpires = null;
-	await user.save();
+	await user.save({
+		validateBeforeSave: false,
+	});
 
 	createAndSendToken(user, 200, req, res);
 });

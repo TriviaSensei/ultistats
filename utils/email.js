@@ -24,7 +24,7 @@ module.exports = class Email {
 		try {
 			//1. render html for email, based on pug template
 			const html = pug.renderFile(
-				`${__dirname}/../views/email/${template}.pug`,
+				`${__dirname}/../mvc/views/email/${template}.pug`,
 				{
 					name: `${this.fName} ${this.lName}`,
 					url: this.url,
@@ -55,10 +55,13 @@ module.exports = class Email {
 	async sendWelcome() {
 		try {
 			//1. render html for email, based on pug template
-			const html = pug.renderFile(`${__dirname}/../views/email/welcome.pug`, {
-				name: this.firstName,
-				url: this.url,
-			});
+			const html = pug.renderFile(
+				`${__dirname}/../mvc/views/email/welcome.pug`,
+				{
+					name: this.fName,
+					url: this.url,
+				}
+			);
 
 			//2. define email options
 			const msg = {
@@ -66,7 +69,7 @@ module.exports = class Email {
 				to: this.sendRealMail ? this.to : this.testEmail,
 				subject: this.subject,
 				html,
-				text: htmlToText.fromString(html),
+				text: htmlToText.convert(html),
 			};
 
 			//3. create a transport and send the e-mail
@@ -74,7 +77,12 @@ module.exports = class Email {
 			const result = await this.sgMail.send(msg);
 			return result;
 		} catch (err) {
+			console.log('error:');
 			console.log(err);
+			console.log('---');
+			err.response.body.errors.forEach((e) => {
+				console.log(e);
+			});
 		}
 	}
 
@@ -82,7 +90,7 @@ module.exports = class Email {
 		try {
 			//1. render html for email, based on pug template
 			const html = pug.renderFile(
-				`${__dirname}/../views/email/passwordReset.pug`,
+				`${__dirname}/../mvc/views/email/passwordReset.pug`,
 				{
 					name: this.fName,
 					url: this.url,
@@ -117,7 +125,7 @@ module.exports = class Email {
 	async sendManagerRequest() {
 		try {
 			const html = pug.renderFile(
-				`${__dirname}/../views/email/managerRequest.pug`,
+				`${__dirname}/../mvc/views/email/managerRequest.pug`,
 				{
 					name: this.fName,
 					url: this.url,
