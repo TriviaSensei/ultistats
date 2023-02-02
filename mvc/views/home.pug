@@ -1,0 +1,62 @@
+extends _base
+
+block content 
+    section.header-section
+        .container-fluid
+            .container-fill
+                nav.navbar.navbar-dark.navbar-expand-lg
+                    .container-fluid.mb-4
+                        a.navbar-brand(href="#") UltiStats
+                        button.navbar-toggler(type="button" data-bs-toggle="collapse" data-bs-target="#navbar-home" aria-controls="navbar-home" aria-expanded="false" aria-label="Toggle navigation")
+                            span.navbar-toggler-icon
+                        .collapse.navbar-collapse#navbar-home 
+                            ul.navbar-nav.ms-auto 
+                                li.nav-item
+                                    a.nav-link.active(aria-current="page" href="#") Home
+                                li.nav-item
+                                    a.nav-link(aria-current="page" href="#") Login/Signup
+                                li.nav-item
+                                    a.nav-link(aria-current="page" href="#") Contact
+                .row
+                    .col-lg-6.mb-2.d-flex.flex-column
+                        h1 Your team's stats. #[br]Simplified.
+                        .button-container
+                            button.btn.btn-light.btn-lg.download-button(type="button") 
+                                a(href="#") 
+                                    div Learn More
+                            button.btn.btn-light.btn-lg.download-button(type="button")
+                                a(href="#") 
+                                    div Sign Up
+                    .col-lg-6.mb-2
+                        img.title-image(src="/img/iphone.png")
+    section.main-content
+        .body-section
+            h1.section-title About
+            p UltiStats.app is a new platform to keep your team's stats and get new insights on your team's performance. At a glance, see your team's leaders in basic stats such as goals, assists, and blocks. You can also have more advanced stats, including +/-, completion percentage by area of field, and even visualizations of where your turnovers are occuring so that you can focus your practice time and see results!
+        .body-section 
+            h1.section-title Features
+            .container-fluid 
+                .row 
+                    .feature-box.col-lg-4 
+                        svg(fill="#000000" viewBox="-8 0 512 512" xmlns="http://www.w3.org/2000/svg")
+                            path(d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 448c-110.3 0-200-89.7-200-200S137.7 56 248 56s200 89.7 200 200-89.7 200-200 200zm-80-216c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32zm160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32zm4 72.6c-20.8 25-51.5 39.4-84 39.4s-63.2-14.3-84-39.4c-8.5-10.2-23.7-11.5-33.8-3.1-10.2 8.5-11.5 23.6-3.1 33.8 30 36 74.1 56.6 120.9 56.6s90.9-20.6 120.9-56.6c8.5-10.2 7.1-25.3-3.1-33.8-10.1-8.4-25.3-7.1-33.8 3.1z")
+                        h3.feature-title Easy to Use 
+                        p Setting up your team and entering data is a snap. Set up your team with its roster at the beginning of the season, add and remove players as necessary. Tournament and game information can be entered in seconds. Recording each pass in a game takes only two clicks. 
+                    .feature-box.col-lg-4 
+                        svg(viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg")
+                            path#graph1(d="M1163.46,251.089l-7.75,4.592h0a0.981,0.981,0,0,1-.56.263,0.859,0.859,0,0,1-.88-0.281l-4.27-4.228-4.28,4.246a1.018,1.018,0,0,1-1.43,0h0a1,1,0,0,1,0-1.414l4.99-4.95a1.031,1.031,0,0,1,1.44,0l4.33,4.293,7.53-4.467a0.917,0.917,0,0,1,1.33.444h0A1.207,1.207,0,0,1,1163.46,251.089ZM1163,262a1,1,0,0,1,0,2h-22a1,1,0,0,1-1-1V241a1,1,0,0,1,2,0v21h21Z" transform="translate(-1140 -240)")
+                        h3.feature-title Informative Data 
+                        p Basic and advanced stats at your fingertips. See your team leaders in goals and completion percentage, analyze your team's turnover prone areas of the field, or see where you're getting D's.
+                    .feature-box.col-lg-4 
+                        svg(fill="#000000" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg")
+                            path(d="M12,8a4,4,0,1,0,4,4A4,4,0,0,0,12,8Zm0,6a2,2,0,1,1,2-2A2,2,0,0,1,12,14Zm8.99-5L19.415,9c-.008-.022-.036-.107-.046-.129l1.11-1.11a2.011,2.011,0,0,0,0-2.842l-1.4-1.4a2,2,0,0,0-1.421-.588h0a2,2,0,0,0-1.419.588L15.07,4.612,15,4.58V3.009A2.011,2.011,0,0,0,12.99,1H11.01A2.011,2.011,0,0,0,9,3.009L9,4.566l-.086.049-.043.016L7.765,3.522a2,2,0,0,0-1.42-.589h0a2,2,0,0,0-1.421.588l-1.4,1.4a2.011,2.011,0,0,0,0,2.842l1.1,1.143c-.013.029-.033.063-.043.093H3.01A2.011,2.011,0,0,0,1,11.009v1.982A2.011,2.011,0,0,0,3.01,15l1.575,0c.008.022.036.107.046.129l-1.11,1.11a2.011,2.011,0,0,0,0,2.842l1.4,1.4a2.059,2.059,0,0,0,2.842,0l1.115-1.115c.022.011.1.047.121.056v1.571A2.011,2.011,0,0,0,11.01,23h1.98A2.011,2.011,0,0,0,15,20.991l0-1.557.129-.065,1.109,1.109a2.058,2.058,0,0,0,2.843,0l1.4-1.4a2.011,2.011,0,0,0,0-2.842l-1.1-1.143c.013-.029.033-.063.043-.093H20.99A2.011,2.011,0,0,0,23,12.991V11.009A2.011,2.011,0,0,0,20.99,9Zm0,4H19.421a2.1,2.1,0,0,0-1.466,3.54l1.109,1.124-1.414,1.4-1.11-1.109A2.1,2.1,0,0,0,13,19.42L12.99,21,11,20.991V19.42a2.043,2.043,0,0,0-1.307-1.881,2.138,2.138,0,0,0-.816-.164,2,2,0,0,0-1.417.58L6.336,19.064l-1.4-1.414,1.108-1.108A2.1,2.1,0,0,0,4.579,13L3,12.991,3.01,11H4.579A2.1,2.1,0,0,0,6.045,7.46L4.936,6.336l1.414-1.4L7.46,6.045a2.04,2.04,0,0,0,2.227.419l.018-.007A2.04,2.04,0,0,0,11,4.58L11.01,3,13,3.009V4.58a2,2,0,0,0,1.227,1.845c.026.013.057.027.087.039a2.038,2.038,0,0,0,2.226-.419l1.124-1.109,1.4,1.414L17.956,7.458A2.1,2.1,0,0,0,19.421,11H20.99l.01.009Z")
+                        h3.feature-title Customizable
+                        p You can set the point cap and timeout rules, as well as choose from multiple game formats, including USAU and AUDL. Want to do your own analysis? Export the game data into a CSV and input it into your preferred program.
+        .body-section 
+            h1.section-title Get Started
+            p Getting started is a easy! #[a(href="/signup") Sign up] for an account, enter your team's information, and add players to your roster. You can specify each player's name, number, line, position, and gender-match. Before a tournament, enter the tournament information and set your tournament roster, and enter the game information when each game starts. Set your lineup on each point, click the location of the disc and the player who caught it on each offensive pass, and that's it!
+            button.btn.btn-outline-dark.btn-lg.download-button(type="button")
+                a(href="#") 
+                    div Sign Up Now
+        .body-section 
+            p Copyright &copy; 2023 by Chuck Yu

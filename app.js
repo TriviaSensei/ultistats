@@ -12,6 +12,7 @@ const gameRouter = require('./mvc/routes/gameRoutes');
 const teamRouter = require('./mvc/routes/teamRoutes');
 const tournamentRouter = require('./mvc/routes/tournamentRoutes');
 const userRouter = require('./mvc/routes/userRoutes');
+const viewRouter = require('./mvc/routes/viewRoutes');
 
 // const viewRouter = require('./routes/viewRoutes');
 
@@ -53,7 +54,7 @@ app.use(cookieParser());
 // app.use('/api/v1/gigs/', gigRouter);
 // app.use('/', viewRouter);
 
-// app.use('/', viewRouter);
+app.use('/', viewRouter);
 app.use('/api/v1/formats/', formatRouter);
 app.use('/api/v1/games/', gameRouter);
 app.use('/api/v1/teams/', teamRouter);

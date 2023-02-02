@@ -201,6 +201,8 @@ exports.addPass = catchAsync(async (req, res, next) => {
 		state = 0;
 	//we turned it over
 	else if (lastPass.thrower && lastPass.result !== 'complete') state = 0;
+	//they got stalled - they drop the disc and we need to select someone to pick it up.
+	else if (!lastPass.thrower && lastPass.result === 'stall') state = 1;
 	//we compelted a pass
 	else if (
 		lastPass.result === 'complete' ||
@@ -344,7 +346,7 @@ exports.addPass = catchAsync(async (req, res, next) => {
 			});
 		}
 	} else {
-		//this is a regular pass
+		//this is a regular pass (or a stall)
 		/**
 		 * We can record:
 		 * - Other team picking up (just location x1,y1 and result='pickup'...no players specified)
@@ -354,6 +356,7 @@ exports.addPass = catchAsync(async (req, res, next) => {
 		 * - Us completing a pass (thrower, receiver, x0,y0,x1,y1, result=complete)
 		 * - Us throwing it away (thrower, x0,y0,x1,y1, result=throwaway)
 		 * - Us dropping it (thrower, intended receiver, x0,y0,x1,y1, result=drop)
+		 * - Stall out from either team (thrower?, x0, y0, result=stall)
 		 * - Us getting a D (defender, x1,y1)
 		 * - Us scoring (goal = 1)
 		 */
@@ -449,6 +452,17 @@ exports.addPass = catchAsync(async (req, res, next) => {
 			result === 'drop'
 		) {
 			message1 = `${res.locals.game.opponent} threw a turnover.`;
+		}
+		//stall out
+		else if (x0 !== undefined && y0 !== undefined && result === 'stall') {
+			if (throwerInfo) {
+				message1 = `${
+					throwerInfo.displayName ||
+					throwerInfo.firstName + ' ' + throwerInfo.lastName
+				} got stalled out.`;
+			} else {
+				`${res.locals.game.opponent} got stalled out.`;
+			}
 		}
 		//we pick up, either on a pull or after an opponent turnover
 		else if (
