@@ -19,10 +19,11 @@ block content
                                 li.nav-item
                                     a.nav-link(aria-current="page") Login/Signup
                                 li.nav-item
-                                    a.nav-link(aria-current="page" href="/contact") Contact
+                                    a.nav-link(href="/contact") Contact
     section.signup-body
         .container-fluid 
             .container-fill 
+                h6.mb-3 Already have an account? #[a(href="/login") Login here].
                 h3.mb-3 Sign up for UltiStats
                 .form-container
                     form#sign-up-form
@@ -44,10 +45,15 @@ block content
                         label.form-label(for="password") Password
                         .input-group.mb-3
                             input#password.form-control(type="password" name="password" placeholder="Password" pattern=".{8,}" required)
-                            span.input-group-text.validator-span
+                            span#pw-span.input-group-text.validator-span
                             .validator
                         label.form-label(for="password-confirm") Confirm Password
                         .input-group.mb-3 
-                            input#password-confirm.form-control(type="password" name="password-confirm" placeholder="Confirm password" required)
-                            span.input-group-text.invalid-pw-confirm
-                            .pw-confirm-validator
+                            input#password-confirm.form-control(type="password" name="password-confirm" placeholder="Confirm password" pattern=".{8,}" required)
+                            span#pw-confirm-span.input-group-text.invalid-pw-confirm
+                            .pw-confirm-validator.invalid
+                        button.btn.btn-outline-success.hover-gray
+                            a(href="")
+                                div Sign up
+block scripts 
+    script(Src="/js/signup.js" type="module" defer)

@@ -3,6 +3,10 @@ html {
 	color: var(--black);
 }
 
+.btn {
+	padding: unset;
+}
+
 .navbar-brand {
 	color: var(--black);
 }
@@ -52,12 +56,14 @@ input ~ .pw-confirm-validator {
 	margin-top: 5px;
 }
 
-input:invalid ~ .validator {
+input:invalid ~ .validator,
+.invalid {
 	border: 3px solid var(--color-3);
 	border-radius: 3px;
 }
 
-input:valid ~ .validator {
+input:valid ~ .validator,
+.valid {
 	border: 3px solid var(--color-2);
 	border-radius: 3px;
 }
