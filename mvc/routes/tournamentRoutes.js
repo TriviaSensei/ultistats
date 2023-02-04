@@ -15,7 +15,7 @@ router.patch('/:id/addPlayers', tournamentController.addPlayers);
 router.patch('/:id/removePlayers', tournamentController.removePlayers);
 
 router
-	.route(':/id')
+	.route('/:id')
 	.get(tournamentController.getTournament)
 	.patch(tournamentController.updateTournament)
 	.delete(tournamentController.deleteTournament);

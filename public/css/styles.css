@@ -4,6 +4,7 @@
 	--blurred: rgba(0, 0, 0, 0.3);
 	--color-1: #abffa8;
 	--color-2: #06b500;
+	--color-3: #6e0000;
 	--translucent: rgba(0, 0, 0, 0.5);
 }
 body,
@@ -21,6 +22,10 @@ body {
 
 * {
 	box-sizing: border-box;
+}
+
+.hover-gray:hover {
+	background-color: #d3d4d5;
 }
 
 .header-section {
@@ -59,6 +64,10 @@ nav {
 	font-size: 2rem;
 }
 
+.btn {
+	padding: 0;
+}
+
 button > a {
 	text-decoration: none;
 	color: inherit;
@@ -72,6 +81,17 @@ button > a > div {
 	margin: auto;
 }
 
+.nav-greeting {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.nav-greeting > span {
+	margin: auto;
+}
+
+.nav-greeting,
 .nav-link,
 .navbar-nav .nav-link.active {
 	color: var(--white);
@@ -171,6 +191,17 @@ svg:hover {
 
 	.header-section .container-fluid {
 		display: flex;
+	}
+
+	.nav-greeting {
+		margin-right: 20px;
+	}
+
+	.nav-greeting::after {
+		content: '|';
+		/* border-left: 2px solid var(--white);
+		border-right: 2px solid var(--white); */
+		margin-left: 30px;
 	}
 
 	.nav-item {

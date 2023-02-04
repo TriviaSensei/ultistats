@@ -13,7 +13,7 @@ router.use(authController.restrictTo('admin'));
 
 router.post('/', formatController.createFormat);
 router
-	.route(':/id')
+	.route('/:id')
 	.patch(formatController.updateFormat)
 	.delete(formatController.deleteFormat);
 

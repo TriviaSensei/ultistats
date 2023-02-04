@@ -10,21 +10,30 @@ block content
                         button.navbar-toggler(type="button" data-bs-toggle="collapse" data-bs-target="#navbar-home" aria-controls="navbar-home" aria-expanded="false" aria-label="Toggle navigation")
                             span.navbar-toggler-icon
                         .collapse.navbar-collapse#navbar-home 
-                            ul.navbar-nav.ms-auto 
+                            ul.navbar-nav.ms-auto
+                                - if (user)
+                                    li.nav-greeting 
+                                        span= `Hello, ${user.firstName}`
                                 li.nav-item
-                                    a.nav-link.active(aria-current="page" href="#") Home
+                                    a.nav-link.active(aria-current="page" href="/") Home
+                                - if (!user)
+                                    li.nav-item
+                                        a.nav-link(href="/signup") Login/Signup
+                                - else
+                                    li.nav-item
+                                        a.nav-link(href="/mystuff") My Stuff
+                                    li.nav-item
+                                        a.nav-link#logout Logout
                                 li.nav-item
-                                    a.nav-link(aria-current="page" href="#") Login/Signup
-                                li.nav-item
-                                    a.nav-link(aria-current="page" href="#") Contact
+                                    a.nav-link(href="#") Contact
                 .row
                     .col-lg-6.mb-2.d-flex.flex-column
                         h1 Your team's stats. #[br]Simplified.
                         .button-container
-                            button.btn.btn-light.btn-lg.download-button(type="button") 
+                            button.btn.btn-light.btn-lg(type="button") 
                                 a(href="#") 
                                     div Learn More
-                            button.btn.btn-light.btn-lg.download-button(type="button")
+                            button.btn.btn-light.btn-lg(type="button")
                                 a(href="#") 
                                     div Sign Up
                     .col-lg-6.mb-2
@@ -54,8 +63,8 @@ block content
                         p You can set the point cap and timeout rules, as well as choose from multiple game formats, including USAU and AUDL. Want to do your own analysis? Export the game data into a CSV and input it into your preferred program.
         .body-section 
             h1.section-title Get Started
-            p Getting started is a easy! #[a(href="/signup") Sign up] for an account, enter your team's information, and add players to your roster. You can specify each player's name, number, line, position, and gender-match. Before a tournament, enter the tournament information and set your tournament roster, and enter the game information when each game starts. Set your lineup on each point, click the location of the disc and the player who caught it on each offensive pass, and that's it!
-            button.btn.btn-outline-dark.btn-lg.download-button(type="button")
+            p Getting started is easy! #[a(href="/signup") Sign up] for an account, enter your team's information, and add players to your roster. You can specify each player's name, number, line, position, and gender-match. Before a tournament, enter the tournament information and set your tournament roster, and enter the game information when each game starts. Set your lineup on each point, click the location of the disc and the player who caught it on each offensive pass, and that's it!
+            button.btn.btn-outline-dark.btn-lg.hover-gray(type="button")
                 a(href="#") 
                     div Sign Up Now
         .body-section 

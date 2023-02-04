@@ -2,7 +2,7 @@ const pug = require('pug');
 const htmlToText = require('html-to-text');
 
 module.exports = class Email {
-	constructor(user, url, fromEmail = process.env.EMAIL_FROM, subject) {
+	constructor(user, url, fromEmail = process.env.EMAIL_FROM, subject, ...text) {
 		this.name = `${user.firstName} ${user.lastName}`;
 		this.fName = user.firstName;
 		this.lName = user.lastName;
@@ -14,6 +14,7 @@ module.exports = class Email {
 		this.sendRealMail = true;
 		this.testEmail = 'chuck@mailsac.com';
 		this.to = user.email;
+		if (text.length > 0) this.text = text;
 		// process.env.NODE_ENV === 'development' || this.sendRealMail
 		//   ? user.email
 		//   : this.testEmail;
@@ -41,7 +42,7 @@ module.exports = class Email {
 						: this.testEmail,
 				subject,
 				html,
-				text: htmlToText.fromString(html),
+				text: htmlToText.convert(html),
 			};
 
 			//3. create a transport and send the e-mail
@@ -107,7 +108,7 @@ module.exports = class Email {
 				reply_to: process.env.EMAIL_FROM,
 				subject: this.subject,
 				html,
-				text: htmlToText.fromString(html),
+				text: htmlToText.convert(html),
 			};
 
 			//3. create a transport and send the e-mail
@@ -129,6 +130,7 @@ module.exports = class Email {
 				{
 					name: this.fName,
 					url: this.url,
+					text: this.text,
 				}
 			);
 			const msg = {
@@ -138,9 +140,9 @@ module.exports = class Email {
 						? this.to
 						: this.testEmail,
 				reply_to: process.env.EMAIL_FROM,
-				subject: `Your UltiStats password reset token (valid for 10 minutes)`,
+				subject: this.subject,
 				html,
-				text: htmlToText.fromString(html),
+				text: htmlToText.convert(html),
 			};
 
 			await this.sgMail.send(msg);

@@ -8,5 +8,5 @@ const router = express.Router();
 router.use(authController.isLoggedIn);
 
 router.get('/', viewController.getHome);
-
+router.get('/signup', viewController.getSignUpForm);
 module.exports = router;

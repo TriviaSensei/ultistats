@@ -1,0 +1,53 @@
+extends _base
+
+block styles 
+    link(rel='stylesheet' href='/css/signup.css')
+
+block content 
+    section.signup-header
+        .container-fluid
+            .container-fill
+                nav.navbar.navbar-expand-lg
+                    .container-fluid.mb-4
+                        a.navbar-brand(href="#") UltiStats
+                        button.navbar-toggler(type="button" data-bs-toggle="collapse" data-bs-target="#navbar-home" aria-controls="navbar-home" aria-expanded="false" aria-label="Toggle navigation")
+                            span.navbar-toggler-icon
+                        .collapse.navbar-collapse#navbar-home 
+                            ul.navbar-nav.ms-auto 
+                                li.nav-item
+                                    a.nav-link.active(href="/") Home
+                                li.nav-item
+                                    a.nav-link(aria-current="page") Login/Signup
+                                li.nav-item
+                                    a.nav-link(aria-current="page" href="/contact") Contact
+    section.signup-body
+        .container-fluid 
+            .container-fill 
+                h3.mb-3 Sign up for UltiStats
+                .form-container
+                    form#sign-up-form
+                        label.form-label(for="first-name") First Name 
+                        .input-group.mb-3
+                            input#first-name.form-control(type="text" name="first-name" placeholder="First Name" required)
+                            span.input-group-text.validator-span
+                            .validator
+                        label.form-label(for="last-name") Last Name
+                        .input-group.mb-3
+                            input#last-name.form-control(type="text" name="last-name" placeholder="Last Name" required)
+                            span.input-group-text.validator-span
+                            .validator
+                        label.form-label(for="email") E-Mail address (will not be shared)
+                        .input-group.mb-3
+                            input#email.form-control(type="email" name="email" placeholder="E-Mail Address" required)
+                            span.input-group-text.validator-span
+                            .validator
+                        label.form-label(for="password") Password
+                        .input-group.mb-3
+                            input#password.form-control(type="password" name="password" placeholder="Password" pattern=".{8,}" required)
+                            span.input-group-text.validator-span
+                            .validator
+                        label.form-label(for="password-confirm") Confirm Password
+                        .input-group.mb-3 
+                            input#password-confirm.form-control(type="password" name="password-confirm" placeholder="Confirm password" required)
+                            span.input-group-text.invalid-pw-confirm
+                            .pw-confirm-validator

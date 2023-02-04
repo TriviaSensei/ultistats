@@ -102,6 +102,15 @@ exports.updateOne = (Model) =>
 			) {
 				return next(new AppError('Invalid field.', 400));
 			}
+		} else if (loc.toLowerCase() === 'teams') {
+			if (req.body.membershipLevel || req.body.membershipExpires) {
+				return next(
+					new AppError(
+						'This route is not for updating membership information.',
+						400
+					)
+				);
+			}
 		}
 
 		const doc = await Model.findByIdAndUpdate(req.params.id, req.body, {
@@ -124,42 +133,17 @@ exports.createOne = (Model) =>
 		const loc = (arr.length > 3 ? arr[3] : '').toLowerCase();
 
 		if (loc === 'teams') {
+			// req.body.membershipLevel = 'Free';
 			req.body.managers = [res.locals.user._id];
 			req.body.requestedManagers = [];
 			req.body.roster = [];
 		} else if (loc === 'games') {
-			const tourney = await Tournament.findById(req.body.tournament);
-			if (!tourney) return next(new AppError('Tournament not found', 404));
-
-			const team = await Team.findById(tourney.team);
-			if (!team) return next(new AppError('Team not found', 404));
-			if (!team.managers.includes(res.locals.user._id))
-				return next(new AppError('You are not a manager of this team', 403));
-
-			tourney.games.push(doc._id);
-			tourney.markModified('games');
-			await tourney.save();
-
-			req.body.result = '';
-			req.body.score = 0;
-			req.body.oppScore = 0;
-			req.body.cap = req.body.cap || tourney.cap;
-			req.body.hardCap = req.body.hardCap || tourney.hardCap;
-			req.body.winBy = req.body.winBy || tourney.winBy;
-
-			if (req.body.hardCap < req.body.cap)
-				return next(
-					new AppError(
-						'Hard cap must be greater than or equal to point cap',
-						400
-					)
-				);
-
-			req.body.timeouts = req.body.cap || tourney.timeouts;
-			req.body.points = [];
-		} else if (loc === 'tournaments') {
-			if (!req.body.hardCap) req.body.hardCap = 15;
-			if (!req.body.cap) req.body.cap = 15;
+			console.log(req.body);
+			if (!req.body.cap && !req.body.hardCap) {
+				req.body.cap = 15;
+				req.body.hardCap = 15;
+			} else if (!req.body.hardCap) req.body.hardCap = req.body.cap;
+			else if (!req.body.cap) req.body.cap = req.body.hardCap;
 
 			if (req.body.hardCap < req.body.cap)
 				return next(
@@ -172,6 +156,12 @@ exports.createOne = (Model) =>
 
 		const doc = await Model.create(req.body);
 
+		//if creating a team, the user creating it starts as the manager
+		if (loc === 'teams') {
+			res.locals.user.teams.push(doc._id);
+			await res.locals.user.save({ validateBeforeSave: false });
+		}
+
 		res.status(201).json({
 			status: 'success',
 			//envelope the new object
@@ -183,14 +173,42 @@ exports.getOne = (Model, popOptions) =>
 	catchAsync(async (req, res, next) => {
 		const arr = req.originalUrl.trim().split('/');
 		const loc = arr.length > 3 ? arr[3] : '';
+		let filter = { _id: req.params.id };
 
 		query = Model.find(filter);
 
 		if (popOptions) query = query.populate(popOptions);
-		const doc = await query;
+		let doc = await query;
 
-		if (!doc) {
+		if (!doc || doc.length === 0) {
 			return next(new AppError('No document found with that ID.', 404));
+		} else if (loc === 'teams') {
+			if (
+				!doc[0].managers.some((m) => {
+					return m.toString() === res.locals.user._id.toString();
+				})
+			) {
+				doc = [];
+			}
+		} else if (loc === 'tournaments') {
+			let team = await Team.findById(doc[0].team._id.toString());
+			if (
+				!team.managers.some((m) => {
+					return m.toString() === res.locals.user._id.toString();
+				})
+			) {
+				doc = [];
+			}
+		} else if (loc === 'games') {
+			let tourney = await Tournament.findById(doc[0].tournament._id.toString());
+			let team = await Team.findById(tourney.team._id.toString());
+			if (
+				!team.managers.some((m) => {
+					return m.toString() === res.locals.user._id.toString();
+				})
+			) {
+				doc = [];
+			}
 		}
 
 		res.status(200).json({

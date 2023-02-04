@@ -89,6 +89,10 @@ exports.localOnly = (req, res, next) => {
 exports.signup = catchAsync(async (req, res, next) => {
 	//do not await User.create(req.body) so that the user cannot put whatever they want into the body.
 	//Only take the necessary fields.
+
+	if (res.locals.user)
+		return next(new AppError('You are already logged in.', 400));
+
 	const url = `${req.protocol}://${req.get('host')}/activate`;
 
 	const playerExists = await User.findOne({ email: req.body.email });

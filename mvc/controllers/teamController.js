@@ -6,22 +6,54 @@ const User = require('../models/userModel');
 const Email = require('../../utils/email');
 
 const { v4: uuidV4 } = require('uuid');
+const e = require('express');
 const rosterLimit = 40;
 
+const validateNewPlayer = (player) => {
+	if (!player.firstName) return 'First name not specified.';
+	if (!player.lastName) return 'Last name not specified.';
+	if (
+		player.number &&
+		(isNaN(parseInt(player.number)) ||
+			player.number.length > 2 ||
+			player.number.split().some((c) => {
+				return isNaN(parseInt(c));
+			}))
+	)
+		return 'Invalid number';
+	if (
+		player.number &&
+		(parseInt(player.number) < 0 ||
+			parseInt(player.number) > 99 ||
+			parseFloat(player.number) !== parseInt(player.number))
+	)
+		return 'Number must be an integer from 00-99, inclusive';
+
+	if (
+		player.gender &&
+		player.gender.toUpperCase() !== 'M' &&
+		player.gender.toUpperCase() !== 'F'
+	) {
+		return 'Invalid gender match specified.';
+	}
+
+	return null;
+};
+
 exports.addPlayer = catchAsync(async (req, res, next) => {
-	if (!req.body.firstName)
-		return next(new AppError('First name not specified.', 400));
-	if (!req.body.lastName)
-		return next(new AppError('Last name not specified.', 400));
-	if (req.body.number && isNaN(parseInt(req.body.number)))
-		return next(new AppError('Invalid number.', 400));
-	if (req.body.number && parseInt(req.body.number) < 0)
-		return next(new AppError('Number must be non-negative.', 400));
+	const val = validateNewPlayer(req.body);
+	if (val) return next(new AppError(val, 400));
 
 	const team = await Team.findById(req.params.id);
 	if (!team) return next(new AppError('Team ID not found.', 404));
 
-	if (team.roster.length >= rosterLimit)
+	//verify that the roster limit has not been reached.
+	if (
+		team.roster.reduce((p, c) => {
+			if (c.active) return p + 1;
+			return p;
+		}, 0) >= rosterLimit
+	)
 		return next(
 			new AppError(`The roster limit is ${rosterLimit} players.`, 400)
 		);
@@ -31,12 +63,14 @@ exports.addPlayer = catchAsync(async (req, res, next) => {
 
 	const existingPlayer = team.roster.find((p) => {
 		if (
+			p.active &&
 			p.firstName.toLowerCase() === req.body.firstName.toLowerCase() &&
 			p.lastName.toLowerCase() === req.body.lastName.toLowerCase()
 		) {
-			message = `A player with name (${req.body.lastName}, ${req.body.firstName}) has already been added to your team.`;
+			message = `A player with that name (${req.body.lastName}, ${req.body.firstName}) has already been added to your team.`;
 			return true;
 		} else if (
+			p.active &&
 			p.number !== '' &&
 			parseInt(p.number) === parseInt(req.body.number)
 		) {
@@ -46,9 +80,19 @@ exports.addPlayer = catchAsync(async (req, res, next) => {
 	});
 	if (existingPlayer) status = 'warning';
 
+	const { firstName, lastName, displayName, number, line, position, gender } =
+		req.body;
+
 	team.roster.push({
-		...req.body,
+		firstName,
+		lastName,
+		displayName,
+		number,
+		line,
+		position,
+		gender,
 		id: uuidV4(),
+		active: true,
 	});
 	team.markModified('roster');
 	const data = await team.save();
@@ -67,13 +111,14 @@ exports.removePlayer = catchAsync(async (req, res, next) => {
 	let status = 'warning';
 	let message = 'Player was not found';
 
-	team.roster = team.roster.filter((p) => {
-		if (status === 'warning' && p.id === req.body.id) {
+	team.roster.some((p) => {
+		if (p.id === req.body.id) {
 			status = 'success';
-			message = `Player ${p.lastName}, ${p.firstName} removed from team.`;
-			return false;
+			message = `Player ${p.lastName}, ${p.firstName} removed from roster.`;
+			p.active = false;
+			return true;
 		}
-		return true;
+		return false;
 	});
 	team.markModified('roster');
 	const data = await team.save();
@@ -93,11 +138,40 @@ exports.editPlayer = catchAsync(async (req, res, next) => {
 	let message = 'Player not found';
 	let found = false;
 
-	team.roster = team.roster.map((p) => {
+	team.roster = team.roster.map((p, i) => {
 		if (p.id === req.body.id) {
 			status = 'success';
 			message = 'Player successfully modified.';
 			found = true;
+
+			const existingPlayer = team.roster.find((p2, j) => {
+				if (i === j) return false;
+				if (
+					(req.body.firstName || p.firstName).toLowerCase() ===
+						p2.firstName.toLowerCase() &&
+					(req.body.lastName || p.lastName).toLowerCase() ===
+						p2.lastName.toLowerCase()
+				) {
+					message = `A player with that name (${req.body.lastName}, ${req.body.firstName}) is already on your team.`;
+					return true;
+				} else if (
+					(req.body.number || p.number) &&
+					parseInt(req.body.number || p.number) === parseInt(p2.number)
+				) {
+					message = `Jersey number ${req.body.number} is already worn by ${p2.firstName} ${p2.lastName}`;
+					return true;
+				}
+				return false;
+			});
+			if (existingPlayer) status = 'warning';
+
+			const val = validateNewPlayer({
+				...p,
+				...req.body,
+			});
+
+			if (val) return next(new AppError(val, 400));
+
 			return {
 				...p,
 				...req.body,
@@ -133,10 +207,10 @@ exports.requestAddManager = catchAsync(async (req, res, next) => {
 	const newManager = await User.findOne({ email: req.body.email });
 	if (!newManager) return next(new AppError('User not found.', 404));
 
-	//...and does not have a pending request to manage this team
+	//...and does not have a pending request to manage this team or is already a manager
 	if (
 		newManager.teamRequests.some((t) => {
-			return t.id === team._id;
+			return t.toString() === team._id.toString();
 		})
 	) {
 		return next(
@@ -145,21 +219,23 @@ exports.requestAddManager = catchAsync(async (req, res, next) => {
 				400
 			)
 		);
+	} else if (
+		newManager.teams.some((t) => {
+			return t.toString() === team._id.toString();
+		})
+	) {
+		return next(
+			new AppError('That user is already a manager of this team.', 400)
+		);
 	}
 
 	//add this team to the user's management request queue.
-	newManager.teamRequests.push({
-		id: team._id,
-		name: `${team.name} (${team.season})`,
-	});
+	newManager.teamRequests.push(team._id);
 	newManager.markModified('teamRequests');
-	await newManager.save();
+	await newManager.save({ validateBeforeSave: false });
 
 	//add this user to the team's management request queue.
-	team.requestedManagers.push({
-		id: newManager._id,
-		name: `${newManager.lastName}, ${newManager.firstName}`,
-	});
+	team.requestedManagers.push(newManager._id);
 	team.markModified('requestedManagers');
 	await team.save();
 
@@ -173,8 +249,14 @@ exports.requestAddManager = catchAsync(async (req, res, next) => {
 			`${url}/managerRequests`,
 		],
 		process.env.EMAIL_FROM,
-		`${team.name} (${team.season}) would like to add you as a manager`
+		`${team.name} (${team.season}) would like to add you as a manager`,
+		`${res.locals.user.firstName} ${res.locals.user.lastName} has requested to add you as a manager of ${team.name} (${team.season}).`,
+		`You may accept or decline the request, or review your requests with one of the links below:`
 	).sendManagerRequest();
+
+	res.status(200).json({
+		status: 'success',
+	});
 });
 
 exports.cancelAddManager = catchAsync(async (req, res, next) => {
@@ -188,7 +270,7 @@ exports.cancelAddManager = catchAsync(async (req, res, next) => {
 
 	let found = false;
 	team.requestedManagers = team.requestedManagers.filter((m) => {
-		if (m.id === req.body.id) {
+		if (m.toString() === req.body.id) {
 			found = true;
 			return false;
 		}
@@ -198,13 +280,13 @@ exports.cancelAddManager = catchAsync(async (req, res, next) => {
 		team.markModified('requestedManagers');
 		await team.save();
 
-		const user = User.findById(req.body.id);
+		const user = await User.findById(req.body.id);
 		if (user) {
 			user.teamRequests = user.teamRequests.filter((r) => {
-				return r.id !== team._id;
+				return r.toString() !== team._id.toString();
 			});
 			user.markModified('teamRequests');
-			await user.save();
+			await user.save({ validateBeforeSave: false });
 		}
 
 		return res.status(200).json({

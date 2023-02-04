@@ -14,7 +14,7 @@ router.patch('/:id/cancelManager', teamController.cancelAddManager);
 
 router.post('/', teamController.createTeam);
 router
-	.route(':/id')
+	.route('/:id')
 	.get(teamController.getTeam)
 	.patch(teamController.updateTeam)
 	.delete(teamController.deleteTeam);

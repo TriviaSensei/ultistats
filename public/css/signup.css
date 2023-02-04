@@ -1,0 +1,100 @@
+body,
+html {
+	color: var(--black);
+}
+
+.navbar-brand {
+	color: var(--black);
+}
+
+.nav-greeting,
+.nav-link,
+.navbar-nav .nav-link.active {
+	color: var(--black);
+	font-size: 1.25rem;
+	font-weight: bold;
+}
+
+.nav-item {
+	background-color: var(--white);
+	border: 1px solid var(--black);
+	border-collapse: collapse;
+}
+
+.signup-header > .container-fluid {
+	padding: 3% 10% 0%;
+}
+
+.signup-body .container-fill {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.form-label {
+	font-weight: bold;
+}
+
+.form-label::after {
+	content: '*';
+	color: red;
+	font-weight: bold;
+	margin-left: 0.5rem;
+}
+
+input {
+	font-weight: bold;
+}
+
+input ~ .validator,
+input ~ .pw-confirm-validator {
+	width: 100%;
+	margin-top: 5px;
+}
+
+input:invalid ~ .validator {
+	border: 3px solid var(--color-3);
+	border-radius: 3px;
+}
+
+input:valid ~ .validator {
+	border: 3px solid var(--color-2);
+	border-radius: 3px;
+}
+
+input:invalid + .validator-span::after,
+.invalid-pw-confirm::after {
+	content: '✕';
+	text-align: center;
+	margin-left: 10px;
+	color: red;
+	font-weight: bold;
+}
+
+input:valid + .validator-span::after,
+.valid-pw-confirm::after {
+	content: '✓';
+	text-align: center;
+	margin-left: 10px;
+	color: green;
+	font-weight: bold;
+}
+
+/* input:invalid {
+	border-bottom: 10px solid var(--color-3);
+}
+
+input:valid {
+	border-bottom: 10px solid var(--color-1);
+} */
+
+@media (min-width: 992px) {
+	.nav-item {
+		background-color: transparent;
+		border: unset;
+	}
+
+	.form-container {
+		width: 40%;
+	}
+}

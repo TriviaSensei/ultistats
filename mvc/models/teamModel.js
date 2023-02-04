@@ -42,6 +42,40 @@ const teamSchema = new mongoose.Schema({
 	roster: {
 		type: [Object],
 	},
+	/**
+	 * Free: 
+	 * - Points
+	 * - Touches
+	 * - Goals
+	 * - Assists
+	 * - Turns
+	 * - D's
+	 * 
+	 * Basic
+	 * - Yards
+	 * - +/- ratio
+	 * - Offensive efficiency
+	 * - Defensive efficiency
+	 * 
+	 * Advanced
+	 * - Heatmaps on field (by player and by team)
+	 * 		- Where turnovers occur
+	 * 		- Scoring throws
+	 * 		- Touches
+	 * 		- Probability of scoring on a possession if we have the disc here
+	 *	- Passing grid (similar to NFL QB chart) 
+			- attempts/completion pct. by net yardage (<0, 0-10, 10-20, 20-30, 30+)
+	 * 		
+	 */
+	membershipLevel: {
+		type: String,
+		enum: ['Free', 'Basic', 'Advanced'],
+		default: 'Free',
+	},
+	membershipExpires: {
+		type: Date,
+		default: new Date().setFullYear(9999),
+	},
 });
 
 const Teams = mongoose.model('Teams', teamSchema, 'teams');

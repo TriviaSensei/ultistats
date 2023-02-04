@@ -29,6 +29,7 @@ const tournamentSchema = new mongoose.Schema({
 	timeouts: {
 		type: Number,
 		enum: [0, 1, 2, 3, 4],
+		default: 4,
 	},
 	cap: {
 		type: Number,
