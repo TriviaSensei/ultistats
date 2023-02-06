@@ -54,12 +54,12 @@ app.use(cookieParser());
 // app.use('/api/v1/gigs/', gigRouter);
 // app.use('/', viewRouter);
 
-app.use('/', viewRouter);
 app.use('/api/v1/formats/', formatRouter);
 app.use('/api/v1/games/', gameRouter);
 app.use('/api/v1/teams/', teamRouter);
 app.use('/api/v1/tournaments/', tournamentRouter);
 app.use('/api/v1/users/', userRouter);
+app.use('/', viewRouter);
 
 app.all('*', (req, res, next) => {
 	//any argument passed to a next() function is assumed to be an error; skips all other middleware and goes to the error handler.

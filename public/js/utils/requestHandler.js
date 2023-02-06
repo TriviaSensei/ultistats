@@ -15,6 +15,7 @@ export const handleRequest = (
 		req.onreadystatechange = () => {
 			if (req.readyState == 4) {
 				if (req.status !== 204) {
+					console.log(req.response);
 					const res = JSON.parse(req.response);
 					responseHandler(res);
 				} else {

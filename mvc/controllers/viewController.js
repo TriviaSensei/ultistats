@@ -19,6 +19,9 @@ exports.getHome = catchAsync(async (req, res, next) => {
 });
 
 exports.getLoginForm = catchAsync(async (req, res, next) => {
+	if (res.locals.user) {
+		return res.redirect('/mystuff');
+	}
 	// 1) get data for the requested tour (inc. reviews and tour guides)
 	// 2) build template
 	// 3) render template using data from (1)
@@ -58,8 +61,8 @@ exports.confirmRegistration = catchAsync(async (req, res, next) => {
 });
 
 exports.getAccount = (req, res) => {
-	res.status(200).render('account', {
-		title: 'My Account',
+	res.status(200).render('myStuff', {
+		title: 'My Stuff',
 		user: req.user,
 	});
 };

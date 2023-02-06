@@ -1,31 +1,13 @@
 extends _base
 
+block styles 
+    link(rel="stylesheet" href="/css/home.css")
+
 block content 
-    section.header-section
+    section.header-section.navbar-container
         .container-fluid
             .container-fill
-                nav.navbar.navbar-dark.navbar-expand-lg
-                    .container-fluid.mb-4
-                        a.navbar-brand(href="#") UltiStats
-                        button.navbar-toggler(type="button" data-bs-toggle="collapse" data-bs-target="#navbar-home" aria-controls="navbar-home" aria-expanded="false" aria-label="Toggle navigation")
-                            span.navbar-toggler-icon
-                        .collapse.navbar-collapse#navbar-home 
-                            ul.navbar-nav.ms-auto
-                                - if (user)
-                                    li.nav-greeting 
-                                        span= `Hello, ${user.firstName}`
-                                li.nav-item
-                                    a.nav-link.active(aria-current="page" href="/") Home
-                                - if (!user)
-                                    li.nav-item
-                                        a.nav-link(href="/signup") Login/Signup
-                                - else
-                                    li.nav-item
-                                        a.nav-link(href="/mystuff") My Stuff
-                                    li.nav-item
-                                        a.nav-link#logout Logout
-                                li.nav-item
-                                    a.nav-link(href="#") Contact
+                include components/navbar_dark
                 .row
                     .col-lg-6.mb-2.d-flex.flex-column
                         h1 Your team's stats. #[br]Simplified.

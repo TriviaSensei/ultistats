@@ -19,16 +19,6 @@ html {
 	font-weight: bold;
 }
 
-.nav-item {
-	background-color: var(--white);
-	border: 1px solid var(--black);
-	border-collapse: collapse;
-}
-
-.signup-header > .container-fluid {
-	padding: 3% 10% 0%;
-}
-
 .signup-body .container-fill {
 	display: flex;
 	flex-direction: column;
@@ -95,11 +85,6 @@ input:valid {
 } */
 
 @media (min-width: 992px) {
-	.nav-item {
-		background-color: transparent;
-		border: unset;
-	}
-
 	.form-container {
 		width: 40%;
 	}

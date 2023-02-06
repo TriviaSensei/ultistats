@@ -4,22 +4,10 @@ block styles
     link(rel='stylesheet' href='/css/signup.css')
 
 block content 
-    section.signup-header
+    section.signup-header.navbar-container
         .container-fluid
             .container-fill
-                nav.navbar.navbar-expand-lg
-                    .container-fluid.mb-4
-                        a.navbar-brand(href="#") UltiStats
-                        button.navbar-toggler(type="button" data-bs-toggle="collapse" data-bs-target="#navbar-home" aria-controls="navbar-home" aria-expanded="false" aria-label="Toggle navigation")
-                            span.navbar-toggler-icon
-                        .collapse.navbar-collapse#navbar-home 
-                            ul.navbar-nav.ms-auto 
-                                li.nav-item
-                                    a.nav-link.active(href="/") Home
-                                li.nav-item
-                                    a.nav-link(aria-current="page") Login/Signup
-                                li.nav-item
-                                    a.nav-link(href="/contact") Contact
+                include components/navbar
     section.signup-body
         .container-fluid 
             .container-fill 
@@ -32,8 +20,10 @@ block content
                         label.form-label(for="password") Password
                         .input-group.mb-3
                             input#password.form-control(type="password" name="password" placeholder="Password" required)
-                        button.btn.btn-outline-success.hover-gray
+                        button.btn.btn-outline-success.hover-gray.mb-3
                             a(href="")
                                 div Log in
+                        h6.mb-3 Forgot your password? #[a(href="/forgotPassword") Reset it here].
+                        h6.mb-3 Don't have an account? #[a(href="/signup") Sign up here].
 block scripts 
     script(Src="/js/login.js" type="module" defer)

@@ -4,22 +4,10 @@ block styles
     link(rel='stylesheet' href='/css/signup.css')
 
 block content 
-    section.signup-header
+    section.navbar-container
         .container-fluid
             .container-fill
-                nav.navbar.navbar-expand-lg
-                    .container-fluid.mb-4
-                        a.navbar-brand(href="#") UltiStats
-                        button.navbar-toggler(type="button" data-bs-toggle="collapse" data-bs-target="#navbar-home" aria-controls="navbar-home" aria-expanded="false" aria-label="Toggle navigation")
-                            span.navbar-toggler-icon
-                        .collapse.navbar-collapse#navbar-home 
-                            ul.navbar-nav.ms-auto 
-                                li.nav-item
-                                    a.nav-link.active(href="/") Home
-                                li.nav-item
-                                    a.nav-link(aria-current="page") Login/Signup
-                                li.nav-item
-                                    a.nav-link(href="/contact") Contact
+                include components/navbar
     section.signup-body
         .container-fluid 
             .container-fill 

@@ -1,0 +1,10 @@
+.navbar-brand {
+	color: var(--black);
+}
+
+.nav-greeting,
+.nav-link,
+.navbar-nav .nav-link.active {
+	color: var(--black);
+	font-size: 1.25rem;
+}

@@ -1,0 +1,20 @@
+nav.navbar.navbar-dark.navbar-expand-lg
+    .container-fluid.mb-4
+        a.navbar-brand(href="/") UltiStats
+        button.navbar-toggler(type="button" data-bs-toggle="collapse" data-bs-target="#navbar-home" aria-controls="navbar-home" aria-expanded="false" aria-label="Toggle navigation")
+            span.navbar-toggler-icon
+        .collapse.navbar-collapse#navbar-home 
+            ul.navbar-nav.ms-auto
+                - if (user)
+                    li.nav-greeting 
+                        span= `Hello, ${user.firstName}`
+                - if (!user)
+                    li.nav-item
+                        a.nav-link(href="/login") Login/Signup
+                - else
+                    li.nav-item
+                        a.nav-link(href="/mystuff") My stuff
+                    li.nav-item
+                        a.nav-link#logout Logout
+                li.nav-item
+                    a.nav-link(href="/contact") Contact

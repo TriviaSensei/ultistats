@@ -41,8 +41,7 @@ export const showMessage = (type, msg, ...time) => {
 		color = 'black';
 		bgcolor = 'white';
 	}
-	const msgContainer = document.getElementById('message-container');
-	const msgDiv = document.getElementById('game-message');
+	const msgDiv = document.querySelector('.message');
 	msgDiv.innerHTML = msg;
 	msgDiv.style = `color:${color};background-color:${bgcolor};opacity:1;`;
 	msgDiv.classList.remove('invisible-div');
@@ -50,7 +49,7 @@ export const showMessage = (type, msg, ...time) => {
 };
 
 export const hideMessage = () => {
-	const msgDiv = document.getElementById('game-message');
+	const msgDiv = document.querySelector('.message');
 	msgDiv.classList.add('invisible-div');
 	// msgTimeout = setTimeout(() => {
 	//   msgDiv.style = 'display:none;';
