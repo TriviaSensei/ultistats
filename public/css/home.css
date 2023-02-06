@@ -18,8 +18,18 @@
 
 .nav-item {
 	background-color: var(--translucent);
-	border: 1px solid var(--white);
+	border-left: 1px solid var(--white);
+	border-right: 1px solid var(--white);
+	border-top: 1px solid var(--white);
 	border-collapse: collapse;
+}
+
+.nav-item:last-child {
+	border-bottom: 1px solid var(--white);
+}
+
+.nav-item:hover {
+	background-color: var(--gray);
 }
 
 .nav-greeting,
