@@ -61,8 +61,18 @@ exports.confirmRegistration = catchAsync(async (req, res, next) => {
 });
 
 exports.getAccount = (req, res) => {
-	res.status(200).render('myStuff', {
-		title: 'My Stuff',
+	res.status(200).render('myAccount', {
+		title: 'My Account',
 		user: req.user,
 	});
 };
+
+exports.getManagerPage = catchAsync(async (req, res) => {
+	const user = await req.user.populate('teams');
+	console.log(user);
+	res.status(200).render('myStuff', {
+		title: 'My Stuff',
+		user,
+		year: new Date().getFullYear(),
+	});
+});

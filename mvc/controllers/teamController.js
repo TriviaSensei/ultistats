@@ -301,7 +301,11 @@ exports.cancelAddManager = catchAsync(async (req, res, next) => {
 });
 
 exports.createTeam = factory.createOne(Team);
-exports.getTeam = factory.getOne(Team);
+exports.getTeam = factory.getOne(Team, {
+	path: 'managers',
+	// model: User,
+	// select: ['_id', 'firstName', 'lastName', 'displayName'],
+});
 exports.getAllTeams = factory.getAll(Team);
 exports.updateTeam = factory.updateOne(Team);
 exports.deleteTeam = factory.deleteOne(Team);

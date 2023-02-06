@@ -12,7 +12,7 @@ router.get('/signup', viewController.getSignUpForm);
 router.get('/login', viewController.getLoginForm);
 
 router.use(authController.protect);
-
-router.get('/mystuff', viewController.getAccount);
+router.get('/me', viewController.getAccount);
+router.get('/mystuff', viewController.getManagerPage);
 
 module.exports = router;

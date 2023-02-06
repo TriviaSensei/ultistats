@@ -1,4 +1,8 @@
 const mongoose = require('mongoose');
+const Filter = require('bad-words');
+const filter = new Filter();
+
+const noBadWords = (val) => !filter.isProfane(val);
 
 const teamSchema = new mongoose.Schema({
 	managers: {
@@ -12,6 +16,10 @@ const teamSchema = new mongoose.Schema({
 	name: {
 		type: String,
 		required: [true, "You must specify your team's name"],
+		validate: {
+			validator: noBadWords,
+			message: 'Invalid team name - please watch your language.',
+		},
 	},
 	season: {
 		type: Number,
@@ -36,6 +44,14 @@ const teamSchema = new mongoose.Schema({
 		default: '#ffffff',
 	},
 	color2: {
+		type: String,
+		default: '#000000',
+	},
+	color3: {
+		type: String,
+		default: '#ffffff',
+	},
+	color4: {
 		type: String,
 		default: '#000000',
 	},

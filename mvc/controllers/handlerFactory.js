@@ -1,6 +1,7 @@
 const catchAsync = require('../../utils/catchAsync');
 const AppError = require('../../utils/appError');
 const APIFeatures = require('../../utils/apiFeatures');
+const { uuidV4: v4 } = require('uuid');
 // const User = require('../models/userModel');
 const Tournament = require('../models/tournamentModel');
 const Team = require('../models/teamModel');
@@ -136,7 +137,13 @@ exports.createOne = (Model) =>
 			// req.body.membershipLevel = 'Free';
 			req.body.managers = [res.locals.user._id];
 			req.body.requestedManagers = [];
-			req.body.roster = [];
+			if (!req.body.roster) req.body.roster = [];
+			else {
+				req.body.roster.forEach((p) => {
+					p.id = uuidV4();
+					p.active = true;
+				});
+			}
 		} else if (loc === 'games') {
 			console.log(req.body);
 			if (!req.body.cap && !req.body.hardCap) {
@@ -154,12 +161,17 @@ exports.createOne = (Model) =>
 				);
 		}
 
-		const doc = await Model.create(req.body);
+		let doc = await Model.create(req.body);
 
 		//if creating a team, the user creating it starts as the manager
 		if (loc === 'teams') {
 			res.locals.user.teams.push(doc._id);
 			await res.locals.user.save({ validateBeforeSave: false });
+
+			doc = await Model.findById(doc._id.toString()).populate({
+				path: 'managers',
+				select: 'firstName lastName displayName _id',
+			});
 		}
 
 		res.status(201).json({
@@ -175,21 +187,38 @@ exports.getOne = (Model, popOptions) =>
 		const loc = arr.length > 3 ? arr[3] : '';
 		let filter = { _id: req.params.id };
 
-		query = Model.find(filter);
+		// query = Model.find(filter);
 
-		if (popOptions) query = query.populate(popOptions);
-		let doc = await query;
+		// if (popOptions) query = query.populate(popOptions);
+		// let doc = await query;
 
-		if (!doc || doc.length === 0) {
-			return next(new AppError('No document found with that ID.', 404));
-		} else if (loc === 'teams') {
+		let doc;
+
+		if (loc === 'teams') {
+			doc = await Model.findById(req.params.id)
+				.populate({
+					path: 'managers',
+					select: 'firstName lastName displayName _id',
+				})
+				.populate({
+					path: 'requestedManagers',
+					select: 'firstName lastName displayName _id',
+				});
+
 			if (
-				!doc[0].managers.some((m) => {
-					return m.toString() === res.locals.user._id.toString();
+				doc &&
+				!doc.managers.some((m) => {
+					console.log(m._id, res.locals.user._id);
+					return m._id.toString() === res.locals.user._id.toString();
 				})
 			) {
-				doc = [];
+				return next(new AppError('You are not a manager of this team.'));
 			}
+			// doc.managers = doc.managers.sort((a, b) => {
+			// 	const a1 = a._id.toString() === res.locals.user._id.toString() ? 1 : 0;
+			// 	const b1 = b._id.toString() === res.locals.user._id.toString() ? 1 : 0;
+			// 	return b1 - a1;
+			// });
 		} else if (loc === 'tournaments') {
 			let team = await Team.findById(doc[0].team._id.toString());
 			if (

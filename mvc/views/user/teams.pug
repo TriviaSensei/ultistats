@@ -1,0 +1,123 @@
+label.form-label(for="team-select") Select a team:&nbsp;
+form#team-form.mb-3
+    select#team-select.mb-3
+        option(value="") [Create New]
+        each team in user.teams
+            option(value=`${team._id}`)= `${team.name} (${team.season})`
+    .input-group-h.mb-3
+        .input-group-f.input-group-3
+            label.form-label(for="team-name") Team name:
+            .input-group
+                input#team-name.form-control(type="text" name="name" placeholder="Team Name" required)
+        .input-group-f.input-group-1
+            label.form-label(for="season") Season:
+            .input-group
+                input#season.form-control(type="number" name="season" placeholder="Season" min=`${year}` required)
+    .input-group-f.mb-3
+        label.form-label(for="division") Division: 
+        select#division
+            option(value="Men") Men
+            option(value="Women") Women 
+            option(value="Mixed") Mixed
+    .input-group-f
+        label.form-label Colors:
+    .input-group-h.mb-2
+        .input-group-f.input-group-1.ai-c
+            label.form-label(for="color-1") Light:
+            input#color-1(type="color" value="#ffffff")
+        .input-group-f.input-group-1.ai-c
+            label.form-label(for="color-2") Light #s:
+            input#color-2(type="color" value="#000000")
+        .input-group-f.input-group-1.ai-c
+            label.form-label(for="color-3") Dark:
+            input#color-3(type="color" value="#000000")
+        .input-group-f.input-group-1.ai-c
+            label.form-label(for="color-4") Dark #s:
+            input#color-4(type="color" value="#ffffff")
+    .input-group-h.f-sb
+        .jersey-container
+            .jersey-preview#preview-1(style="color:#000000;background-color:#ffffff")
+                .jersey-name JP
+                .jersey-number 27
+        .jersey-container
+            .jersey-preview#preview-2(style="color:#ffffff;background-color:#000000")
+                .jersey-name GH
+                .jersey-number 15
+form#roster-form
+    .input-group-f 
+        label.form-label Roster (can be edited later)
+    .input-group-h.mb-3
+        .input-group-f.input-group-1
+            label.form-label(for="first-name") First name:
+            .input-group
+                input#first-name.form-control(type="text" placeholder="First Name" required)
+        .input-group-f.input-group-1
+            label.form-label(for="last-name") Last name:
+            .input-group
+                input#last-name.form-control(type="text" placeholder="Last Name" required)
+    .input-group-h.mb-3
+        .input-group-f.input-group-3
+            label.form-label(for="display-name") Display name:
+            .input-group
+                input#display-name.form-control(type="text" placeholder="Display Name")
+        .input-group-f.input-group-1
+            label.form-label(for="number") Number:
+            .input-group
+                input#number.form-control(type="text" placeholder="##" size="2" maxlength="2")
+    .input-group-h.mb-3
+        .input-group-f.input-group-1
+            label.form-label(for="gender-match") Gender match:
+            .input-group
+                input#gen-m.me-2(type="radio" name="gender-match" value="M") 
+                label.me-2(for='gen-m') Male
+            .input-group
+                input#gen-f.me-2(type="radio" name="gender-match" value="F")
+                label(for='gen-f') Female
+        .input-group-f.input-group-1
+            label.form-label(for="line") Primary Line:
+            .input-group
+                input#line-d.me-2(type="radio" name="line" value="D") 
+                label.me-2(for='line-d') Defense
+            .input-group
+                input#line-o.me-2(type="radio" name="line" value="O")
+                label(for='line-o') Offense
+        .input-group-f.input-group-1
+            label.form-label(for="position") Position:
+            .input-group
+                select#position
+                    option(value="H") Handler
+                    option(value="C") Cutter 
+                    option(value="Hy") Hybrid
+    .d-grid.gap-2.mb-3  
+        button.btn.btn-primary(type="submit") Add Player
+table#roster-table.mb-3
+    thead 
+        tr 
+            th #
+            th Name 
+            th Gen 
+            th Ln 
+            th Pos 
+            th ✏️
+            th ❌
+    tbody#roster-list
+        tr 
+            td(colspan="7") Add players to your roster above.
+#manager-area
+    .input-group-f 
+        label.form-label Team Managers
+    table#manager-table.mb-3 
+        thead 
+            tr
+                th Name 
+                th Leave
+        tbody 
+    .input-group.mb-3
+        label.form-label Add manager (e-mail): 
+        .input-group 
+            input#new-manager-email.form-control(type="email" placeholder="E-mail")
+    .d-grid.gap-2.mb-3 
+        button.btn.btn-primary(type="submit") Request Add Manager
+.w-100.d-grid.gap-2 
+    button.btn.btn-primary(type="submit" form="team-form") Save Team
+    
