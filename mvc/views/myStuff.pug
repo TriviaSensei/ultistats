@@ -22,9 +22,11 @@ block content
                 .tab-inner.flex-col.ai-c
                     include user/teams
             .tab-pane.fade#tournament-div(role="tabpanel" aria-labelledby="tournament-tab" tabindex="0")
-                include user/tournaments
+                .tab-inner.flex-col.ai-c
+                    include user/tournaments
             .tab-pane.fade#game-div(role="tabpanel" aria-labelledby="game-tab" tabindex="0")
-                include user/games
+                .tab-inner.flex-col.ai-c
+                    include user/games
 
 block scripts 
     script(src="/js/teams.js" type="module" defer)

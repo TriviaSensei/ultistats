@@ -61,6 +61,7 @@ exports.addPlayer = catchAsync(async (req, res, next) => {
 	let status = 'success';
 	let message = '';
 
+	let v = 1;
 	const existingPlayer = team.roster.find((p) => {
 		if (
 			p.active &&
@@ -68,6 +69,14 @@ exports.addPlayer = catchAsync(async (req, res, next) => {
 			p.lastName.toLowerCase() === req.body.lastName.toLowerCase()
 		) {
 			message = `A player with that name (${req.body.lastName}, ${req.body.firstName}) has already been added to your team.`;
+			team.roster.forEach((p2) => {
+				if (
+					p2.firstName.toLowerCase() === req.body.firstName.toLowerCase() &&
+					p2.lastName.toLowerCase() === req.body.lastName.toLowerCase()
+				) {
+					v = Math.max(v, p2.v + 1);
+				}
+			});
 			return true;
 		} else if (
 			p.active &&
@@ -92,6 +101,7 @@ exports.addPlayer = catchAsync(async (req, res, next) => {
 		position,
 		gender,
 		id: uuidV4(),
+		v,
 		active: true,
 	});
 	team.markModified('roster');

@@ -89,8 +89,6 @@ body {
 .jersey-preview {
 	width: 4rem;
 	padding: 5px;
-	min-height: 4rem;
-	height: 100%;
 	border: 1px solid black;
 	font-weight: bold;
 	display: flex;
@@ -131,4 +129,9 @@ body {
 #manager-table td {
 	border: 1px solid black;
 	text-align: center;
+}
+
+#roster-list tr.player-row:hover,
+#manager-list tr.manager-row:hover {
+	background-color: var(--color-1);
 }

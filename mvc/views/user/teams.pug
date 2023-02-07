@@ -63,7 +63,7 @@ form#roster-form
         .input-group-f.input-group-1
             label.form-label(for="number") Number:
             .input-group
-                input#number.form-control(type="text" placeholder="##" size="2" maxlength="2")
+                input#number.form-control(type="text" placeholder="##" size="2" pattern="[0-9]{1,2}" maxlength="2")
     .input-group-h.mb-3
         .input-group-f.input-group-1
             label.form-label(for="gender-match") Gender match:
@@ -101,7 +101,7 @@ table#roster-table.mb-3
             th ✏️
             th ❌
     tbody#roster-list
-        tr 
+        tr#filler-row
             td(colspan="7") Add players to your roster above.
 #manager-area
     .input-group-f 
