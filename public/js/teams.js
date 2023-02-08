@@ -3,6 +3,7 @@ import { showMessage } from './utils/messages.js';
 import { getElementArray } from './utils/getElementArray.js';
 import { createElement } from './utils/createElementFromSelector.js';
 //team information
+const teamForm = document.querySelector('#team-form');
 const teamSelect = document.querySelector('#team-select');
 const teamName = document.querySelector('#team-name');
 const teamSeason = document.querySelector('#season');
@@ -57,9 +58,21 @@ const removePlayer = (id) => {
 	if (teamSelect.value !== '') {
 		const str = `/api/v1/teams/${teamSelect.value}/removePlayer`;
 		const handler = (res) => {
-			showMessage(res.status, res.message);
+			if (res.status === 'success') {
+				showMessage('info', res.message);
+			} else {
+				showMessage(res.status, res.message);
+			}
 		};
 		handleRequest(str, 'PATCH', { id }, handler);
+	} else {
+		const p = roster.find((pl) => {
+			return pl.id === id;
+		});
+		showMessage(
+			'info',
+			`Player ${p.lastName}, ${p.firstName} removed from roster.`
+		);
 	}
 
 	roster = roster.filter((p) => {
@@ -83,11 +96,17 @@ const addPlayerRow = (player) => {
 	const info = [
 		player.number,
 		`${player.lastName}, ${player.firstName} ${
-			player.v === 1 ? '' : '(' + player.v + ')'
+			player.v > 1 ? '(' + player.v + ')' : ''
 		}`,
 		player.gender,
 		player.line,
-		player.position,
+		player.position === 'Handler'
+			? 'H'
+			: player.position === 'Cutter'
+			? 'C'
+			: player.position === 'Hybrid'
+			? 'Hy'
+			: player.position,
 	];
 
 	const newRow = createElement('tr.player-row');
@@ -135,36 +154,43 @@ const addPlayerRow = (player) => {
 const addPlayer = (player) => {
 	let message = 'Player added.';
 	let status = 'info';
-	let v = 1;
-	roster.some((p) => {
-		if (
-			p.firstName.toLowerCase() === player.firstName.toLowerCase() &&
-			p.lastName.toLowerCase() === player.lastName.toLowerCase()
-		) {
-			message = `Player with name ${p.firstName} ${p.lastName} already exists on the roster.`;
-			status = 'warning';
 
-			roster.forEach((p2) => {
-				if (
-					p2.firstName.toLowerCase() === player.firstName.toLowerCase() &&
-					p2.lastName.toLowerCase() === player.lastName.toLowerCase()
-				) {
-					v = Math.max(v, p2.v + 1);
-				}
-			});
-			return true;
-		} else if (parseInt(p.number) === parseInt(player.number)) {
-			message = `Number ${p.number} is already being worn by ${p.firstName} ${p.lastName}`;
-			status = 'warning';
-			return true;
+	const toPush = { ...player, id: window.crypto.randomUUID() };
+
+	//if we're creating a new team, we need to check client side if we're creating a duplicate player.
+	if (teamSelect.value === '') {
+		roster.some((p) => {
+			if (
+				p.firstName.toLowerCase() === player.firstName.toLowerCase() &&
+				p.lastName.toLowerCase() === player.lastName.toLowerCase()
+			) {
+				message = `A player with that name (${req.body.lastName}, ${req.body.firstName}) has already been added to your team.`;
+				status = 'error';
+				return true;
+			} else if (parseInt(p.number) === parseInt(player.number)) {
+				message = `Number ${p.number} is already being worn by ${p.firstName} ${p.lastName}`;
+				status = 'warning';
+				return true;
+			}
+		});
+		if (status === 'error') {
+			return showMessage(status, message, 2000);
 		}
-	});
-
-	const toPush = { ...player, v, id: window.crypto.randomUUID() };
-	roster.push(toPush);
-	addPlayerRow(toPush);
-
-	showMessage(status, message, status === 'info' ? 500 : 2000);
+		roster.push(toPush);
+		addPlayerRow(toPush);
+		showMessage(status, message, status === 'info' ? 500 : 2000);
+	} else {
+		const str = `/api/v1/teams/${teamSelect.value}/addPlayer`;
+		const handler = (res) => {
+			console.log(res);
+			showMessage(res.status, res.message);
+			if (res.status === 'success' || res.status === 'warning') {
+				roster.push(res.newPlayer);
+				addPlayerRow(res.newPlayer);
+			}
+		};
+		handleRequest(str, 'PATCH', toPush, handler);
+	}
 };
 
 const handleAddPlayer = (e) => {
@@ -197,18 +223,48 @@ const handleAddPlayer = (e) => {
 
 const getTeam = (e) => {
 	if (e.target !== teamSelect) return;
-	if (!teamSelect.value) return;
+	//if "create new team" is selected
+	if (!teamSelect.value) {
+		//reset the color values
+		color1.value = '#ffffff';
+		color2.value = '#000000';
+		color3.value = '#000000';
+		color4.value = '#ffffff';
+		//...and the inputs
+		[teamName, teamSeason, firstName, lastName, displayName, number].forEach(
+			(i) => {
+				i.value = '';
+			}
+		);
 
+		getElementArray(rosterForm, `input[type="radio"]`).forEach((el) => {
+			el.checked = false;
+		});
+
+		//remove the rows from the roster table (this should empty the roster)
+		getElementArray(rosterBody, '.player-row').forEach((r) => {
+			removePlayer(r.getAttribute('data-id'));
+		});
+		//empty the roster just in case
+		roster = [];
+
+		return;
+	}
+
+	//get the team info
 	const str = `/api/v1/teams/${teamSelect.value}`;
 	const handler = (res) => {
 		if (res.status === 'success') {
 			console.log(res);
+			//set the colors;
 			color1.value = res.data.color1;
 			color2.value = res.data.color2;
 			color3.value = res.data.color3;
 			color4.value = res.data.color4;
+			//set the jersey previews - invoking the function once will change everything
 			handleColorChange({ target: color1 });
 
+			//set the inputs
 			teamName.value = res.data.name;
 			teamSeason.value = res.data.season;
 
@@ -219,12 +275,64 @@ const getTeam = (e) => {
 				}
 			});
 
+			//clear the roster table (just the rows...don't want to accidentally clear the actual DB roster)
+			getElementArray(rosterBody, '.player-row').forEach((r) => {
+				if (r.getAttribute('data-id')) {
+					removePlayerRow(r.getAttribute('data-id'));
+				} else {
+					r.remove();
+				}
+			});
+			//set the roster to the roster of the team
 			roster = res.data.roster;
+			roster.forEach((p) => {
+				addPlayerRow(p);
+			});
 		} else {
 			showMessage('error', res.message);
 		}
 	};
 	handleRequest(str, 'GET', null, handler);
+};
+
+const createTeam = () => {
+	const body = {
+		name: teamName.value,
+		season: parseInt(teamSeason.value),
+		division: division.value,
+		color1: color1.value,
+		color2: color2.value,
+		color3: color3.value,
+		color4: color4.value,
+		roster,
+	};
+	let str = `/api/v1/teams/`;
+	let handler = (res) => {
+		if (res.status === 'success') {
+			showMessage('info', 'Successfully created team.');
+			const op = document.createElement('option');
+			op.innerHTML = `${res.data.name} (${res.data.season})`;
+			op.value = res.data._id;
+			teamSelect.appendChild(op);
+			teamSelect.selectedIndex =
+				teamSelect.querySelectorAll('option').length - 1;
+			getTeam({ target: teamSelect });
+		}
+	};
+	handleRequest(str, 'POST', body, handler);
+};
+
+const saveTeam = () => {};
+
+const handleSaveTeam = (e) => {
+	if (e.target !== teamForm) return;
+	e.preventDefault();
+
+	if (teamSelect.value === '') {
+		createTeam();
+	} else {
+		saveTeam();
+	}
 };
 
 document.addEventListener('DOMContentLoaded', (e) => {
@@ -236,4 +344,5 @@ document.addEventListener('DOMContentLoaded', (e) => {
 	color4.addEventListener('change', handleColorChange);
 
 	rosterForm.addEventListener('submit', handleAddPlayer);
+	teamForm.addEventListener('submit', handleSaveTeam);
 });

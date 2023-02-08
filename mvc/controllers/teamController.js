@@ -60,57 +60,79 @@ exports.addPlayer = catchAsync(async (req, res, next) => {
 
 	let status = 'success';
 	let message = '';
+	let pushIt = true;
+	let toPush;
 
-	let v = 1;
 	const existingPlayer = team.roster.find((p) => {
 		if (
 			p.active &&
 			p.firstName.toLowerCase() === req.body.firstName.toLowerCase() &&
 			p.lastName.toLowerCase() === req.body.lastName.toLowerCase()
 		) {
+			pushIt = false;
+			status = 'fail';
 			message = `A player with that name (${req.body.lastName}, ${req.body.firstName}) has already been added to your team.`;
-			team.roster.forEach((p2) => {
-				if (
-					p2.firstName.toLowerCase() === req.body.firstName.toLowerCase() &&
-					p2.lastName.toLowerCase() === req.body.lastName.toLowerCase()
-				) {
-					v = Math.max(v, p2.v + 1);
-				}
-			});
+			return true;
+		} else if (
+			p.firstName.toLowerCase() === req.body.firstName.toLowerCase() &&
+			p.lastName.toLowerCase() === req.body.lastName.toLowerCase()
+		) {
+			message = `Player ${p.firstName} ${p.lastName} has been reinstated to the roster.`;
+			p.active = true;
+			p.firstName = req.body.firstName;
+			p.lastName = req.body.lastName;
+			p.displayName = req.body.displayName;
+			p.number = req.body.number;
+			p.gender = req.body.gender;
+			p.line = req.body.line;
+			p.position = req.body.position;
+			pushIt = false;
+			toPush = p;
 			return true;
 		} else if (
 			p.active &&
 			p.number !== '' &&
 			parseInt(p.number) === parseInt(req.body.number)
 		) {
-			message = `Jersey number ${req.body.number} is already worn by ${p.firstName} ${p.lastName}`;
+			status = 'warning';
+			message = `Number ${p.number} is already being worn by ${p.firstName} ${p.lastName}`;
 			return true;
 		}
 	});
-	if (existingPlayer) status = 'warning';
+	if (status === 'fail') {
+		return next(new AppError(message, 400));
+	}
 
-	const { firstName, lastName, displayName, number, line, position, gender } =
-		req.body;
+	if (pushIt) {
+		const { firstName, lastName, displayName, number, line, position, gender } =
+			req.body;
 
-	team.roster.push({
-		firstName,
-		lastName,
-		displayName,
-		number,
-		line,
-		position,
-		gender,
-		id: uuidV4(),
-		v,
-		active: true,
-	});
+		const id = uuidV4();
+
+		toPush = {
+			firstName,
+			lastName,
+			displayName,
+			number,
+			line,
+			position,
+			gender,
+			id,
+			active: true,
+		};
+		team.roster.push(toPush);
+	}
+
+	if (!message)
+		message = `Player ${toPush.firstName} ${toPush.lastName} added to roster.`;
+
 	team.markModified('roster');
 	const data = await team.save();
 
 	res.status(200).json({
 		status,
 		message,
-		data,
+		newPlayer: toPush,
 	});
 });
 

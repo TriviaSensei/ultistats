@@ -14,6 +14,11 @@ export const msgTypes = [
 		color: '#000000',
 		bgcolor: '#d9ffd6',
 	},
+	{
+		type: 'success',
+		color: '#000000',
+		bgcolor: '#d9ffd6',
+	},
 ];
 
 export const msgTimeout = {

@@ -214,6 +214,10 @@ exports.getOne = (Model, popOptions) =>
 			) {
 				return next(new AppError('You are not a manager of this team.'));
 			}
+
+			doc.roster = doc.roster.filter((p) => {
+				return p.active;
+			});
 			// doc.managers = doc.managers.sort((a, b) => {
 			// 	const a1 = a._id.toString() === res.locals.user._id.toString() ? 1 : 0;
 			// 	const b1 = b._id.toString() === res.locals.user._id.toString() ? 1 : 0;
