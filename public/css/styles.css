@@ -160,7 +160,7 @@ button > a > div {
 }
 
 .invisible-div {
-	display: none;
+	display: none !important;
 }
 
 @media (min-width: 992px) {

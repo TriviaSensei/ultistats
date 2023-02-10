@@ -3,6 +3,10 @@ extends _base
 block styles 
     link(rel='stylesheet' href='/css/user.css')
 
+block modals 
+    include components/modals/editPlayerModal
+    include components/modals/deletePlayerModal
+
 block content 
     section.navbar-container
         .container-fluid

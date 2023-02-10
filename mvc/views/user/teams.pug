@@ -41,11 +41,11 @@ form#team-form.mb-3
                 .jersey-number 27
         .jersey-container
             .jersey-preview#preview-2(style="color:#ffffff;background-color:#000000")
-                .jersey-name GH
-                .jersey-number 15
+                .jersey-name DH
+                .jersey-number 1
 form#roster-form
     .input-group-f 
-        label.form-label Roster (can be edited later)
+        label.form-label Roster (#[span#roster-size 0]/#[span#roster-limit= rosterLimit] used)
     .input-group-h.mb-3
         .input-group-f.input-group-1
             label.form-label(for="first-name") First name:
@@ -65,8 +65,8 @@ form#roster-form
             .input-group
                 input#number.form-control(type="text" placeholder="##" size="2" pattern="[0-9]{1,2}" maxlength="2")
     .input-group-h.mb-3
-        .input-group-f.input-group-1
-            label.form-label(for="gender-match") Gender match:
+        #gender-match.input-group-f.input-group-1.invisible-div
+            label.form-label Gender match:
             .input-group
                 input#gen-m.me-2(type="radio" name="gender-match" value="M") 
                 label.me-2(for='gen-m') Male
@@ -85,6 +85,7 @@ form#roster-form
             label.form-label(for="position") Position:
             .input-group
                 select#position
+                    option(value="-") None
                     option(value="H") Handler
                     option(value="C") Cutter 
                     option(value="Hy") Hybrid
@@ -92,12 +93,12 @@ form#roster-form
         button.btn.btn-primary(type="submit") Add Player
 table#roster-table.mb-3
     thead 
-        tr 
-            th #
-            th Name 
-            th Gen 
-            th Ln 
-            th Pos 
+        tr#roster-header
+            th.sort-header.active-sort.sort-asc(data-attr="number") #
+            th.sort-header(data-attr="name") Name 
+            th.sort-header.gen-cell(data-attr="gender") Gen 
+            th.sort-header(data-attr="line") Ln 
+            th.sort-header(data-attr="position") Pos 
             th ✏️
             th ❌
     tbody#roster-list

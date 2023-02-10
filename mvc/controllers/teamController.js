@@ -6,8 +6,7 @@ const User = require('../models/userModel');
 const Email = require('../../utils/email');
 
 const { v4: uuidV4 } = require('uuid');
-const e = require('express');
-const rosterLimit = 40;
+const { rosterLimit } = require('../../utils/settings');
 
 const validateNewPlayer = (player) => {
 	if (!player.firstName) return 'First name not specified.';
@@ -39,6 +38,24 @@ const validateNewPlayer = (player) => {
 
 	return null;
 };
+
+exports.verifyOwnership = catchAsync(async (req, res, next) => {
+	res.locals.team = await Team.findById(req.params.id).populate({
+		path: 'managers',
+		select: 'firstName lastName displayName _id',
+	});
+
+	if (!res.locals.team) return next(new AppError('Team not found', 404));
+	else if (
+		!res.locals.team.managers.some((m) => {
+			return m._id.toString() === res.locals.user._id.toString();
+		})
+	) {
+		return next(new AppError('You are not a manager of this team.', 403));
+	}
+
+	next();
+});
 
 exports.addPlayer = catchAsync(async (req, res, next) => {
 	const val = validateNewPlayer(req.body);
@@ -133,6 +150,7 @@ exports.addPlayer = catchAsync(async (req, res, next) => {
 		status,
 		message,
 		newPlayer: toPush,
+		rosterLimit,
 	});
 });
 
@@ -159,6 +177,7 @@ exports.removePlayer = catchAsync(async (req, res, next) => {
 		status,
 		message,
 		data,
+		rosterLimit,
 	});
 });
 
@@ -169,6 +188,7 @@ exports.editPlayer = catchAsync(async (req, res, next) => {
 	let status = 'fail';
 	let message = 'Player not found';
 	let found = false;
+	let toReturn;
 
 	team.roster = team.roster.map((p, i) => {
 		if (p.id === req.body.id) {
@@ -184,18 +204,19 @@ exports.editPlayer = catchAsync(async (req, res, next) => {
 					(req.body.lastName || p.lastName).toLowerCase() ===
 						p2.lastName.toLowerCase()
 				) {
+					status = 'fail';
 					message = `A player with that name (${req.body.lastName}, ${req.body.firstName}) is already on your team.`;
 					return true;
 				} else if (
 					(req.body.number || p.number) &&
 					parseInt(req.body.number || p.number) === parseInt(p2.number)
 				) {
+					status = 'warning';
 					message = `Jersey number ${req.body.number} is already worn by ${p2.firstName} ${p2.lastName}`;
 					return true;
 				}
 				return false;
 			});
-			if (existingPlayer) status = 'warning';
 
 			const val = validateNewPlayer({
 				...p,
@@ -204,13 +225,16 @@ exports.editPlayer = catchAsync(async (req, res, next) => {
 
 			if (val) return next(new AppError(val, 400));
 
-			return {
+			toReturn = {
 				...p,
 				...req.body,
 			};
+
+			return toReturn;
 		}
 		return p;
 	});
+	if (status === 'fail') return next(new AppError(message, 400));
 	if (found) {
 		team.markModified('roster');
 		const data = await team.save();
@@ -218,6 +242,7 @@ exports.editPlayer = catchAsync(async (req, res, next) => {
 			status,
 			message,
 			data,
+			modifiedPlayer: toReturn,
 		});
 	}
 	res.status(200).json({

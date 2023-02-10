@@ -208,7 +208,6 @@ exports.getOne = (Model, popOptions) =>
 			if (
 				doc &&
 				!doc.managers.some((m) => {
-					console.log(m._id, res.locals.user._id);
 					return m._id.toString() === res.locals.user._id.toString();
 				})
 			) {

@@ -1,0 +1,11 @@
+.modal.fade#confirm-delete-player-modal(tabindex="-1" aria-labelledby="delete-player-label" aria-hidden="true")
+    .modal-dialog.modal-dialog-centered
+        .modal-content#delete-player-modal-content
+            .modal-header
+                h5.modal-title#delete-player-label Delete player?
+            .modal-body
+                p Are you sure you wish to remove this player?
+                input#delete-player-id(type="hidden" value='')
+            .modal-footer
+                button.btn.btn-primary#confirm-delete-player(type="button" data-bs-dismiss="modal") Yes
+                button.btn.btn-secondary(type="button" data-bs-dismiss="modal") No

@@ -74,6 +74,7 @@ exports.isLoggedIn = catchAsync(async (req, res, next) => {
 		res.locals.user = currentUser;
 		next();
 	} catch (err) {
+		console.log('error');
 		next();
 	}
 });
@@ -239,19 +240,20 @@ exports.protect = catchAsync(async (req, res, next) => {
 	}
 
 	if (!token) {
-		// return next(
-		// 	new AppError('You are not logged in. Please log in for access.', 401)
-		// );
-		return res.redirect('/login');
+		return next(
+			new AppError('You are not logged in. Please log in for access.', 401)
+		);
 	}
 	// validate the token
 	const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 	// check if the user exists
 	const currentUser = await User.findById(decoded.id);
 	if (!currentUser) {
-		return next(
-			new AppError('The user belonging to this token no longer exists.', 401)
-		);
+		// return next(
+		// 	new AppError('The user belonging to this token no longer exists.', 401)
+		// );
+		console.log('no user');
+		return res.redirect('/login');
 	}
 	// check if the user changed password after the token was issued
 	if (currentUser.changedPasswordAfter(decoded.iat)) {

@@ -5,14 +5,18 @@ const teamController = require('../controllers/teamController');
 const router = express.Router();
 
 router.use(authController.protect);
-
-router.patch('/:id/addPlayer', teamController.addPlayer);
-router.patch('/:id/removePlayer', teamController.removePlayer);
-router.patch('/:id/editPlayer', teamController.editPlayer);
-router.patch('/:id/addManager', teamController.requestAddManager);
-router.patch('/:id/cancelManager', teamController.cancelAddManager);
-
 router.post('/', teamController.createTeam);
+
+router.use('/*/:id', teamController.verifyOwnership);
+
+router.patch('/addPlayer/:id', teamController.addPlayer);
+router.patch('/removePlayer/:id', teamController.removePlayer);
+router.patch('/editPlayer/:id', teamController.editPlayer);
+router.patch('/addManager/:id', teamController.requestAddManager);
+router.patch('/cancelManager/:id', teamController.cancelAddManager);
+
+router.use('/:id', teamController.verifyOwnership);
+
 router
 	.route('/:id')
 	.get(teamController.getTeam)

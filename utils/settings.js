@@ -1,0 +1,1 @@
+exports.rosterLimit = 40;

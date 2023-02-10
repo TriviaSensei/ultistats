@@ -106,6 +106,7 @@ body {
 .form-label {
 	text-align: left;
 	font-weight: bold;
+	margin-bottom: 0.1rem;
 }
 
 .btn {
@@ -130,6 +131,47 @@ body {
 	border: 1px solid black;
 	text-align: center;
 }
+
+#roster-table .gen-cell {
+	display: none;
+}
+
+#roster-table.mixed .gen-cell {
+	display: table-cell;
+}
+
+#roster-header > th {
+	-webkit-touch-callout: none; /* iOS Safari */
+	-webkit-user-select: none; /* Safari */
+	-khtml-user-select: none; /* Konqueror HTML */
+	-moz-user-select: none; /* Old versions of Firefox */
+	-ms-user-select: none; /* Internet Explorer/Edge */
+	user-select: none;
+}
+
+#roster-header > th.sort-header:hover {
+	background-color: var(--color-1);
+	cursor: pointer;
+}
+
+#roster-header > th.active-sort {
+	background-color: var(--color-1);
+}
+/* 
+#roster-header > th::after {
+	content: ' ';
+	font-size: 0.75rem;
+}
+
+#roster-header > th.active-sort.sort-asc::after {
+	content: '▲';
+	font-size: 0.75rem;
+}
+
+#roster-header > th.active-sort.sort-desc::after {
+	content: '▼';
+	font-size: 0.75rem;
+} */
 
 #roster-list tr.player-row:hover,
 #manager-list tr.manager-row:hover {
