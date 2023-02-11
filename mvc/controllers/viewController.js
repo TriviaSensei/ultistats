@@ -48,6 +48,9 @@ exports.getPasswordResetForm = catchAsync(async (req, res, next) => {
 });
 
 exports.getSignUpForm = catchAsync(async (req, res, next) => {
+	if (res.locals.user) {
+		return res.redirect('/mystuff');
+	}
 	res.status(200).render('signup', {
 		title: 'Sign up for UltiStats',
 	});
@@ -61,9 +64,14 @@ exports.confirmRegistration = catchAsync(async (req, res, next) => {
 });
 
 exports.getAccount = (req, res) => {
+	console.log(res.locals.user);
 	res.status(200).render('myAccount', {
 		title: 'My Account',
-		user: req.user,
+		user: res.locals.user,
+		requests:
+			res.locals.user.teamRequests.length > 0
+				? res.locals.user.teamRequests
+				: null,
 	});
 };
 
@@ -78,3 +86,5 @@ exports.getManagerPage = catchAsync(async (req, res) => {
 		rosterLimit,
 	});
 });
+
+exports.handleManagerRequest = catchAsync(async (req, res, next) => {});

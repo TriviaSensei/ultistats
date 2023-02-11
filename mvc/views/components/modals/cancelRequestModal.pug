@@ -1,0 +1,11 @@
+.modal.fade#confirm-cancel-request-modal(tabindex="-1" aria-labelledby="cancel-request-label" aria-hidden="true")
+    .modal-dialog.modal-dialog-centered
+        .modal-content#cancel-request-modal-content
+            .modal-header
+                h5.modal-title#cancel-request-label Cancel request?
+            .modal-body
+                input#cancel-request-id(type="hidden" value='')
+                p Are you sure you want to cancel this request?
+            .modal-footer
+                button.btn.btn-primary#confirm-cancel-request(type="button" data-bs-dismiss="modal") Yes
+                button.btn.btn-secondary(type="button" data-bs-dismiss="modal") No

@@ -14,6 +14,7 @@ router.patch('/removePlayer/:id', teamController.removePlayer);
 router.patch('/editPlayer/:id', teamController.editPlayer);
 router.patch('/addManager/:id', teamController.requestAddManager);
 router.patch('/cancelManager/:id', teamController.cancelAddManager);
+router.patch('/leaveTeam/:id', teamController.leaveTeam);
 
 router.use('/:id', teamController.verifyOwnership);
 

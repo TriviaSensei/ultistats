@@ -24,6 +24,7 @@ exports.handleManagerRequest = catchAsync(async (req, res, next) => {
 	if (!team) return next(new AppError('Team ID not found.', 404));
 
 	let found = false;
+
 	//remove the request from the team's queue
 	team.requestedManagers = team.requestedManagers.filter((r) => {
 		if (r.toString() === res.locals.user._id.toString()) {
@@ -60,7 +61,7 @@ exports.handleManagerRequest = catchAsync(async (req, res, next) => {
 
 	//remove the request from the user's request queue
 	res.locals.user.teamRequests = res.locals.user.teamRequests.filter((r) => {
-		return r.toString() !== team._id.toString();
+		return r._id.toString() !== team._id.toString();
 	});
 	//save the user
 	res.locals.user.markModified('teamRequests');
@@ -125,7 +126,6 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 		'displayName',
 		'email'
 	);
-	//make sure the slug isn't taken, and update if it is for whatever reason
 
 	const updatedUser = await User.findByIdAndUpdate(req.user.id, updatedInfo, {
 		new: true,
@@ -133,6 +133,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 	});
 	res.status(200).json({
 		status: 'success',
+		message: 'Successfully updated information',
 		data: {
 			user: updatedUser,
 		},

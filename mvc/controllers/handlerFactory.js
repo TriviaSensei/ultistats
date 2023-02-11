@@ -1,7 +1,7 @@
 const catchAsync = require('../../utils/catchAsync');
 const AppError = require('../../utils/appError');
 const APIFeatures = require('../../utils/apiFeatures');
-const { uuidV4: v4 } = require('uuid');
+const { v4: uuidV4 } = require('uuid');
 // const User = require('../models/userModel');
 const Tournament = require('../models/tournamentModel');
 const Team = require('../models/teamModel');

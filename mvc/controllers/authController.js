@@ -247,12 +247,14 @@ exports.protect = catchAsync(async (req, res, next) => {
 	// validate the token
 	const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 	// check if the user exists
-	const currentUser = await User.findById(decoded.id);
+	const currentUser = await User.findById(decoded.id).populate({
+		path: 'teamRequests',
+	});
+
 	if (!currentUser) {
 		// return next(
 		// 	new AppError('The user belonging to this token no longer exists.', 401)
 		// );
-		console.log('no user');
 		return res.redirect('/login');
 	}
 	// check if the user changed password after the token was issued

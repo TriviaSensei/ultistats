@@ -11,7 +11,7 @@ body {
 }
 
 .profile-body {
-	width: min(100%, 450px);
+	width: min(100%, 600px);
 }
 
 .navbar-brand {
@@ -25,11 +25,39 @@ body {
 	font-size: 1.25rem;
 }
 
+.nav-tabs .nav-link {
+	font-size: 1rem;
+}
+
 .profile-body {
 	flex: 1;
 	display: flex;
 	flex-direction: column;
 	overflow-y: hidden;
+}
+
+.user-dashboard-container {
+	width: 100%;
+	flex: 1;
+	overflow-y: hidden;
+}
+
+.user-dashboard-inner {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	overflow-y: scroll;
+	align-items: center;
+}
+
+#request-table {
+	width: 90%;
+}
+
+#request-table > tbody td {
+	border: 1px solid black;
+	padding: 10px;
 }
 
 .tab-content {
@@ -176,4 +204,14 @@ body {
 #roster-list tr.player-row:hover,
 #manager-list tr.manager-row:hover {
 	background-color: var(--color-1);
+}
+
+@media (min-width: 992px) {
+	.user-dashboard-container {
+		padding: 0 10%;
+	}
+
+	#request-table {
+		width: 50%;
+	}
 }

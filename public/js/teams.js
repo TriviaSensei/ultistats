@@ -3,6 +3,8 @@ import { showMessage } from './utils/messages.js';
 import { getElementArray } from './utils/getElementArray.js';
 import { createElement } from './utils/createElementFromSelector.js';
 
+const myId = document.querySelector('#my-id').value;
+
 //team information
 const rosterSize = document.querySelector('#roster-size');
 const teamForm = document.querySelector('#team-form');
@@ -38,6 +40,10 @@ const rosterHeader = document.querySelector('#roster-header');
 const rosterBody = document.querySelector('#roster-list');
 const fillerRow = document.querySelector('#filler-row');
 
+//manager table
+const managerTable = document.querySelector('#manager-table');
+const managerList = document.querySelector('#manager-list');
+
 //edit modal
 const editPlayerModal = new bootstrap.Modal(
 	document.getElementById('edit-player-modal')
@@ -46,10 +52,22 @@ const editPlayerModal = new bootstrap.Modal(
 const deletePlayerModal = new bootstrap.Modal(
 	document.getElementById('confirm-delete-player-modal')
 );
+//leave team modal
+const leaveTeamModal = new bootstrap.Modal(
+	document.getElementById('confirm-leave-team-modal')
+);
+//cancel request modal
+const cancelRequestModal = new bootstrap.Modal(
+	document.getElementById('confirm-cancel-request-modal')
+);
+
 const deletePlayerId = document.querySelector('#delete-player-id');
 const confirmDeletePlayerButton = document.querySelector(
 	'#confirm-delete-player'
 );
+const addManagerButton = document.querySelector('#add-manager');
+const confirmLeaveButton = document.querySelector('#confirm-leave-team');
+const confirmCancelRequest = document.querySelector('#confirm-cancel-request');
 
 const editPlayerForm = document.querySelector('#edit-player-form');
 const editPlayerId = document.querySelector('#edit-player-id');
@@ -78,12 +96,9 @@ const sortRosterTable = () => {
 
 	const sortBy = sortByHeader.getAttribute('data-attr');
 	if (!sortBy) return;
-	console.log(sortBy);
 	const asc = sortByHeader.classList.contains('sort-asc');
 
-	console.log(roster);
 	roster = roster.sort((a, b) => {
-		console.log(a, b);
 		return (
 			(asc ? 1 : -1) *
 			a[sortBy].localeCompare(b[sortBy], undefined, {
@@ -91,7 +106,6 @@ const sortRosterTable = () => {
 			})
 		);
 	});
-	console.log(roster);
 	roster.forEach((p) => {
 		const row = rosterBody.querySelector(`tr[data-id="${p.id}"]`);
 		if (row) rosterBody.appendChild(row);
@@ -408,6 +422,35 @@ const handleEditPlayer = (e) => {
 	}
 };
 
+const addManagerRow = (manager, pending) => {
+	const newRow = createElement('tr.manager-row');
+	const cell1 = createElement('td');
+	cell1.innerHTML = `${manager.lastName}, ${manager.firstName} ${
+		pending ? '(Pending)' : ''
+	}`;
+	const cell2 = createElement('td');
+	if (manager._id === myId) {
+		const button = createElement('button');
+		button.innerHTML = 'Leave';
+		cell2.appendChild(button);
+		button.addEventListener('click', () => {
+			leaveTeamModal.show();
+		});
+	} else if (pending) {
+		const button = createElement('button');
+		button.innerHTML = 'Cancel Request';
+		newRow.setAttribute('data-id', manager._id);
+		cell2.appendChild(button);
+		button.addEventListener('click', () => {
+			document.querySelector('#cancel-request-id').value = manager._id;
+			cancelRequestModal.show();
+		});
+	}
+	newRow.appendChild(cell1);
+	newRow.appendChild(cell2);
+	managerList.appendChild(newRow);
+};
+
 const getTeam = (e) => {
 	if (e.target !== teamSelect) return;
 	//if "create new team" is selected
@@ -417,6 +460,7 @@ const getTeam = (e) => {
 		color2.value = '#000000';
 		color3.value = '#000000';
 		color4.value = '#ffffff';
+		handleColorChange({ target: color1 });
 		//...and the inputs
 		[teamName, teamSeason, firstName, lastName, displayName, number].forEach(
 			(i) => {
@@ -434,6 +478,11 @@ const getTeam = (e) => {
 		});
 		//empty the roster just in case
 		roster = [];
+
+		//remove the rows from the manager table (this should empty the roster)
+		getElementArray(managerTable, '.manager-row').forEach((r) => {
+			r.remove();
+		});
 
 		return;
 	}
@@ -477,6 +526,23 @@ const getTeam = (e) => {
 				addPlayerRow(p);
 			});
 			updateRosterSize();
+
+			getElementArray(managerTable, '.manager-row').forEach((r) => {
+				r.remove();
+			});
+
+			res.data.managers = res.data.managers.sort((a, b) => {
+				if (a._id === myId) return -1;
+				else if (b._id === myId) return 1;
+				else return 0;
+			});
+
+			res.data.managers.forEach((m) => {
+				addManagerRow(m, false);
+			});
+			res.data.requestedManagers.forEach((m) => {
+				addManagerRow(m, true);
+			});
 		} else {
 			showMessage('error', res.message);
 		}
@@ -571,10 +637,71 @@ const handleDivisionChange = (e) => {
 			document,
 			'input[type="radio"][name="gender-match"], input[type="radio"][name="edit-gender-match"]'
 		);
+		let checkedGen = division.value === 'Men' ? 'M' : 'F';
 		r.forEach((el) => {
-			el.checked = false;
+			el.checked = el.value === checkedGen;
 		});
 	}
+};
+
+const handleRequestManager = () => {
+	if (!teamSelect.value)
+		showMessage('error', 'You must save your team before adding a manager.');
+	const str = `/api/v1/teams/addManager/${teamSelect.value}`;
+	const body = {
+		email: document.querySelector('#new-manager-email').value,
+	};
+	const handler = (res) => {
+		if (res.status === 'success') {
+			showMessage(
+				'info',
+				`An e-mail request has been sent to ${res.newManager.firstName} ${res.newManager.lastName}`
+			);
+			addManagerRow(res.newManager, true);
+		} else {
+			showMessage('error', res.message);
+		}
+	};
+	handleRequest(str, 'PATCH', body, handler);
+};
+
+const cancelManagerRequest = () => {
+	const id = document.querySelector('#cancel-request-id').value;
+	if (!id) return;
+
+	if (!teamSelect.value)
+		showMessage(
+			`error`,
+			'You must create a team to add and remove managers from it.'
+		);
+
+	const str = `/api/v1/teams/cancelManager/${teamSelect.value}`;
+	const body = {
+		id,
+	};
+	const handler = (res) => {
+		if (res.status === 'success') {
+			showMessage('info', res.message);
+			const row = document.querySelector(`tr.manager-row[data-id="${id}"]`);
+			if (row) row.remove();
+		} else showMessage('error', res.message);
+	};
+	handleRequest(str, 'PATCH', body, handler);
+};
+
+const handleLeaveTeam = () => {
+	if (!teamSelect.value) return;
+
+	const str = `/api/v1/teams/leaveTeam/${teamSelect.value}`;
+	const handler = (res) => {
+		showMessage('info', res.message);
+		if (res.status === 'success') {
+			teamSelect.querySelector(`option[value="${teamSelect.value}"]`).remove();
+			teamSelect.selectedIndex = 0;
+			getTeam({ target: teamSelect });
+		}
+	};
+	handleRequest(str, 'PATCH', null, handler);
 };
 
 document.addEventListener('DOMContentLoaded', (e) => {
@@ -599,4 +726,8 @@ document.addEventListener('DOMContentLoaded', (e) => {
 	headers.forEach((h) => {
 		h.addEventListener('click', handleSortRoster);
 	});
+
+	addManagerButton.addEventListener('click', handleRequestManager);
+	confirmCancelRequest.addEventListener('click', cancelManagerRequest);
+	confirmLeaveButton.addEventListener('click', handleLeaveTeam);
 });

@@ -68,7 +68,7 @@ form#roster-form
         #gender-match.input-group-f.input-group-1.invisible-div
             label.form-label Gender match:
             .input-group
-                input#gen-m.me-2(type="radio" name="gender-match" value="M") 
+                input#gen-m.me-2(type="radio" name="gender-match" value="M" checked) 
                 label.me-2(for='gen-m') Male
             .input-group
                 input#gen-f.me-2(type="radio" name="gender-match" value="F")
@@ -111,14 +111,14 @@ table#roster-table.mb-3
         thead 
             tr
                 th Name 
-                th Leave
-        tbody 
+                th Action
+        tbody#manager-list
     .input-group.mb-3
         label.form-label Add manager (e-mail): 
         .input-group 
             input#new-manager-email.form-control(type="email" placeholder="E-mail")
     .d-grid.gap-2.mb-3 
-        button.btn.btn-primary(type="submit") Request Add Manager
+        button#add-manager.btn.btn-primary(type="button") Request Add Manager
 .w-100.d-grid.gap-2 
     button.btn.btn-primary(type="submit" form="team-form") Save Team
     

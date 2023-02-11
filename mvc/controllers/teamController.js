@@ -255,14 +255,10 @@ exports.requestAddManager = catchAsync(async (req, res, next) => {
 	const team = await Team.findById(req.params.id);
 	if (!team) return next(new AppError('Team ID not found.', 404));
 
-	//only managers can add other managers.
-	if (!team.managers.includes(res.locals.user._id)) {
-		return next(new AppError('You are not a manager of this team.', 403));
-	}
-
 	//make sure the new manager exists
 	const newManager = await User.findOne({ email: req.body.email });
-	if (!newManager) return next(new AppError('User not found.', 404));
+	if (!newManager)
+		return next(new AppError('That e-mail was not found in the system.', 404));
 
 	//...and does not have a pending request to manage this team or is already a manager
 	if (
@@ -303,7 +299,7 @@ exports.requestAddManager = catchAsync(async (req, res, next) => {
 		[
 			`${url}/confirmManager/${team._id}`,
 			`${url}/declineManager/${team._id}`,
-			`${url}/managerRequests`,
+			`${url}/me`,
 		],
 		process.env.EMAIL_FROM,
 		`${team.name} (${team.season}) would like to add you as a manager`,
@@ -313,17 +309,17 @@ exports.requestAddManager = catchAsync(async (req, res, next) => {
 
 	res.status(200).json({
 		status: 'success',
+		newManager: {
+			lastName: newManager.lastName,
+			firstName: newManager.firstName,
+			_id: newManager.id,
+		},
 	});
 });
 
 exports.cancelAddManager = catchAsync(async (req, res, next) => {
 	const team = await Team.findById(req.params.id);
 	if (!team) return next(new AppError('Team ID not found.', 404));
-
-	//only managers can manage team managers.
-	if (!team.managers.includes(res.locals.user._id)) {
-		return next(new AppError('You are not a manager of this team.', 403));
-	}
 
 	let found = false;
 	team.requestedManagers = team.requestedManagers.filter((m) => {
@@ -354,6 +350,32 @@ exports.cancelAddManager = catchAsync(async (req, res, next) => {
 	res.status(200).json({
 		status: 'fail',
 		message: 'Request not found',
+	});
+});
+
+exports.leaveTeam = catchAsync(async (req, res, next) => {
+	const team = await Team.findById(req.params.id);
+	if (!team) return next(new AppError('Team ID not found.', 404));
+
+	team.managers = team.managers.filter((m) => {
+		return m.toString() !== res.locals.user._id.toString();
+	});
+	res.locals.user.teams = res.locals.user.teams.filter((t) => {
+		return t.toString() !== team._id.toString();
+	});
+
+	team.markModified('managers');
+	res.locals.user.markModified('teams');
+
+	if (team.managers.length === 0) {
+		await team.delete();
+	} else await team.save();
+
+	await res.locals.user.save({ validateBeforeSave: false });
+
+	res.status(200).json({
+		status: 'success',
+		message: `You are no longer a manager of ${team.name} (${team.season})`,
 	});
 });
 

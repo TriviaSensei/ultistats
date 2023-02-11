@@ -26,3 +26,21 @@ const server = app.listen(port, () => {
 });
 
 const http = require('http').Server(app);
+
+process.on('unhandledRejection', (err) => {
+	console.log(err.name, err.message);
+	console.log(err.stack);
+	console.log('Unhandled rejection. Shutting down.');
+	server.close(() => {
+		process.exit(1);
+	});
+});
+
+process.on('uncaughtException', (err) => {
+	console.log(err.name, err.message);
+	console.log(err.stack);
+	console.log('Unhandled exception. Shutting down.');
+	server.close(() => {
+		process.exit(1);
+	});
+});

@@ -1,0 +1,11 @@
+.modal.fade#confirm-leave-team-modal(tabindex="-1" aria-labelledby="leave-team-label" aria-hidden="true")
+    .modal-dialog.modal-dialog-centered
+        .modal-content#leave-team-modal-content
+            .modal-header
+                h5.modal-title#leave-team-label Leave team?
+            .modal-body
+                p Are you sure you wish to remove yourself as manager?
+                p #[strong Warning: This cannot be undone - another manager will need to add you back. If you are the only manager, your team will be deleted when you leave.]
+            .modal-footer
+                button.btn.btn-primary#confirm-leave-team(type="button" data-bs-dismiss="modal") Leave
+                button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Cancel
