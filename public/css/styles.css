@@ -25,6 +25,30 @@ body {
 	box-sizing: border-box;
 }
 
+hr {
+	width: 50%;
+	margin: 1rem auto;
+	border-top: 2px solid var(--black);
+}
+
+input,
+select {
+	height: 1.8rem;
+}
+
+.accordion-item {
+	background-color: var(--white);
+	border: none;
+}
+
+.accordion-button {
+	font-weight: bold;
+}
+
+.form-label {
+	text-overflow: ellipsis;
+}
+
 .container-all {
 	height: 100%;
 	max-height: 100%;
@@ -124,6 +148,7 @@ button > a > div {
 .tab-inner {
 	height: 100%;
 	overflow-y: scroll;
+	overflow-x: hidden;
 }
 
 .navbar-toggler-icon {

@@ -3,6 +3,8 @@ const catchAsync = require('../../utils/catchAsync');
 const AppError = require('../../utils/appError');
 const Team = require('../models/teamModel');
 const User = require('../models/userModel');
+const Tournament = require('../models/tournamentModel');
+
 const Email = require('../../utils/email');
 
 const { v4: uuidV4 } = require('uuid');
@@ -72,7 +74,7 @@ exports.addPlayer = catchAsync(async (req, res, next) => {
 		}, 0) >= rosterLimit
 	)
 		return next(
-			new AppError(`The roster limit is ${rosterLimit} players.`, 400)
+			new AppError(`The team roster limit is ${rosterLimit} players.`, 400)
 		);
 
 	let status = 'success';
@@ -376,6 +378,19 @@ exports.leaveTeam = catchAsync(async (req, res, next) => {
 	res.status(200).json({
 		status: 'success',
 		message: `You are no longer a manager of ${team.name} (${team.season})`,
+	});
+});
+
+exports.getTournaments = catchAsync(async (req, res, next) => {
+	const data = await Tournament.find({
+		team: req.params.id,
+	}).sort({
+		startDate: 1,
+	});
+
+	res.status(200).json({
+		status: 'success',
+		data,
 	});
 });
 

@@ -13,16 +13,21 @@ exports.verifyOwnership = catchAsync(async (req, res, next) => {
 	if (!t) return next(new AppError('Tournament ID not found', 404));
 	res.locals.tournament = t;
 
-	const fmt = await Format.findById(t.format);
-	if (fmt) return next(new AppError('Invalid format', 400));
-	res.locals.format = fmt;
+	res.locals.format = await Format.findById(t.format);
+	if (res.locals.format) return next(new AppError('Invalid format', 400));
 
-	const tm = await Team.find(t.team);
-	if (!tm) return next(new AppError('Team ID not found', 404));
-	res.locals.team = tm;
-
-	if (!tm.managers.includes(res.locals.user._id))
+	res.locals.team = await Team.findById(t.team).populate({
+		path: 'managers',
+		select: 'firstName lastName displayName _id',
+	});
+	if (!res.locals.team) return next(new AppError('Team not found', 404));
+	else if (
+		!res.locals.team.managers.some((m) => {
+			return m._id.toString() === res.locals.user._id.toString();
+		})
+	) {
 		return next(new AppError('You are not a manager of this team.', 403));
+	}
 
 	next();
 });

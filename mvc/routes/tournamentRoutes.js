@@ -10,9 +10,9 @@ router.post('/', tournamentController.createTournament);
 
 router.use(tournamentController.verifyOwnership);
 
-router.patch('/:id/changeTeam', tournamentController.changeTeam);
-router.patch('/:id/addPlayers', tournamentController.addPlayers);
-router.patch('/:id/removePlayers', tournamentController.removePlayers);
+router.patch('/changeTeam/:id', tournamentController.changeTeam);
+router.patch('/addPlayers/:id', tournamentController.addPlayers);
+router.patch('/removePlayers/:id', tournamentController.removePlayers);
 
 router
 	.route('/:id')

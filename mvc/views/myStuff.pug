@@ -18,16 +18,16 @@ block content
         h3 My Stuff
         ul.nav.nav-tabs.nav-fill.mb-3#myTab(role="tablist")
             li.nav-item(role="presentation")
-                button.nav-link.active#team-tab(data-bs-toggle="tab" data-bs-target="#team-div" type="button" role="tab" aria-controls="team-div" aria-selected="true") Teams
+                button.nav-link#team-tab(data-bs-toggle="tab" data-bs-target="#team-div" type="button" role="tab" aria-controls="team-div" aria-selected="false") Teams
             li.nav-item(role="presentation")
-                button.nav-link#tournament-tab(data-bs-toggle="tab" data-bs-target="#tournament-div" type="button" role="tab" aria-controls="tournament-div" aria-selected="false") Tournaments
+                button.nav-link.active#tournament-tab(data-bs-toggle="tab" data-bs-target="#tournament-div" type="button" role="tab" aria-controls="tournament-div" aria-selected="true") Tournaments
             li.nav-item(role="presentation")
                 button.nav-link#game-tab(data-bs-toggle="tab" data-bs-target="#game-div" type="button" role="tab" aria-controls="game-div" aria-selected="false") Games
         .tab-content#myTabContent
-            .tab-pane.fade.show.active#team-div(role="tabpanel" aria-labelledby="team-tab" tabindex="0")
+            .tab-pane.fade#team-div(role="tabpanel" aria-labelledby="team-tab" tabindex="0")
                 .tab-inner.flex-col.ai-c
                     include user/teams
-            .tab-pane.fade#tournament-div(role="tabpanel" aria-labelledby="tournament-tab" tabindex="0")
+            .tab-pane.fade.show.active#tournament-div(role="tabpanel" aria-labelledby="tournament-tab" tabindex="0")
                 .tab-inner.flex-col.ai-c
                     include user/tournaments
             .tab-pane.fade#game-div(role="tabpanel" aria-labelledby="game-tab" tabindex="0")
@@ -36,3 +36,4 @@ block content
 
 block scripts 
     script(src="/js/teams.js" type="module" defer)
+    script(src="/js/tournaments.js" type="module" defer)

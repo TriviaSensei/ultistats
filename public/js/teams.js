@@ -77,6 +77,9 @@ const editDisplayName = document.querySelector('#edit-display-name');
 const editNumber = document.querySelector('#edit-number');
 const editPosition = document.querySelector('#edit-position');
 
+//other
+const tourneyTeamSelect = document.querySelector('#tourney-team-select');
+
 const handleColorChange = (e) => {
 	if (![color1, color2, color3, color4].includes(e.target)) return;
 
@@ -408,6 +411,7 @@ const handleEditPlayer = (e) => {
 						p.number = res.modifiedPlayer.number;
 						p.firstName = res.modifiedPlayer.firstName;
 						p.lastName = res.modifiedPlayer.lastName;
+						p.displayName = res.modifiedPlayer.displayName;
 						p.name = `${res.modifiedPlayer.lastName}, ${res.modifiedPlayer.firstName}`;
 						p.gender = res.modifiedPlayer.gender;
 						p.line = res.modifiedPlayer.line;
@@ -571,6 +575,10 @@ const createTeam = () => {
 			teamSelect.appendChild(op);
 			teamSelect.selectedIndex =
 				teamSelect.querySelectorAll('option').length - 1;
+			const op2 = op.cloneNode();
+			console.log(op2);
+			op2.innerHTML = `${res.data.name} (${res.data.season})`;
+			tourneyTeamSelect.appendChild(op2);
 			getTeam({ target: teamSelect });
 		}
 	};
@@ -591,6 +599,14 @@ const saveTeam = () => {
 	let handler = (res) => {
 		if (res.status === 'success') {
 			showMessage('info', 'Successfully saved team.');
+			const opt = teamSelect.options[teamSelect.selectedIndex];
+			opt.innerHTML = `${res.data.name} (${res.data.season})`;
+			const opt2 = tourneyTeamSelect.querySelector(
+				`option[value="${res.data._id}"]`
+			);
+			if (opt2) {
+				opt2.innerHTML = `${res.data.name} (${res.data.season})`;
+			}
 			getTeam({ target: teamSelect });
 		} else {
 			showMessage('error', res.message);

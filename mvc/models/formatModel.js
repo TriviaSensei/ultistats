@@ -28,11 +28,16 @@ const formatSchema = new mongoose.Schema({
 	periods: {
 		type: Number,
 		default: 2,
+		enum: [1, 2, 4],
 		required: [true, 'Number of periods is required.'],
 	},
 	defaultPointCap: {
 		type: Number,
 		default: 15,
+	},
+	roundNames: {
+		type: [String],
+		required: [true, 'List of round names is required'],
 	},
 });
 

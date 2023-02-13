@@ -1,6 +1,9 @@
 const AppError = require('../../utils/appError');
 const catchAsync = require('../../utils/catchAsync');
+const Format = require('../models/formatModel');
+
 const { rosterLimit } = require('../../utils/settings');
+
 exports.loginRedirect = catchAsync(async (req, res, next) => {
 	if (!res.locals.user) {
 		return res.status(200).render('login', {
@@ -78,12 +81,15 @@ exports.getAccount = (req, res) => {
 exports.getManagerPage = catchAsync(async (req, res) => {
 	if (!req.user) return res.redirect('/login');
 
+	const formats = await Format.find();
+
 	const user = await req.user.populate('teams');
 	res.status(200).render('myStuff', {
 		title: 'My Stuff',
 		user,
 		year: new Date().getFullYear(),
 		rosterLimit,
+		formats,
 	});
 });
 

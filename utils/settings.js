@@ -1,1 +1,1 @@
-exports.rosterLimit = 40;
+exports.rosterLimit = 50;

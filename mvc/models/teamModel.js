@@ -60,27 +60,37 @@ const teamSchema = new mongoose.Schema({
 	},
 	/**
 	 * Free: 
-	 * - Points
-	 * - Touches
-	 * - Goals
-	 * - Assists
-	 * - Turns
-	 * - D's
+	 * 	Stats:
+	 * 	- Points
+	 * 	- Touches
+	 * 	- Goals
+	 * 	- Assists
+	 * 	- Turns
+	 * 	- D's
+	 * Features:
+	 *  - O and D lines for each tournament
 	 * 
 	 * Basic
-	 * - Yards
-	 * - +/- ratio
-	 * - Offensive efficiency
-	 * - Defensive efficiency
+	 * 	Stats:
+	 * 	- Yards
+	 * 	- +/- ratio
+	 * 	- Offensive efficiency
+	 * 	- Defensive efficiency
+	 * Features:
+	 * 	- Offense, defense, and up to 2 additional preset lines for each tournament
+	 *
 	 * 
 	 * Advanced
-	 * - Heatmaps on field (by player and by team)
-	 * 		- Where turnovers occur
-	 * 		- Scoring throws
-	 * 		- Touches
-	 * 		- Probability of scoring on a possession if we have the disc here
-	 *	- Passing grid (similar to NFL QB chart) 
-			- attempts/completion pct. by net yardage (<0, 0-10, 10-20, 20-30, 30+)
+	 * 	Stats:
+	 * 	- Heatmaps on field (by player and by team)
+	 * 			- Where turnovers occur
+	 * 			- Scoring throws
+	 * 			- Touches
+	 * 			- Probability of scoring on a possession if we have the disc here
+	 *		- Passing grid (similar to NFL QB chart) 
+	 			- attempts/completion pct. by net yardage (<0, 0-10, 10-20, 20-30, 30+)
+		Features:
+			- Offense, defense, and up to 4 additional preset lines for each tournament
 	 * 		
 	 */
 	membershipLevel: {

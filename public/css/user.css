@@ -88,6 +88,10 @@ body {
 	width: 100%;
 }
 
+.input-group-h > .input-group-f {
+	justify-content: flex-end;
+}
+
 .input-group-1 {
 	flex: 1;
 }
