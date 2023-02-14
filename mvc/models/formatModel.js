@@ -35,6 +35,11 @@ const formatSchema = new mongoose.Schema({
 		type: Number,
 		default: 15,
 	},
+	defaultTimeouts: {
+		type: Number,
+		enum: [0, 1, 2, 3, 4],
+		default: 4,
+	},
 	roundNames: {
 		type: [String],
 		required: [true, 'List of round names is required'],

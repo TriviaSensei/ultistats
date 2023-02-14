@@ -153,26 +153,26 @@ body {
 	margin-left: 20px;
 }
 
-#roster-table,
+.roster-table,
 #manager-table {
 	width: 100%;
 }
 
-#roster-table td,
+.roster-table td,
 #manager-table td {
 	border: 1px solid black;
 	text-align: center;
 }
 
-#roster-table .gen-cell {
+.roster-table .gen-cell {
 	display: none;
 }
 
-#roster-table.mixed .gen-cell {
+.roster-table.mixed .gen-cell {
 	display: table-cell;
 }
 
-#roster-header > th {
+.roster-header > th {
 	-webkit-touch-callout: none; /* iOS Safari */
 	-webkit-user-select: none; /* Safari */
 	-khtml-user-select: none; /* Konqueror HTML */
@@ -181,31 +181,16 @@ body {
 	user-select: none;
 }
 
-#roster-header > th.sort-header:hover {
+.roster-header > th.sort-header:hover {
 	background-color: var(--color-1);
 	cursor: pointer;
 }
 
-#roster-header > th.active-sort {
+.roster-header > th.active-sort {
 	background-color: var(--color-1);
 }
-/* 
-#roster-header > th::after {
-	content: ' ';
-	font-size: 0.75rem;
-}
 
-#roster-header > th.active-sort.sort-asc::after {
-	content: '▲';
-	font-size: 0.75rem;
-}
-
-#roster-header > th.active-sort.sort-desc::after {
-	content: '▼';
-	font-size: 0.75rem;
-} */
-
-#roster-list tr.player-row:hover,
+.roster-list tr.player-row:hover,
 #manager-list tr.manager-row:hover {
 	background-color: var(--color-1);
 }

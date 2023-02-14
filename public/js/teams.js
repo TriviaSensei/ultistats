@@ -7,6 +7,7 @@ import { populateForm } from './utils/populateForm.js';
 const myId = document.querySelector('#my-id').value;
 
 //team information
+const teamInfo = new bootstrap.Collapse('#team-info');
 const rosterSize = document.querySelector('#roster-size');
 const teamForm = document.querySelector('#team-form');
 const teamSelect = document.querySelector('#team-select');
@@ -40,9 +41,9 @@ const pre2 = document.querySelector('#preview-2');
 let roster = [];
 
 //roster table
-const rosterTable = document.querySelector('#roster-table');
-const rosterHeader = document.querySelector('#roster-header');
-const rosterBody = document.querySelector('#roster-list');
+const rosterTable = document.querySelector('#main-roster-table');
+const rosterHeader = document.querySelector('#main-roster-header');
+const rosterBody = document.querySelector('#main-roster-list');
 const fillerRow = document.querySelector('#filler-row');
 
 //manager table
@@ -498,6 +499,7 @@ const addManagerRow = (manager, pending) => {
 
 const getTeam = (e) => {
 	if (e.target !== teamSelect) return;
+
 	//if "create new team" is selected
 	if (!teamSelect.value) {
 		//reset the color values
@@ -529,7 +531,7 @@ const getTeam = (e) => {
 			r.remove();
 		});
 		changeJerseyPreviews();
-
+		teamInfo.show();
 		return;
 	}
 
@@ -580,6 +582,7 @@ const getTeam = (e) => {
 			res.data.requestedManagers.forEach((m) => {
 				addManagerRow(m, true);
 			});
+			teamInfo.show();
 		} else {
 			showMessage('error', res.message);
 		}

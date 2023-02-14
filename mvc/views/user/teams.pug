@@ -100,9 +100,9 @@ label.form-label(for="team-select") Select a team:&nbsp;
                                 option(value="Hy") Hybrid
                 .d-grid.gap-2.mb-3  
                     button.btn.btn-primary(type="submit") Add Player
-            table#roster-table.mb-3
+            table#main-roster-table.roster-table.mb-3
                 thead 
-                    tr#roster-header
+                    tr#main-roster-header.roster-header
                         th.sort-header.active-sort.sort-asc(data-attr="number") #
                         th.sort-header(data-attr="name") Name 
                         th.sort-header.gen-cell(data-attr="gender") Gen 
@@ -110,7 +110,7 @@ label.form-label(for="team-select") Select a team:&nbsp;
                         th.sort-header(data-attr="position") Pos 
                         th ✏️
                         th ❌
-                tbody#roster-list
+                tbody#main-roster-list.roster-list
                     tr#filler-row
                         td(colspan="7") Add players to your roster above.
     .accordion-item

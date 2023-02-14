@@ -34,7 +34,7 @@ const tournamentSchema = new mongoose.Schema({
 	cap: {
 		type: Number,
 		default: 15,
-		min: [7, 'The minimum point cap is 7'],
+		min: [0, 'The point cap cannot be negative'],
 	},
 	winBy: {
 		type: Number,

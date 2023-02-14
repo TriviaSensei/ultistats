@@ -6,6 +6,7 @@ const { v4: uuidV4 } = require('uuid');
 const Tournament = require('../models/tournamentModel');
 const Team = require('../models/teamModel');
 const Game = require('../models/gameModel');
+const Format = require('../models/formatModel');
 
 //this will delete one of any document, depending on what gets passed to it.
 exports.deleteOne = (Model) =>
@@ -159,6 +160,30 @@ exports.createOne = (Model) =>
 						400
 					)
 				);
+		} else if (loc === 'tournaments') {
+			req.body.roster = [];
+			req.body.games = [];
+
+			//make sure the team exists...
+			const team = await Team.findById(req.body.team).populate({
+				path: 'managers',
+				select: 'firstName lastName displayName _id',
+			});
+			if (!team) return next(new AppError('Team not found', 404));
+
+			//...and that the logged in user is a manager of the team
+			console.log(team.managers);
+			console.log(res.locals.user._id);
+			if (
+				!team.managers.some((m) => {
+					return m._id.toString() === res.locals.user._id.toString();
+				})
+			) {
+				return next(new AppError('You are not a manager of this team.', 403));
+			}
+
+			const fmt = await Format.findById(req.body.format);
+			if (!fmt) return next(new AppError('Format not found', 404));
 		}
 
 		let doc = await Model.create(req.body);
@@ -187,12 +212,10 @@ exports.getOne = (Model, popOptions) =>
 		const loc = arr.length > 3 ? arr[3] : '';
 		let filter = { _id: req.params.id };
 
-		// query = Model.find(filter);
+		query = Model.find(filter);
 
-		// if (popOptions) query = query.populate(popOptions);
-		// let doc = await query;
-
-		let doc;
+		if (popOptions) query = query.populate(popOptions);
+		let doc = await query;
 
 		if (loc === 'teams') {
 			doc = await Model.findById(req.params.id)
