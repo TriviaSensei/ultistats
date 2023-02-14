@@ -2,6 +2,7 @@ import { handleRequest } from './utils/requestHandler.js';
 import { showMessage } from './utils/messages.js';
 import { getElementArray } from './utils/getElementArray.js';
 import { createElement } from './utils/createElementFromSelector.js';
+import { populateForm } from './utils/populateForm.js';
 
 const myId = document.querySelector('#my-id').value;
 
@@ -16,6 +17,10 @@ const color1 = document.querySelector('#color-1');
 const color2 = document.querySelector('#color-2');
 const color3 = document.querySelector('#color-3');
 const color4 = document.querySelector('#color-4');
+const lightName = document.querySelector('#name-light');
+const lightNumber = document.querySelector('#number-light');
+const darkName = document.querySelector('#name-dark');
+const darkNumber = document.querySelector('#number-dark');
 
 const getCheckedValue = (name) => {
 	const el = document.querySelector(`input[name="${name}"]:checked`);
@@ -87,6 +92,45 @@ const handleColorChange = (e) => {
 	pre1.style.backgroundColor = color1.value;
 	pre2.style.color = color4.value;
 	pre2.style.backgroundColor = color3.value;
+};
+
+const changeJerseyPreviews = () => {
+	let name1, name2, num1, num2;
+
+	if (!roster || roster.length < 2) {
+		name1 = 'AB';
+		name2 = 'CD';
+		num1 = Math.floor(Math.random() * 101);
+		if (num1 === 100) num1 = '00';
+		num2 = Math.floor(Math.random() * 101);
+		if (num2 === 100) num2 = '00';
+	} else {
+		const len = roster.length;
+
+		let i1 = Math.floor(Math.random() * len);
+		let i2 = Math.floor(Math.random() * len);
+
+		while (i2 === i1) {
+			i2 = Math.floor(Math.random() * len);
+		}
+
+		const p1 = roster[i1];
+		const p2 = roster[i2];
+
+		name1 = `${p1.firstName.charAt(0)}${p1.lastName.charAt(0)}`.toUpperCase();
+		name2 = `${p2.firstName.charAt(0)}${p2.lastName.charAt(0)}`.toUpperCase();
+		num1 = p1.number || Math.floor(Math.random() * 101);
+		if (num1 === 100) num1 = '00';
+		num2 = p2.number || Math.floor(Math.random() * 101);
+		if (num2 === 100) num2 = '00';
+		while (num1 === num2) {}
+	}
+
+	lightName.innerHTML = name1;
+	lightNumber.innerHTML = num1;
+
+	darkName.innerHTML = name2;
+	darkNumber.innerHTML = num2;
 };
 
 const updateRosterSize = () => {
@@ -190,11 +234,8 @@ const openEditModal = (e) => {
 	});
 	if (!player) return;
 
-	editPlayerId.value = id;
-	editFirstName.value = player.firstName;
-	editLastName.value = player.lastName;
-	editDisplayName.value = player.displayName;
-	editNumber.value = player.number;
+	populateForm(editPlayerForm, player);
+
 	if (player.gender) {
 		const r = document.querySelector(
 			`input[type="radio"][name="edit-gender-match"][value="${player.gender}"]`
@@ -487,6 +528,7 @@ const getTeam = (e) => {
 		getElementArray(managerTable, '.manager-row').forEach((r) => {
 			r.remove();
 		});
+		changeJerseyPreviews();
 
 		return;
 	}
@@ -495,17 +537,8 @@ const getTeam = (e) => {
 	const str = `/api/v1/teams/${teamSelect.value}`;
 	const handler = (res) => {
 		if (res.status === 'success') {
-			console.log(res);
-			//set the colors;
-			color1.value = res.data.color1;
-			color2.value = res.data.color2;
-			color3.value = res.data.color3;
-			color4.value = res.data.color4;
-			//set the jersey previews - invoking the function once will change everything
+			populateForm(teamForm, res.data);
 			handleColorChange({ target: color1 });
-			//set the inputs
-			teamName.value = res.data.name;
-			teamSeason.value = res.data.season;
 
 			getElementArray(division, 'option').some((op, i) => {
 				if (op.value.toLowerCase() === res.data.division.toLowerCase()) {
@@ -530,7 +563,7 @@ const getTeam = (e) => {
 				addPlayerRow(p);
 			});
 			updateRosterSize();
-
+			changeJerseyPreviews();
 			getElementArray(managerTable, '.manager-row').forEach((r) => {
 				r.remove();
 			});
@@ -746,4 +779,6 @@ document.addEventListener('DOMContentLoaded', (e) => {
 	addManagerButton.addEventListener('click', handleRequestManager);
 	confirmCancelRequest.addEventListener('click', cancelManagerRequest);
 	confirmLeaveButton.addEventListener('click', handleLeaveTeam);
+
+	changeJerseyPreviews();
 });

@@ -6,25 +6,25 @@
                 button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
             .modal-body
                 form#edit-player-form
-                    input#edit-player-id(type='hidden' value='')
+                    input#edit-player-id(type='hidden' value='' data-field="id")
                     .input-group-h.mb-3
                         .input-group-f.input-group-1
                             label.form-label(for="edit-first-name") First name:
                             .input-group
-                                input#edit-first-name.form-control(type="text" placeholder="First Name" required)
+                                input#edit-first-name.form-control(type="text" placeholder="First Name" data-field="firstName" required)
                         .input-group-f.input-group-1
                             label.form-label(for="edit-last-name") Last name:
                             .input-group
-                                input#edit-last-name.form-control(type="text" placeholder="Last Name" required)
+                                input#edit-last-name.form-control(type="text" placeholder="Last Name" data-field="lastName" required)
                     .input-group-h.mb-3
                         .input-group-f.input-group-3
                             label.form-label(for="edit-display-name") Display name:
                             .input-group
-                                input#edit-display-name.form-control(type="text" placeholder="Display Name")
+                                input#edit-display-name.form-control(type="text" placeholder="Display Name"  data-field="displayName")
                         .input-group-f.input-group-1
                             label.form-label(for="edit-number") Number:
                             .input-group
-                                input#edit-number.form-control(type="text" placeholder="##" size="2" pattern="[0-9]{1,2}" maxlength="2")
+                                input#edit-number.form-control(type="text" placeholder="##" size="2" pattern="[0-9]{1,2}" maxlength="2" data-field="number")
                     .input-group-h.mb-3
                         #edit-gender-match.input-group-f.input-group-1
                             label.form-label(for="edit-gender-match") Gender match:

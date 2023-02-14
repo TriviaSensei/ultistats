@@ -2,6 +2,7 @@ import { handleRequest } from './utils/requestHandler.js';
 import { showMessage } from './utils/messages.js';
 import { getElementArray } from './utils/getElementArray.js';
 import { createElement } from './utils/createElementFromSelector.js';
+import { populateForm } from './utils/populateForm.js';
 
 const teamSelect = document.querySelector('#tourney-team-select');
 const tournamentSelect = document.querySelector('#tournament-select');
@@ -37,12 +38,13 @@ const removeTourneys = () => {
 		if (i !== 0) o.remove();
 	});
 };
-const populateForm = (form, obj) => {
-	Object.keys(obj).forEach((k) => {
-		const inp = form.querySelector(`[data-field="${k}"]`);
-		if (inp) inp.value = obj[k];
-	});
+
+const clearForm = () => {
+	tournamentName.value = '';
+	startDate.value = '';
+	endDate.value = '';
 };
+
 const getTeam = (e) => {
 	if (e.target !== teamSelect) return;
 	//if "create new team" is selected
@@ -70,6 +72,7 @@ const getTeam = (e) => {
 			if (res.status === 'success') {
 				tournamentSelect.disabled = false;
 				removeTourneys();
+				clearForm();
 				infoButton.disabled = false;
 				rulesButton.disabled = false;
 				tournaments = res.data;
@@ -123,10 +126,13 @@ const getTournament = (e) => {
 			}
 		});
 		timeouts.selectedIndex = tourney.timeouts;
+
+		rosterItem.classList.remove('invisible-div');
+		gamesItem.classList.remove('invisible-div');
 	} else {
-		startDate.value = '';
-		endDate.value = '';
-		tournamentName.value = '';
+		clearForm();
+		rosterItem.classList.add('invisible-div');
+		gamesItem.classList.add('invisible-div');
 	}
 };
 
