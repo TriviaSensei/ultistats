@@ -13,6 +13,7 @@
 	margin-right: 0.25rem;
 	white-space: nowrap;
 	text-overflow: clip;
+	font-size: 0.8rem;
 }
 
 .roster-option > input[type='checkbox'] {
@@ -26,6 +27,11 @@
 
 input[type='checkbox']:checked ~ label {
 	font-weight: bold;
+}
+
+#tourney-roster-container,
+#non-roster-container {
+	border: 1px solid var(--black);
 }
 
 #move-one.move-left::after {
@@ -42,11 +48,6 @@ input[type='checkbox']:checked ~ label {
 
 #move-all.move-right::after {
 	content: '>>';
-}
-
-#tourney-roster-container,
-#non-roster-container {
-	border: 1px solid var(--black);
 }
 
 @media (min-width: 992px) {

@@ -6,25 +6,37 @@
                 button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
             .modal-body.overflow-hidden
                 .input-group-f.h-100.overflow-hidden
-                    .input-group-1.h-100.pb-5
+                    .input-group-1.h-100.pb-4
                         form#tournament-roster-form.h-100
                             .input-group-h.mt-3.w-100.h-100
                                 .input-group-f.input-group-1.px-1.h-100.overflow-hidden
-                                    .form-label Available roster
+                                    .form-label Available
                                     .h-100.w-100.overflow-hidden
-                                        .w-100.input-group-1.h-100.overflow-hidden
-                                            #non-roster-container.fill-scroll
+                                        .w-100.input-group-f.input-group-1.h-100.overflow-hidden
+                                            .input-group-1.h-100.w-100.overflow-hidden
+                                                .h-100.w-100.overflow-hidden
+                                                    #non-roster-container.player-container.fill-scroll
+                                            .input-group-h.ai-c.jc-c.f-sb.mt-2
+                                                button.select-all(type="button" data-target="#non-roster-container") All 
+                                                button.select-none(type="button" data-target="#non-roster-container") None
                                 .px-1.m-auto
                                     .input-group-f.w-100
                                         .my-1.w-100
                                             button#move-one.w-100.move-right(type="button" title="Move selected")
                                         .my-1.w-100
                                             button#move-all.w-100.move-right(type="button" title="Move all")
+                                        .my-5.w-100 
+                                            button#create-new-player(type="button" data-bs-toggle="modal" data-bs-target="#add-player-modal") New
                                 .input-group-f.input-group-1.px-1.h-100.overflow-hidden
-                                    .form-label Rostered Players
+                                    .form-label Selected (#[span#roster-count 0])
                                     .h-100.w-100.overflow-hidden
-                                        .w-100.input-group-1.h-100.overflow-hidden
-                                            #tourney-roster-container.fill-scroll 
+                                        .w-100.input-group-f.input-group-1.h-100.overflow-hidden
+                                            .input-group-1.h-100.w-100.overflow-hidden
+                                                .h-100.w-100.overflow-hidden
+                                                    #tourney-roster-container.player-container.fill-scroll
+                                            .input-group-h.ai-c.jc-c.f-sb.mt-2
+                                                button.select-all(type="button" data-target="#tourney-roster-container") All 
+                                                button.select-none(type="button" data-target="#tourney-roster-container") None
             .modal-footer
-                button.btn.btn-secondary#cancel-edit(type="button" data-bs-dismiss="modal") Close
+                button.btn.btn-secondary#cancel-edit(type="button" data-bs-dismiss="modal") Cancel
                 button.btn.btn-primary#confirm-edit(type="submit" form="tournament-roster-form") Save

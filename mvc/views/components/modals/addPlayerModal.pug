@@ -1,0 +1,55 @@
+.modal.fade#add-player-modal(tabindex="-1" aria-labelledby="add-player-label" aria-hidden="true")
+    .modal-dialog.modal-dialog-centered
+        .modal-content#add-player-modal-content
+            .modal-header
+                h5.modal-title#add-player-label Add Player
+                button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+            .modal-body
+                form#add-player-form
+                    input#add-player-id(type='hidden' value='' data-field="id")
+                    .input-group-h.mb-3
+                        .input-group-f.input-group-1
+                            label.form-label(for="edit-first-name") First name:
+                            .input-group
+                                input#edit-first-name.form-control(type="text" placeholder="First Name" data-field="firstName" required)
+                        .input-group-f.input-group-1
+                            label.form-label(for="edit-last-name") Last name:
+                            .input-group
+                                input#edit-last-name.form-control(type="text" placeholder="Last Name" data-field="lastName" required)
+                    .input-group-h.mb-3
+                        .input-group-f.input-group-3
+                            label.form-label(for="edit-display-name") Display name:
+                            .input-group
+                                input#edit-display-name.form-control(type="text" placeholder="Display Name"  data-field="displayName")
+                        .input-group-f.input-group-1
+                            label.form-label(for="edit-number") Number:
+                            .input-group
+                                input#edit-number.form-control(type="text" placeholder="##" size="2" pattern="[0-9]{1,2}" maxlength="2" data-field="number")
+                    .input-group-h.mb-3
+                        #edit-gender-match.input-group-f.input-group-1
+                            label.form-label(for="edit-gender-match") Gender match:
+                            .input-group
+                                input#edit-gen-m.me-2(type="radio" name="edit-gender-match" value="M" checked) 
+                                label.me-2(for='edit-gen-m') Male
+                            .input-group
+                                input#edit-gen-f.me-2(type="radio" name="edit-gender-match" value="F")
+                                label(for='edit-gen-f') Female
+                        .input-group-f.input-group-1
+                            label.form-label(for="edit-line") Primary Line:
+                            .input-group
+                                input#edit-line-d.me-2(type="radio" name="edit-line" value="D") 
+                                label.me-2(for='line-d') Defense
+                            .input-group
+                                input#edit-line-o.me-2(type="radio" name="edit-line" value="O")
+                                label(for='line-o') Offense
+                        .input-group-f.input-group-1
+                            label.form-label(for="edit-position") Position:
+                            .input-group
+                                select#edit-position
+                                    option(value="-") None
+                                    option(value="H") Handler
+                                    option(value="C") Cutter 
+                                    option(value="Hy") Hybrid
+            .modal-footer
+                button.btn.btn-secondary#cancel-edit(type="button" data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="#tournament-roster-modal") Close
+                button.btn.btn-primary#confirm-edit(type="submit" form="add-player-form") Save

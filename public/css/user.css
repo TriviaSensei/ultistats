@@ -108,6 +108,10 @@ body {
 	align-items: center;
 }
 
+.jc-c {
+	justify-content: center;
+}
+
 .f-sb {
 	justify-content: space-evenly;
 }

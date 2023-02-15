@@ -41,6 +41,7 @@ const rosterHeader = rosterTable?.querySelector('thead');
 const rosterBody = rosterTable?.querySelector('tbody');
 const nonRosterSelect = document.querySelector('#non-roster-container');
 const rosterSelect = document.querySelector('#tourney-roster-container');
+const rosterCount = document.querySelector('#roster-count');
 const moveOne = document.querySelector('#move-one');
 const moveAll = document.querySelector('#move-all');
 
@@ -140,6 +141,8 @@ const getTournament = (e) => {
 		console.log(tourney);
 		populateForm(tournamentForm, tourney);
 
+		tourneyRoster = tourney.roster;
+
 		const offset = new Date().getTimezoneOffset();
 		const d1 = new Date(Date.parse(tourney.startDate) + offset * 60000)
 			.toISOString()
@@ -169,15 +172,19 @@ const getTournament = (e) => {
 			return a1.localeCompare(b1);
 		});
 
+		let count = 0;
 		roster.forEach((p) => {
+			const name = `${p.lastName}, ${p.firstName}`;
 			const op = createElement('.roster-option');
 			op.setAttribute('data-id', p.id);
+			op.setAttribute('data-name', name);
 			const cb = createElement('input');
 			cb.setAttribute('id', `cb-${p.id}`);
 			cb.setAttribute('type', 'checkbox');
+			cb.addEventListener('change', handleArrows);
 			const lbl = createElement('label');
 			lbl.setAttribute('for', cb.id);
-			lbl.innerHTML = `${p.lastName}, ${p.firstName}`;
+			lbl.innerHTML = name;
 			op.appendChild(cb);
 			op.appendChild(lbl);
 
@@ -187,9 +194,12 @@ const getTournament = (e) => {
 				})
 			) {
 				rosterSelect.appendChild(op);
+				count++;
 			} else {
 				nonRosterSelect.appendChild(op);
 			}
+
+			rosterCount.innerHTML = count;
 		});
 
 		tournamentInfo.show();
@@ -343,37 +353,156 @@ const handleDates = () => {
 	}
 };
 
-const testSelect = () => {
-	const nrSelect = getElementArray(nonRosterSelect, 'option')
-		.filter((o) => {
-			return o.selected;
+const insertOption = (op, container) => {
+	//figure out where to insert the option (they're sorted alphabetically)
+	const otherOptions = getElementArray(container, '.roster-option');
+	if (
+		!otherOptions.some((o) => {
+			const otherName = o.getAttribute('data-name');
+			if (op.getAttribute('data-name').localeCompare(otherName) <= 0) {
+				container.insertBefore(op, o);
+				return true;
+			}
 		})
-		.map((o) => {
-			return o.value;
-		});
+	) {
+		container.appendChild(op);
+	}
+};
 
-	const rSelect = getElementArray(rosterSelect, 'option')
-		.filter((o) => {
-			return o.selected;
-		})
-		.map((o) => {
-			return o.value;
-		});
+const handleMoveOne = (box) => {
+	//get the parent container and the target (other) container
+	const parent = box.closest('.player-container');
+	if (!parent) return;
+	const other =
+		parent === nonRosterSelect
+			? rosterSelect
+			: parent === rosterSelect
+			? nonRosterSelect
+			: undefined;
+	if (!other) return;
 
-	console.log(nrSelect);
-	console.log(rSelect);
+	//get the option to move over
+	const op = box.closest('.roster-option');
+	if (!op) return;
+
+	//insert the option into the other box
+	insertOption(op, other);
+
+	//uncheck the box
+	box.checked = false;
+
+	//update the roster
+
+	//update roster count, set arrows if one box is empty
+	const nrCount = nonRosterSelect.querySelectorAll('.roster-option').length;
+	const rCount = rosterSelect.querySelectorAll('.roster-option').length;
+	rosterCount.innerHTML = rCount;
+	if (rCount === 0) {
+		moveOne.classList.add('move-right');
+		moveOne.classList.remove('move-left');
+		moveAll.classList.add('move-right');
+		moveAll.classList.remove('move-left');
+	} else if (nrCount === 0) {
+		moveOne.classList.add('move-left');
+		moveOne.classList.remove('move-right');
+		moveAll.classList.add('move-left');
+		moveAll.classList.remove('move-right');
+	}
 };
 
 const handleMoveSome = (e) => {
-	testSelect();
+	const selected = getElementArray(
+		document,
+		'#tournament-roster-form input[type="checkbox"]:checked'
+	);
+
+	if (selected.length === 0) return;
+
+	//verify that they're all in the same box
+	if (
+		!selected.every((b, i) => {
+			return (
+				b.closest('.player-container') ===
+				selected[0].closest('.player-container')
+			);
+		})
+	) {
+		return showMessage(
+			'error',
+			'Cannot move players from both boxes simultaneously'
+		);
+	}
+
+	selected.forEach((b) => {
+		handleMoveOne(b);
+	});
 };
 
 const handleMoveAll = (e) => {
-	testSelect();
+	const first = moveAll.classList.contains('move-right')
+		? nonRosterSelect
+		: rosterSelect;
+
+	checkAll(first, true);
+
+	handleMoveSome(null);
+};
+
+const checkAll = (tgt, select) => {
+	const boxes = getElementArray(tgt, 'input[type="checkbox"]');
+	boxes.forEach((b) => {
+		b.checked = select;
+	});
+	if (boxes.length > 0 && select) handleArrows({ target: boxes[0] });
 };
 
 const handleArrows = (e) => {
-	testSelect();
+	if (!e.target.checked) return;
+
+	const container = e.target.closest('.player-container');
+	if (container === nonRosterSelect) {
+		moveOne.classList.add('move-right');
+		moveOne.classList.remove('move-left');
+		moveAll.classList.add('move-right');
+		moveAll.classList.remove('move-left');
+		checkAll(rosterSelect, false);
+	} else if (container === rosterSelect) {
+		moveOne.classList.add('move-left');
+		moveOne.classList.remove('move-right');
+		moveAll.classList.add('move-left');
+		moveAll.classList.remove('move-right');
+		checkAll(nonRosterSelect, false);
+	}
+};
+
+const handleSelectAll = (e) => {
+	const parent = document.querySelector(e.target.getAttribute('data-target'));
+	if (!parent) return;
+
+	const other =
+		parent === rosterSelect
+			? nonRosterSelect
+			: parent === nonRosterSelect
+			? rosterSelect
+			: undefined;
+	if (!other) return;
+
+	const boxes = getElementArray(parent, 'input[type="checkbox"]');
+	const otherBoxes = getElementArray(other, 'input[type="checkbox"]');
+
+	if (e.target.classList.contains('select-all')) {
+		boxes.forEach((b) => {
+			b.checked = true;
+		});
+		otherBoxes.forEach((b) => {
+			b.checked = false;
+		});
+		handleArrows({ target: boxes[0] });
+	} else if (e.target.classList.contains('select-none')) {
+		boxes.forEach((b) => {
+			b.checked = false;
+		});
+	}
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -387,6 +516,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	formatSelect.addEventListener('change', getFormat);
 	moveOne.addEventListener('click', handleMoveSome);
 	moveAll.addEventListener('click', handleMoveAll);
-	nonRosterSelect.addEventListener('change', handleArrows);
-	rosterSelect.addEventListener('change', handleArrows);
+	getElementArray(document, '.select-all,.select-none').forEach((b) => {
+		b.addEventListener('click', handleSelectAll);
+	});
 });
