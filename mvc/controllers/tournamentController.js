@@ -4,22 +4,26 @@ const AppError = require('../../utils/appError');
 const Tournament = require('../models/tournamentModel');
 const Team = require('../models/teamModel');
 const Game = require('../models/gameModel');
+const Format = require('../models/formatModel');
 
 exports.verifyOwnership = catchAsync(async (req, res, next) => {
 	if (!res.locals.user)
 		return next(new AppError('You are not logged in.', 403));
 
-	const t = await Tournament.find(req.params.id);
+	const t = await Tournament.findById(req.params.id);
 	if (!t) return next(new AppError('Tournament ID not found', 404));
 	res.locals.tournament = t;
 
-	res.locals.format = await Format.findById(t.format);
-	if (res.locals.format) return next(new AppError('Invalid format', 400));
+	console.log(t.format.toString());
+
+	res.locals.format = await Format.findById(t.format.toString());
+	if (!res.locals.format) return next(new AppError('Invalid format', 400));
 
 	res.locals.team = await Team.findById(t.team).populate({
 		path: 'managers',
 		select: 'firstName lastName displayName _id',
 	});
+
 	if (!res.locals.team) return next(new AppError('Team not found', 404));
 	else if (
 		!res.locals.team.managers.some((m) => {

@@ -2,6 +2,7 @@
 	--white: #eeeeee;
 	--black: #222222;
 	--gray: #777777;
+	--light-gray: #cccccc;
 	--blurred: rgba(0, 0, 0, 0.3);
 	--color-1: #abffa8;
 	--color-2: #06b500;
@@ -186,6 +187,24 @@ button > a > div {
 
 .invisible-div {
 	display: none !important;
+}
+
+.desktop-only {
+	display: none;
+}
+
+.overflow-hidden {
+	overflow-y: hidden;
+}
+
+@media (pointer: fine) {
+	.desktop-only {
+		display: unset;
+	}
+
+	.mobile-only {
+		display: none;
+	}
 }
 
 @media (min-width: 992px) {

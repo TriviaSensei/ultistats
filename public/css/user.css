@@ -156,12 +156,20 @@ body {
 .roster-table,
 #manager-table {
 	width: 100%;
+	max-width: 100%;
 }
 
 .roster-table td,
 #manager-table td {
 	border: 1px solid black;
 	text-align: center;
+	overflow-wrap: break-word;
+}
+
+.table-container {
+	width: 100%;
+	max-width: 100%;
+	overflow-x: scroll;
 }
 
 .roster-table .gen-cell {
@@ -193,6 +201,12 @@ body {
 .roster-list tr.player-row:hover,
 #manager-list tr.manager-row:hover {
 	background-color: var(--color-1);
+}
+
+.fill-scroll {
+	height: 100%;
+	max-height: 100%;
+	overflow-y: scroll;
 }
 
 @media (min-width: 992px) {

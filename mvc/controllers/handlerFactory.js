@@ -95,16 +95,18 @@ exports.updateOne = (Model) =>
 						)
 					);
 			}
-		} else if (loc.toLowerCase() === 'tournaments') {
-			if (
-				req.body.team ||
-				req.body.roster ||
-				req.body.format ||
-				req.body.games
-			) {
-				return next(new AppError('Invalid field.', 400));
-			}
-		} else if (loc.toLowerCase() === 'teams') {
+		}
+		// else if (loc.toLowerCase() === 'tournaments') {
+		// 	if (
+		// 		req.body.team ||
+		// 		req.body.roster ||
+		// 		req.body.format ||
+		// 		req.body.games
+		// 	) {
+		// 		return next(new AppError('Invalid field.', 400));
+		// 	}
+		// }
+		else if (loc.toLowerCase() === 'teams') {
 			if (req.body.membershipLevel || req.body.membershipExpires) {
 				return next(
 					new AppError(

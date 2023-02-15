@@ -1,0 +1,72 @@
+#tournament-roster-modal-dialog {
+	max-width: unset;
+	width: min(95%, 600px);
+}
+
+.roster-option {
+	display: flex;
+	align-items: center;
+}
+
+.roster-option > * {
+	margin-left: 0.25rem;
+	margin-right: 0.25rem;
+	white-space: nowrap;
+	text-overflow: clip;
+}
+
+.roster-option > input[type='checkbox'] {
+	width: 1rem;
+	height: 1rem;
+	min-width: 1rem;
+	max-width: 1rem;
+	min-height: 1rem;
+	max-height: 1rem;
+}
+
+input[type='checkbox']:checked ~ label {
+	font-weight: bold;
+}
+
+#move-one.move-left::after {
+	content: '<';
+}
+
+#move-all.move-left::after {
+	content: '<<';
+}
+
+#move-one.move-right::after {
+	content: '>';
+}
+
+#move-all.move-right::after {
+	content: '>>';
+}
+
+#tourney-roster-container,
+#non-roster-container {
+	border: 1px solid var(--black);
+}
+
+@media (min-width: 992px) {
+	select {
+		max-height: unset;
+	}
+
+	#move-one.move-left::after {
+		content: '◀';
+	}
+
+	#move-all.move-left::after {
+		content: '◀◀';
+	}
+
+	#move-one.move-right::after {
+		content: '▶';
+	}
+
+	#move-all.move-right::after {
+		content: '▶▶';
+	}
+}

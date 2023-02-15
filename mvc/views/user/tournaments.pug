@@ -1,11 +1,11 @@
 .input-group-h.mb-4
-    .input-group-f.input-group-1.px-2
+    .input-group-f.input-group-1.px-2.overflow-hidden
         label.form-label(for="tourney-team-select") Select team:
         select#tourney-team-select
             option(value="") [Select a team]
             each team in user.teams 
                 option(value=`${team.id}`)= `${team.name} (${team.season})`
-    .input-group-f.input-group-1.px-2
+    .input-group-f.input-group-1.px-2.overflow-hidden
         label.form-label(for="tournament-select") Select tournament: 
         select#tournament-select(disabled)
             option(value="") [Create new]
@@ -61,7 +61,7 @@ form#tournament-form.w-100
                 .input-group-h.my-3
                     .input-group-1
                         .w-100.d-grid.gap-2.px-2
-                            button.btn.btn-primary#modify-roster(type="button") Modify Roster
+                            button.btn.btn-primary#modify-roster(type="button" data-bs-toggle="modal" data-bs-target="#tournament-roster-modal") Modify Roster
                     .input-group-1 
                         .w-100.d-grid.gap-2.px-2(title="You must add at least 8 players to the roster to set lines.")
                             button.btn.btn-primary#modify-lines(type="button" disabled) Modify Lines
@@ -75,7 +75,7 @@ form#tournament-form.w-100
                         th ✏️
                         th ❌
                     tbody#tournament-roster-body.roster-list
-                        tr#tournament-filler-row
+                        tr#tournament-filler-row.filler-row
                             td(colspan="7") Add players to your roster above.
 
         .accordion-item#games-item.invisible-div

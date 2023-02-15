@@ -100,19 +100,20 @@ label.form-label(for="team-select") Select a team:&nbsp;
                                 option(value="Hy") Hybrid
                 .d-grid.gap-2.mb-3  
                     button.btn.btn-primary(type="submit") Add Player
-            table#main-roster-table.roster-table.mb-3
-                thead 
-                    tr#main-roster-header.roster-header
-                        th.sort-header.active-sort.sort-asc(data-attr="number") #
-                        th.sort-header(data-attr="name") Name 
-                        th.sort-header.gen-cell(data-attr="gender") Gen 
-                        th.sort-header(data-attr="line") Ln 
-                        th.sort-header(data-attr="position") Pos 
-                        th ✏️
-                        th ❌
-                tbody#main-roster-list.roster-list
-                    tr#filler-row
-                        td(colspan="7") Add players to your roster above.
+            .table-container
+                table#main-roster-table.roster-table.mb-3
+                    thead 
+                        tr#main-roster-header.roster-header
+                            th.sort-header.active-sort.sort-asc(data-attr="number") #
+                            th.sort-header(data-attr="name") Name 
+                            th.sort-header.gen-cell(data-attr="gender") Gen 
+                            th.sort-header(data-attr="line") Ln 
+                            th.sort-header(data-attr="position") Pos 
+                            th ✏️
+                            th ❌
+                    tbody#main-roster-list.roster-list
+                        tr#filler-row.filler-row
+                            td(colspan="7") Add players to your roster above.
     .accordion-item
         h2.accordion-header#manager-area-header
             button.accordion-button.collapsed(type="button" data-bs-toggle="collapse" data-bs-target="#manager-area" aria-expanded="false" aria-controls="manager-area") Managers
@@ -120,12 +121,13 @@ label.form-label(for="team-select") Select a team:&nbsp;
             .my-3
                 .input-group-f 
                     label.form-label Team Managers
-                table#manager-table.mb-3 
-                    thead 
-                        tr
-                            th Name 
-                            th Action
-                    tbody#manager-list
+                .table-container
+                    table#manager-table.mb-3 
+                        thead 
+                            tr
+                                th Name 
+                                th Action
+                        tbody#manager-list
                 .input-group.mb-3
                     label.form-label Add manager (e-mail): 
                     .input-group 

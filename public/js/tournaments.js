@@ -19,7 +19,12 @@ const gamesItem = document.querySelector('#games-item');
 const gamesButton = document.querySelector('#games-button');
 
 //tournament info
-const bsc = new bootstrap.Collapse(`#tournament-info`);
+const tournamentInfo = new bootstrap.Collapse(`#tournament-info`, {
+	toggle: false,
+});
+const tournamentRules = new bootstrap.Collapse('#tournament-rules', {
+	toggle: false,
+});
 const tournamentForm = document.querySelector('#tournament-form');
 const tournamentName = document.querySelector('#tournament-name');
 const startDate = document.querySelector('#start-date');
@@ -34,6 +39,10 @@ const timeouts = document.querySelector('#timeouts');
 const rosterTable = document.querySelector('#tournament-roster-table');
 const rosterHeader = rosterTable?.querySelector('thead');
 const rosterBody = rosterTable?.querySelector('tbody');
+const nonRosterSelect = document.querySelector('#non-roster-container');
+const rosterSelect = document.querySelector('#tourney-roster-container');
+const moveOne = document.querySelector('#move-one');
+const moveAll = document.querySelector('#move-all');
 
 let tournaments = [];
 let roster = [];
@@ -69,15 +78,8 @@ const getTeam = (e) => {
 		[rosterItem, gamesItem].forEach((item) => {
 			item.classList.add('invisible-div');
 		});
-		[infoItem, rulesItem].forEach((item) => {
-			const b = item.querySelector('.accordion-button');
-			if (b) {
-				b.classList.add('collapsed');
-				b.setAttribute('aria-expanded', 'false');
-			}
-			const c = item.querySelector('.accordion-collapse');
-			if (c) c.classList.remove('show');
-		});
+		tournamentInfo.hide();
+		tournamentRules.hide();
 	} else {
 		const str = `/api/v1/teams/tournaments/${teamSelect.value}`;
 		const handler = (res) => {
@@ -113,7 +115,6 @@ const getTeam = (e) => {
 
 						//set the available roster to the roster of the team
 						roster = res.data.roster;
-						console.log(roster);
 					} else {
 						showMessage('error', res.message);
 					}
@@ -152,9 +153,7 @@ const getTournament = (e) => {
 
 		const fmts = getElementArray(formatSelect, 'option');
 		fmts.some((f, i) => {
-			console.log(f.value, tourney.format);
 			if (f.value === tourney.format) {
-				console.log(i);
 				formatSelect.selectedIndex = i;
 				return true;
 			}
@@ -163,12 +162,44 @@ const getTournament = (e) => {
 
 		rosterItem.classList.remove('invisible-div');
 		gamesItem.classList.remove('invisible-div');
+
+		roster = roster.sort((a, b) => {
+			const a1 = `${a.lastName}, ${a.firstName}`;
+			const b1 = `${b.lastName}, ${b.firstName}`;
+			return a1.localeCompare(b1);
+		});
+
+		roster.forEach((p) => {
+			const op = createElement('.roster-option');
+			op.setAttribute('data-id', p.id);
+			const cb = createElement('input');
+			cb.setAttribute('id', `cb-${p.id}`);
+			cb.setAttribute('type', 'checkbox');
+			const lbl = createElement('label');
+			lbl.setAttribute('for', cb.id);
+			lbl.innerHTML = `${p.lastName}, ${p.firstName}`;
+			op.appendChild(cb);
+			op.appendChild(lbl);
+
+			if (
+				tourney.roster.some((p2) => {
+					return p2.id === p.id;
+				})
+			) {
+				rosterSelect.appendChild(op);
+			} else {
+				nonRosterSelect.appendChild(op);
+			}
+		});
+
+		tournamentInfo.show();
 	} else {
 		clearForm();
 		rosterItem.classList.add('invisible-div');
 		gamesItem.classList.add('invisible-div');
+		tournamentInfo.hide();
+		tournamentRules.hide();
 	}
-	bsc.show();
 };
 
 const getFormat = (e) => {
@@ -199,63 +230,74 @@ const handleSaveTournament = (e) => {
 	if (e.target !== tournamentForm) return;
 	e.preventDefault();
 
-	const str = `/api/v1/tournaments`;
+	const str = `/api/v1/tournaments${
+		tournamentSelect.value ? `/${tournamentSelect.value}` : ''
+	}`;
 	const handler = (res) => {
 		if (res.status === 'success') {
-			console.log(res.data);
 			populateForm(tournamentForm, res.data);
-			const op = createElement('option');
-			op.setAttribute('value', res.data._id);
 			const offset = new Date().getTimezoneOffset();
 			const d = new Date(Date.parse(res.data.startDate) + offset * 60000);
-			op.innerHTML = `${res.data.name} (${d.toLocaleDateString()})`;
-			op.setAttribute('data-date', d.toISOString().split('T')[0]);
-			const ops = getElementArray(tournamentSelect, 'option');
-			if (
-				!ops.some((o, i) => {
-					if (i === 0) return false;
-					if (
-						op
-							.getAttribute('data-date')
-							.localeCompare(o.getAttribute('data-date')) <= 0
-					) {
-						tournamentSelect.insertBefore(op, o);
-						tournamentSelect.selectIndex = i;
+
+			if (!tournamentSelect.value) {
+				const op = createElement('option');
+				op.setAttribute('value', res.data._id);
+				op.innerHTML = `${res.data.name} (${d.toLocaleDateString()})`;
+				op.setAttribute('data-date', d.toISOString().split('T')[0]);
+				const ops = getElementArray(tournamentSelect, 'option');
+				if (
+					!ops.some((o, i) => {
+						if (i === 0) return false;
+						if (
+							op
+								.getAttribute('data-date')
+								.localeCompare(o.getAttribute('data-date')) <= 0
+						) {
+							tournamentSelect.insertBefore(op, o);
+							tournamentSelect.selectIndex = i;
+							return true;
+						}
+					})
+				) {
+					tournamentSelect.appendChild(op);
+					tournamentSelect.selectedIndex = ops.length;
+				}
+				const d1 = new Date(Date.parse(res.data.startDate) + offset * 60000)
+					.toISOString()
+					.split('T')[0];
+				const d2 = new Date(Date.parse(res.data.endDate) + offset * 60000)
+					.toISOString()
+					.split('T')[0];
+
+				startDate.value = d1;
+				endDate.value = d2;
+
+				const fmts = getElementArray(formatSelect, 'option');
+				fmts.some((f, i) => {
+					if (f.value === res.data.format) {
+						formatSelect.selectedIndex = i;
 						return true;
 					}
-				})
-			) {
-				tournamentSelect.appendChild(op);
-				tournamentSelect.selectedIndex = ops.length;
-			}
-			const d1 = new Date(Date.parse(res.data.startDate) + offset * 60000)
-				.toISOString()
-				.split('T')[0];
-			const d2 = new Date(Date.parse(res.data.endDate) + offset * 60000)
-				.toISOString()
-				.split('T')[0];
-
-			startDate.value = d1;
-			endDate.value = d2;
-
-			const fmts = getElementArray(formatSelect, 'option');
-			fmts.some((f, i) => {
-				if (f.value === res.data.format) {
-					formatSelect.selectedIndex = i;
-					return true;
+				});
+				timeouts.selectedIndex = tourney.timeouts;
+			} else {
+				const op = tournamentSelect.options[tournamentSelect.selectedIndex];
+				if (op) {
+					op.innerHTML = `${res.data.name} (${d.toLocaleDateString()})`;
 				}
-			});
-			timeouts.selectedIndex = tourney.timeouts;
+			}
 
 			rosterItem.classList.remove('invisible-div');
 			gamesItem.classList.remove('invisible-div');
+
+			showMessage('info', 'Successfully saved tournament.');
 		} else {
 			showMessage('error', res.message);
 		}
 	};
 	handleRequest(
 		str,
-		'POST',
+		tournamentSelect.value ? 'PATCH' : 'POST',
 		{
 			team: teamSelect.value,
 			name: tournamentName.value,
@@ -301,6 +343,39 @@ const handleDates = () => {
 	}
 };
 
+const testSelect = () => {
+	const nrSelect = getElementArray(nonRosterSelect, 'option')
+		.filter((o) => {
+			return o.selected;
+		})
+		.map((o) => {
+			return o.value;
+		});
+
+	const rSelect = getElementArray(rosterSelect, 'option')
+		.filter((o) => {
+			return o.selected;
+		})
+		.map((o) => {
+			return o.value;
+		});
+
+	console.log(nrSelect);
+	console.log(rSelect);
+};
+
+const handleMoveSome = (e) => {
+	testSelect();
+};
+
+const handleMoveAll = (e) => {
+	testSelect();
+};
+
+const handleArrows = (e) => {
+	testSelect();
+};
+
 document.addEventListener('DOMContentLoaded', () => {
 	teamSelect.addEventListener('change', getTeam);
 	tournamentSelect.addEventListener('change', getTournament);
@@ -310,4 +385,8 @@ document.addEventListener('DOMContentLoaded', () => {
 	startDate.addEventListener('change', handleDates);
 	endDate.addEventListener('change', handleDates);
 	formatSelect.addEventListener('change', getFormat);
+	moveOne.addEventListener('click', handleMoveSome);
+	moveAll.addEventListener('click', handleMoveAll);
+	nonRosterSelect.addEventListener('change', handleArrows);
+	rosterSelect.addEventListener('change', handleArrows);
 });
