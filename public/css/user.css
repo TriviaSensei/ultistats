@@ -88,7 +88,7 @@ body {
 	width: 100%;
 }
 
-.input-group-h > .input-group-f {
+.jc-fe {
 	justify-content: flex-end;
 }
 
@@ -196,10 +196,6 @@ body {
 .roster-header > th.sort-header:hover {
 	background-color: var(--color-1);
 	cursor: pointer;
-}
-
-.roster-header > th.active-sort {
-	background-color: var(--color-1);
 }
 
 .roster-list tr.player-row:hover,

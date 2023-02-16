@@ -174,7 +174,7 @@ const handleSortRoster = (e) => {
 };
 
 const removePlayerRow = (id) => {
-	const row = document.querySelector(`tr[data-id="${id}"]`);
+	const row = document.querySelector(`tr.player-row[data-id="${id}"]`);
 	if (row) row.remove();
 
 	const rows = document.querySelector('.player-row');
@@ -756,6 +756,11 @@ const handleLeaveTeam = () => {
 	handleRequest(str, 'PATCH', null, handler);
 };
 
+const handleTabChange = (e) => {
+	if (e.target.id !== 'team-tab') return;
+	getTeam({ target: teamSelect });
+};
+
 document.addEventListener('DOMContentLoaded', (e) => {
 	teamSelect.addEventListener('change', getTeam);
 
@@ -782,6 +787,8 @@ document.addEventListener('DOMContentLoaded', (e) => {
 	addManagerButton.addEventListener('click', handleRequestManager);
 	confirmCancelRequest.addEventListener('click', cancelManagerRequest);
 	confirmLeaveButton.addEventListener('click', handleLeaveTeam);
+
+	document.addEventListener('show.bs.tab', handleTabChange);
 
 	changeJerseyPreviews();
 });

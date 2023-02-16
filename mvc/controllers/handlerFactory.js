@@ -164,8 +164,8 @@ exports.createOne = (Model) =>
 				);
 		} else if (loc === 'tournaments') {
 			req.body.roster = [];
+			req.body.lines = [];
 			req.body.games = [];
-
 			//make sure the team exists...
 			const team = await Team.findById(req.body.team).populate({
 				path: 'managers',

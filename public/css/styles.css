@@ -78,6 +78,10 @@ select {
 	-webkit-transition: opacity 0.25s ease-in-out;
 }
 
+th.active-sort {
+	background-color: var(--color-1);
+}
+
 .hover-gray:hover {
 	background-color: #d3d4d5;
 }

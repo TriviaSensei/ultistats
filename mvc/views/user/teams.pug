@@ -8,7 +8,7 @@ label.form-label(for="team-select") Select a team:&nbsp;
         h2.accordion-header#team-info-header
             button.accordion-button(type="button" data-bs-toggle="collapse" data-bs-target="#team-info" aria-expanded="true" aria-controls="team-info") Team Info
         #team-info.accordion-collapse.collapse.show(aria-labelled-by="team-info-header" data-bs-parent="#team-accordion")
-            form#team-form.my-3.w-100
+            form#team-form.my-3.w-100(autocomplete="off")
                 .input-group-h.mb-3
                     .input-group-f.input-group-3
                         label.form-label(for="team-name") Team name:
@@ -52,7 +52,7 @@ label.form-label(for="team-select") Select a team:&nbsp;
         h2.accordion-header#team-roster-header
             button.accordion-button.collapsed(type="button" data-bs-toggle="collapse" data-bs-target="#team-roster" aria-expanded="false" aria-controls="team-roster") Roster
         #team-roster.accordion-collapse.collapse(aria-labelled-by="team-roster-header" data-bs-parent="#team-accordion")
-            form#roster-form.my-3
+            form#roster-form.my-3(autocomplete="off")
                 .input-group-f 
                     label.form-label Roster (#[span#roster-size 0]/#[span#roster-limit= rosterLimit] used)
                 .input-group-h.mb-3

@@ -9,7 +9,7 @@
         label.form-label(for="tournament-select") Select tournament: 
         select#tournament-select(disabled)
             option(value="") [Create new]
-form#tournament-form.w-100
+form#tournament-form.w-100(autocomplete="off")
     .accordion#tournament-accordion.w-100.accordion-flush
         .accordion-item#info-item
             h2.accordion-header#tournament-info-header
@@ -37,16 +37,16 @@ form#tournament-form.w-100
                         each format in formats
                             option(value=`${format._id}`)= format.name
                 .input-group-h.mb-3
-                    .input-group-f.input-group-1.px-2 
+                    .input-group-f.input-group-1.jc-fe.px-2
                         label.form-label(for="point-cap") Game to: 
                         input#point-cap(type="number" min="0" value=`${formats.length > 0 ? formats[0].defaultPointCap : 15}` style="width:100%;" data-field="cap")
-                    .input-group-f.input-group-1.px-2 
+                    .input-group-f.input-group-1.jc-fe.px-2 
                         label.form-label(for="win-by") Win by: 
                         input#win-by(type="number" min="1" max="2" value=`1` style="width:100%;" data-field="winBy")
-                    .input-group-f.input-group-1.px-2 
+                    .input-group-f.input-group-1.jc-fe.px-2 
                         label.form-label(for="hard-cap") Hard cap: 
                         input#hard-cap(type="number" min="0" value=`${formats.length > 0 ? formats[0].defaultPointCap : 15}` data-field="hardCap" disabled style="width:100%;")
-                    .input-group-f.input-group-1.px-2 
+                    .input-group-f.input-group-1.jc-fe.px-2 
                         label.form-label(for="timeouts") T/Os: 
                         select#timeouts
                             option(value="0") None 
@@ -65,18 +65,19 @@ form#tournament-form.w-100
                     .input-group-1 
                         .w-100.d-grid.gap-2.px-2(title="You must add at least 8 players to the roster to set lines.")
                             button.btn.btn-primary#modify-lines(type="button" disabled) Modify Lines
-                table#tournament-roster-table.roster-table.w-100.mb-3
-                    thead#tournament-roster-header.roster-header
-                        th.sort-header.active-sort.sort-asc(data-attr="number") #
-                        th.sort-header(data-attr="name") Name 
-                        th.sort-header.gen-cell(data-attr="gender") Gen 
-                        th.sort-header(data-attr="line") Ln 
-                        th.sort-header(data-attr="position") Pos 
-                        th ✏️
-                        th ❌
-                    tbody#tournament-roster-body.roster-list
-                        tr#tournament-filler-row.filler-row
-                            td(colspan="7") Add players to your roster above.
+                .table-container
+                    table#tournament-roster-table.roster-table.w-100.mb-3
+                        thead#tournament-roster-header.roster-header
+                            th.sort-header.active-sort.sort-asc(data-attr="number") #
+                            th.sort-header(data-attr="name") Name 
+                            th.sort-header.gen-cell(data-attr="gender") Gen 
+                            th.sort-header(data-attr="line") Ln 
+                            th.sort-header(data-attr="position") Pos 
+                            th ✏️
+                            th ❌
+                        tbody#tournament-roster-body.roster-list
+                            tr#tournament-filler-row.filler-row
+                                td(colspan="7") Add players to your roster above.
 
         .accordion-item#games-item.invisible-div
             h2.accordion-header#tournament-games-header

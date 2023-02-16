@@ -7,7 +7,7 @@
             .modal-body.overflow-hidden
                 .input-group-f.h-100.overflow-hidden
                     .input-group-1.h-100.pb-4
-                        form#tournament-roster-form.h-100
+                        form#tournament-roster-form.h-100(autocomplete="off")
                             .input-group-h.mt-3.w-100.h-100
                                 .input-group-f.input-group-1.px-1.h-100.overflow-hidden
                                     .form-label Available
@@ -38,5 +38,5 @@
                                                 button.select-all(type="button" data-target="#tourney-roster-container") All 
                                                 button.select-none(type="button" data-target="#tourney-roster-container") None
             .modal-footer
-                button.btn.btn-secondary#cancel-edit(type="button" data-bs-dismiss="modal") Cancel
-                button.btn.btn-primary#confirm-edit(type="submit" form="tournament-roster-form") Save
+                button.btn.btn-secondary#cancel-save-roster(type="button" data-bs-dismiss="modal") Cancel
+                button.btn.btn-primary#confirm-save-roster(type="submit" form="tournament-roster-form") Save

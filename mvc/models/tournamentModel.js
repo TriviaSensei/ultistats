@@ -21,6 +21,10 @@ const tournamentSchema = new mongoose.Schema({
 	roster: {
 		type: [Object],
 	},
+	lines: {
+		type: [Object],
+		default: [],
+	},
 	format: {
 		type: mongoose.Schema.ObjectId,
 		ref: 'Formats',
