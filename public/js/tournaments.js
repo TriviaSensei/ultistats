@@ -57,6 +57,7 @@ const fillerRow = document.querySelector('#tournament-filler-row');
 const confirmRemoveFromRosterButton = document.querySelector(
 	'#confirm-remove-from-roster'
 );
+
 let tournaments = [];
 let roster = [];
 let tourneyRoster = [];
@@ -72,6 +73,21 @@ const addLastName = document.querySelector('#add-last-name');
 const addDisplayName = document.querySelector('#add-display-name');
 const addNumber = document.querySelector('#add-number');
 const addPosition = document.querySelector('#add-position');
+
+//edit player on roster
+const editPlayerModal = new bootstrap.Modal(
+	document.querySelector('#edit-rostered-player-modal')
+);
+const editPlayerForm = document.querySelector('#edit-rostered-player-form');
+const editFirstName = document.querySelector('#edit-roster-first-name');
+const editLastName = document.querySelector('#edit-roster-last-name');
+const editDisplayName = document.querySelector('#edit-roster-display-name');
+const editNumber = document.querySelector('#edit-roster-number');
+const editPosition = document.querySelector('#edit-roster-position');
+
+//modify lines
+let memLevel;
+const lineButton = document.querySelector('#modify-lines');
 
 const removeTourneys = () => {
 	getElementArray(tournamentSelect, 'option').forEach((o, i) => {
@@ -122,7 +138,6 @@ const getTeam = (e) => {
 				infoButton.disabled = false;
 				rulesButton.disabled = false;
 				tournaments = res.data;
-				console.log(tournaments);
 				res.data.forEach((t) => {
 					const op = createElement('option');
 					op.setAttribute('value', t._id);
@@ -147,7 +162,14 @@ const getTeam = (e) => {
 						});
 
 						//set the available roster to the roster of the team
-						roster = res.data.roster;
+						roster = res.data.roster.map((p) => {
+							return {
+								...p,
+								name: `${p.lastName}, ${p.firstName}`,
+							};
+						});
+
+						memLevel = res.data.membershipLevel;
 					} else {
 						showMessage('error', res.message);
 					}
@@ -178,6 +200,8 @@ const getTournament = (e) => {
 				name: `${p.lastName}, ${p.firstName}`,
 			};
 		});
+
+		handleLineButton();
 
 		const offset = new Date().getTimezoneOffset();
 		const d1 = new Date(Date.parse(tourney.startDate) + offset * 60000)
@@ -238,7 +262,6 @@ const getTournament = (e) => {
 			rosterCount.innerHTML = count;
 		});
 
-		console.log(tourneyRoster);
 		clearTourneyRosterTable();
 		tourneyRoster.forEach((p, i) => {
 			addPlayerRow(p);
@@ -252,6 +275,25 @@ const getTournament = (e) => {
 		gamesItem.classList.add('invisible-div');
 		tournamentInfo.hide();
 		tournamentRules.hide();
+	}
+};
+
+const handleLineButton = () => {
+	if (memLevel === 'Free') {
+		lineButton.disabled = true;
+		lineButton.parentElement.setAttribute(
+			'title',
+			'Upgrade to a basic or plus membership to '
+		);
+	} else if (tourneyRoster.length >= 8) {
+		lineButton.disabled = false;
+		lineButton.parentElement.setAttribute('title', '');
+	} else {
+		lineButton.disabled = true;
+		lineButton.parentElement.setAttribute(
+			'title',
+			'You must add at least 8 players to the roster to set lines.'
+		);
 	}
 };
 
@@ -567,6 +609,8 @@ const handleRemovePlayer = (e) => {
 		return p.id !== id;
 	});
 
+	handleLineButton();
+
 	const row = document.querySelector(`tr.tourney-roster-row[data-id="${id}"]`);
 	if (row) row.remove();
 
@@ -601,6 +645,32 @@ const cancelSaveRoster = (e) => {
 	rosterCount.innerHTML = rCount;
 };
 
+const saveRoster = (msg, after) => {
+	const str = `/api/v1/tournaments/${tournamentSelect.value}`;
+	const handler = (res) => {
+		if (res.status === 'success') {
+			showMessage('info', msg || res.message);
+			getElementArray(rosterBody, 'tr.tourney-roster-row').forEach((r) => {
+				removePlayerRow(r.getAttribute('data-id'));
+			});
+			tourneyRoster.forEach((p) => {
+				addPlayerRow(p);
+			});
+			sortTournamentRosterTable();
+			handleLineButton();
+			if (after) after();
+		} else {
+			showMessage('error', res.message);
+		}
+	};
+	handleRequest(
+		str,
+		'PATCH',
+		{ roster: tourneyRoster, lines: tourneyLines },
+		handler
+	);
+};
+
 const handleSaveRoster = (e) => {
 	if (e.target !== tournamentRosterForm) return;
 	e.preventDefault();
@@ -616,23 +686,16 @@ const handleSaveRoster = (e) => {
 			return o.id === p.id;
 		});
 	});
+	tourneyLines.forEach((line) => {
+		if (!line.players) return;
+		line.players = line.players.filter((p) => {
+			return tourneyRoster.some((p2) => {
+				return p2.id === p;
+			});
+		});
+	});
 
-	const str = `/api/v1/tournaments/${tournamentSelect.value}`;
-	const handler = (res) => {
-		if (res.status === 'success') {
-			showMessage('info', 'Tournament roster saved');
-			getElementArray(rosterBody, 'tr.tourney-roster-row').forEach((r) => {
-				removePlayerRow(r.getAttribute('data-id'));
-			});
-			tourneyRoster.forEach((p) => {
-				addPlayerRow(p);
-			});
-			sortTournamentRosterTable();
-		} else {
-			showMessage('error', res.message);
-		}
-	};
-	handleRequest(str, 'PATCH', { roster: tourneyRoster }, handler);
+	saveRoster('Tournament roster saved', null);
 };
 
 const sortTournamentRosterTable = () => {
@@ -642,9 +705,6 @@ const sortTournamentRosterTable = () => {
 	const sortBy = sortByHeader.getAttribute('data-attr');
 	if (!sortBy) return;
 	const asc = sortByHeader.classList.contains('sort-asc');
-
-	console.log(sortBy);
-	console.log(tourneyRoster);
 
 	tourneyRoster = tourneyRoster.sort((a, b) => {
 		return (
@@ -671,9 +731,84 @@ const removePlayerRow = (id) => {
 	}
 };
 
+const setDeleteId = (e) => {
+	const inp = document.querySelector('#remove-player-id');
+	inp.value = e.target.getAttribute('data-id');
+
+	const nameSpan = document.querySelector('#remove-player-name');
+	const player = tourneyRoster.find((p) => {
+		return p.id === inp.value;
+	});
+
+	if (!player) return;
+
+	nameSpan.innerHTML = `${player.lastName}, ${player.firstName}`;
+};
+
+const confirmDeletePlayer = (e) => {
+	if (e.target !== confirmRemoveFromRosterButton) return;
+	const inp = document.querySelector('#remove-player-id');
+	if (!inp || !inp.value) return;
+	let msg;
+	tourneyRoster = tourneyRoster.filter((p) => {
+		if (p.id === inp.value) {
+			msg = `${p.lastName}, ${p.firstName} removed from tournament roster.`;
+			const box = document.querySelector(`input#cb-${p.id}[type="checkbox"]`);
+			handleMoveOne(box);
+			return false;
+		}
+		return true;
+	});
+
+	saveRoster(msg, null);
+};
+
+const setEditId = (e) => {
+	const inp = document.querySelector('#edit-player-id');
+	inp.value = e.target.getAttribute('data-id');
+
+	const player = tourneyRoster.find((p) => {
+		return p.id === inp.value;
+	});
+
+	if (!player) return;
+
+	populateForm(editPlayerForm, player);
+
+	getElementArray(editPlayerForm, 'input[type="radio"]').forEach((el) => {
+		el.checked = false;
+	});
+
+	if (player.gender) {
+		const r = editPlayerForm.querySelector(
+			`input[type="radio"][value="${player.gender}"]`
+		);
+		if (r) r.checked = true;
+	}
+
+	if (player.line) {
+		const r = editPlayerForm.querySelector(
+			`input[type="radio"][value="${player.line}"]`
+		);
+		if (r) r.checked = true;
+	}
+
+	const opts = getElementArray(
+		editPlayerForm,
+		'#edit-roster-position > option'
+	);
+	if (opts.length > 0 && player.position) {
+		opts.some((o, i) => {
+			if (o.value === player.position) {
+				o.parentElement.selectedIndex = i;
+				return true;
+			}
+		});
+	}
+};
+
 const addPlayerRow = (player) => {
 	if (!player) return;
-	console.log(player);
 	const info = [
 		player.number,
 		`${player.lastName}, ${player.firstName}`,
@@ -702,17 +837,23 @@ const addPlayerRow = (player) => {
 	const editButton = createElement('button');
 	editButton.setAttribute('type', 'button');
 	editButton.innerHTML = '✏️';
+	editButton.setAttribute('data-id', player.id);
+	editButton.setAttribute('data-bs-toggle', 'modal');
+	editButton.setAttribute('data-bs-target', '#edit-rostered-player-modal');
 	editCell.appendChild(editButton);
-	// editButton.addEventListener('click', openEditModal);
+	editButton.addEventListener('click', setEditId);
 	newRow.appendChild(editCell);
 
 	const deleteCell = createElement('td');
 	const delButton = createElement('button');
 	delButton.setAttribute('type', 'button');
 	delButton.innerHTML = '❌';
+	delButton.setAttribute('data-id', player.id);
+	delButton.setAttribute('data-bs-toggle', 'modal');
+	delButton.setAttribute('data-bs-target', '#confirm-remove-player-modal');
 	deleteCell.appendChild(delButton);
 	newRow.appendChild(deleteCell);
-	// delButton.addEventListener('click', confirmDeletePlayer);
+	delButton.addEventListener('click', setDeleteId);
 
 	newRow.setAttribute('data-number', player.number);
 	if (player.id) {
@@ -794,6 +935,39 @@ const handleSortRoster = (e) => {
 	sortTournamentRosterTable();
 };
 
+const handleEditPlayer = (e) => {
+	if (e.target !== editPlayerForm) return;
+	e.preventDefault();
+
+	const inp = document.querySelector('#edit-player-id');
+	if (!inp) return;
+	console.log(`editing player ${inp.value}`);
+
+	tourneyRoster.some((p) => {
+		if (p.id === inp.value) {
+			p.firstName = editFirstName.value;
+			p.lastName = editLastName.value;
+			p.displayName = editDisplayName.value;
+			p.number = editNumber.value;
+			p.gender = editPlayerForm.querySelector(
+				`input[type="radio"][name="edit-roster-gender-match"]:checked`
+			)?.value;
+			p.line = editPlayerForm.querySelector(
+				`input[type="radio"][name="edit-roster-line"]:checked`
+			)?.value;
+			p.position = editPosition.value;
+			return true;
+		}
+	});
+
+	saveRoster(
+		`Player ${editLastName.value}, ${editFirstName.value} saved.`,
+		() => {
+			editPlayerModal.hide();
+		}
+	);
+};
+
 document.addEventListener('DOMContentLoaded', () => {
 	teamSelect.addEventListener('change', getTeam);
 	tournamentSelect.addEventListener('change', getTournament);
@@ -812,9 +986,10 @@ document.addEventListener('DOMContentLoaded', () => {
 	tournamentRosterForm.addEventListener('submit', handleSaveRoster);
 	cancelSaveRosterButton.addEventListener('click', cancelSaveRoster);
 	addPlayerForm.addEventListener('submit', handleAddPlayer);
-
+	confirmRemoveFromRosterButton.addEventListener('click', confirmDeletePlayer);
 	const headers = getElementArray(rosterTable, 'th.sort-header');
 	headers.forEach((h) => {
 		h.addEventListener('click', handleSortRoster);
 	});
+	editPlayerForm.addEventListener('submit', handleEditPlayer);
 });

@@ -116,27 +116,27 @@ exports.addPlayers = catchAsync(async (req, res, next) => {
 });
 
 exports.removePlayers = catchAsync(async (req, res, next) => {
-	const tourney = await Tournament.findById(req.params.id);
-	if (!tourney) return next(new AppError('Tournament not found', 404));
-
-	const team = await Team.findById(tourney.team);
-	if (!team) return next(new AppError('Team not found', 404));
-
+	//req.body.players should be an array of IDs to remove
 	if (!Array.isArray(req.body.players))
 		return next(new AppError('Invalid input', 400));
 
 	let errors = [];
 
-	const initialLength = tourney.roster.length;
+	const initialLength = res.locals.tournament.roster.length;
 
 	req.body.players.forEach((player) => {
-		const teamPlayer = tourney.roster.find((teammate) => {
-			return player.id === teammate.id;
+		const teamPlayer = res.locals.tournament.roster.find((teammate) => {
+			return player === teammate.id;
 		});
 		if (!teamPlayer)
 			errors.push(
 				`Player ${newPlayer.firstName} ${newPlayer.lastName} not found on tournament roster.`
 			);
+		res.locals.tournament.lines.forEach((l) => {
+			l.players = l.players.filter((p) => {
+				return p !== player;
+			});
+		});
 	});
 
 	tourney.roster = tourney.roster.filter((p) => {
@@ -145,7 +145,9 @@ exports.removePlayers = catchAsync(async (req, res, next) => {
 		});
 	});
 
-	tourney.markModified('roster');
+	res.locals.tournament.markModified('roster');
+	res.locals.tournament.markModified('lines');
+
 	const data = await tourney.save();
 	const newLength = data.roster.length;
 

@@ -1,0 +1,11 @@
+.modal.fade#confirm-remove-player-modal(tabindex="-1" aria-labelledby="remove-player-label" aria-hidden="true")
+    .modal-dialog.modal-dialog-centered
+        .modal-content#remove-player-modal-content
+            .modal-header
+                h5.modal-title#remove-player-label Remove player from roster?
+            .modal-body
+                p Are you sure you wish to remove #[span#remove-player-name] from the tournament roster and any preset lines?
+                input#remove-player-id(type="hidden" value='')
+            .modal-footer
+                button.btn.btn-primary#confirm-remove-from-roster(type="button" data-bs-dismiss="modal") Yes
+                button.btn.btn-secondary(type="button" data-bs-dismiss="modal") No

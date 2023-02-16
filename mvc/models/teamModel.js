@@ -80,7 +80,7 @@ const teamSchema = new mongoose.Schema({
 	 * 	- Offense, defense, and up to 2 additional preset lines for each tournament
 	 *
 	 * 
-	 * Advanced
+	 * Plus
 	 * 	Stats:
 	 * 	- Heatmaps on field (by player and by team)
 	 * 			- Where turnovers occur
@@ -95,7 +95,7 @@ const teamSchema = new mongoose.Schema({
 	 */
 	membershipLevel: {
 		type: String,
-		enum: ['Free', 'Basic', 'Advanced'],
+		enum: ['Free', 'Basic', 'Plus'],
 		default: 'Free',
 	},
 	membershipExpires: {
