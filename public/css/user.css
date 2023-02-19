@@ -184,6 +184,11 @@ body {
 	display: table-cell;
 }
 
+h6 {
+	text-align: left;
+	font-size: 0.9rem;
+}
+
 .roster-header > th {
 	-webkit-touch-callout: none; /* iOS Safari */
 	-webkit-user-select: none; /* Safari */

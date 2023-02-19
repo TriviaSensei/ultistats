@@ -77,7 +77,7 @@ const teamSchema = new mongoose.Schema({
 	 * 	- Offensive efficiency
 	 * 	- Defensive efficiency
 	 * Features:
-	 * 	- Offense, defense, and up to 2 additional preset lines for each tournament
+	 * 	- Offense, defense, and up to 3 additional preset lines for each tournament
 	 *
 	 * 
 	 * Plus
@@ -90,7 +90,7 @@ const teamSchema = new mongoose.Schema({
 	 *		- Passing grid (similar to NFL QB chart) 
 	 			- attempts/completion pct. by net yardage (<0, 0-10, 10-20, 20-30, 30+)
 		Features:
-			- Offense, defense, and up to 4 additional preset lines for each tournament
+			- Offense, defense, and up to 6 additional preset lines for each tournament
 	 * 		
 	 */
 	membershipLevel: {

@@ -25,29 +25,49 @@
 	max-height: 1rem;
 }
 
-input[type='checkbox']:checked ~ label {
+.player-container:not(.male) > .roster-option[data-gender='M'],
+.player-container:not(.female) > .roster-option[data-gender='F'],
+.player-container:not(.defense) > .roster-option[data-line='D'],
+.player-container:not(.offense) > .roster-option[data-line='O'],
+.player-container:not(.handler) > .roster-option[data-position='H'],
+.player-container:not(.cutter) > .roster-option[data-position='C'],
+.player-container:not(.hybrid) > .roster-option[data-position='Hy'] {
+	display: none !important;
+}
+
+#m-count {
+	color: var(--blue);
+}
+#f-count {
+	color: var(--pink);
+}
+
+input[type='checkbox']:checked + label {
 	font-weight: bold;
 }
 
-#tourney-roster-container,
-#non-roster-container {
+.player-container {
 	border: 1px solid var(--black);
 }
 
-#move-one.move-left::after {
+.move-one.move-left::after {
 	content: '<';
+	font-weight: bold;
 }
 
-#move-all.move-left::after {
+.move-all.move-left::after {
 	content: '<<';
+	font-weight: bold;
 }
 
-#move-one.move-right::after {
+.move-one.move-right::after {
 	content: '>';
+	font-weight: bold;
 }
 
-#move-all.move-right::after {
+.move-all.move-right::after {
 	content: '>>';
+	font-weight: bold;
 }
 
 @media (min-width: 992px) {
@@ -55,19 +75,19 @@ input[type='checkbox']:checked ~ label {
 		max-height: unset;
 	}
 
-	#move-one.move-left::after {
+	.move-one.move-left::after {
 		content: '◀';
 	}
 
-	#move-all.move-left::after {
+	.move-all.move-left::after {
 		content: '◀◀';
 	}
 
-	#move-one.move-right::after {
+	.move-one.move-right::after {
 		content: '▶';
 	}
 
-	#move-all.move-right::after {
+	.move-all.move-right::after {
 		content: '▶▶';
 	}
 }

@@ -1,0 +1,60 @@
+.modal.fade#edit-lines-modal(tabindex="-1" aria-labelledby="edit-lines-label" aria-hidden="true")
+    #edit-lines-modal-dialog.modal-dialog.modal-dialog-centered(style="height: 70%;")
+        .modal-content#edit-lines-modal-content(style="height: 90%;")
+            .modal-header
+                h5.modal-title#edit-lines-label Modify Lines
+                button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+            .modal-body.overflow-hidden
+                .input-group-f.input-group-1.h-100.overflow-hidden
+                    .input-group-1.h-100.pb-1
+                        form#edit-lines-form.h-100(autocomplete="off")
+                            .h-100.input-group-f
+                                .input-group-h.w-100.mb-2
+                                    .input-group-f.input-group-1.w-50.p-1
+                                        label.form-label Select line 
+                                        select#line-select
+                                            option(value="") [Create new]
+                                    .input-group-f.input-group-1.w-50.p-1
+                                        label.form-label(for="line-name") Edit Name: 
+                                        input#line-name(type="text" placeholder="Line name" required)      
+                                #line-filter-panel.filter-panel.input-group-h.w-100.ms-2
+                                    .input-group-f.input-group-1
+                                        .form-label Gen 
+                                        .input-group-h.input-group-1 
+                                            input#toggle-line-mm(type="checkbox" data-target="#available-container,#line-container" data-toggle="male" checked)
+                                            label.ms-1.me-2(for="toggle-line-mm") M
+                                            input#toggle-line-fm(type="checkbox" data-target="#available-container,#line-container" data-toggle="female" checked)
+                                            label.ms-1.me-2(for="toggle-line-fm") F
+                                    .input-group-f.input-group-1
+                                        .form-label Ln
+                                        .input-group-h.input-group-1 
+                                            input#toggle-line-dl(type="checkbox" data-target="#available-container,#line-container" data-toggle="defense" checked)
+                                            label.ms-1.me-2(for="toggle-line-dl") D
+                                            input#toggle-line-ol(type="checkbox" data-target="#available-container,#line-container" data-toggle="offense" checked)
+                                            label.ms-1.me-2(for="toggle-line-ol") O
+                                    .input-group-f.input-group-1
+                                        .form-label Pos 
+                                        .input-group-h.input-group-1 
+                                            input#toggle-line-hd(type="checkbox" data-target="#available-container,#line-container" data-toggle="handler" checked)
+                                            label.ms-1.me-2(for="toggle-line-hd") H
+                                            input#toggle-line-ct(type="checkbox" data-target="#available-container,#line-container" data-toggle="cutter" checked)
+                                            label.ms-1.me-2(for="toggle-line-ct") C
+                                            input#toggle-line-hy(type="checkbox" data-target="#available-container,#line-container" data-toggle="hybrid" checked)
+                                            label.ms-1.me-2(for="toggle-line-hy") Hy              
+                                .input-group-h.input-group-1.mt-3.w-100.overflow-hidden
+                                    .input-group-f.input-group-1.px-1.h-100.overflow-hidden
+                                        .form-label Available
+                                        .h-100.w-100.input-group-f.input-group-1.overflow-hidden
+                                            #available-container.player-container.left-side.fill-scroll
+                                    .px-1.m-auto
+                                        .input-group-f.w-100
+                                            .my-1.w-100
+                                                button#move-to-line.move-one.w-100.move-right(type="button" title="Move selected")
+                                    .input-group-f.input-group-1.px-1.h-100.overflow-hidden
+                                        .form-label Selected (#[span#mixed-counts #[span#m-count 0]+#[span#f-count 0]=]#[span#line-count 0])
+                                        .h-100.w-100.input-group-f.input-group-1.overflow-hidden
+                                            #line-container.player-container.right-side.fill-scroll
+            .modal-footer
+                button.btn.btn-secondary#cancel-save-lines(type="button" data-bs-dismiss="modal") Close
+                button.btn.btn-warning#delete-line(type="button") Delete
+                button.btn.btn-primary#confirm-save-lines(type="submit" form="edit-lines-form") Save

@@ -384,9 +384,13 @@ exports.leaveTeam = catchAsync(async (req, res, next) => {
 exports.getTournaments = catchAsync(async (req, res, next) => {
 	const data = await Tournament.find({
 		team: req.params.id,
-	}).sort({
-		startDate: 1,
-	});
+	})
+		.populate({
+			path: 'format',
+		})
+		.sort({
+			startDate: 1,
+		});
 
 	res.status(200).json({
 		status: 'success',

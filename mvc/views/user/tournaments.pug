@@ -64,7 +64,7 @@ form#tournament-form.w-100(autocomplete="off")
                             button.btn.btn-primary#modify-roster(type="button" data-bs-toggle="modal" data-bs-target="#tournament-roster-modal") Modify Roster
                     .input-group-1 
                         .w-100.d-grid.gap-2.px-2(title="You must add at least 8 players to the roster to set lines.")
-                            button.btn.btn-primary#modify-lines(type="button" disabled) Modify Lines
+                            button.btn.btn-primary#modify-lines(type="button" data-bs-toggle="modal" data-bs-target="#edit-lines-modal" disabled) Modify Lines
                 .table-container
                     table#tournament-roster-table.roster-table.w-100.mb-3
                         thead#tournament-roster-header.roster-header

@@ -1,0 +1,19 @@
+.roster-option {
+	display: none;
+}
+
+.player-container.mm > .roster-option[data-gender='M'] {
+	display: unset;
+	display: flex;
+}
+
+.player-container.fm > .roster-option[data-gender='F'] {
+	display: unset;
+	display: flex;
+}
+
+.player-container:not(.handler) > .roster-option[data-position='H'],
+.player-container:not(.cutter) > .roster-option[data-position='C'],
+.player-container:not(.cutter) > .roster-option[data-position='C'] {
+	display: none;
+}

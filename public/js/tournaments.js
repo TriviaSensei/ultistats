@@ -34,6 +34,7 @@ const gameTo = document.querySelector('#point-cap');
 const winBy = document.querySelector('#win-by');
 const hardCap = document.querySelector('#hard-cap');
 const timeouts = document.querySelector('#timeouts');
+let maxPlayerCount;
 
 //roster info
 const tournamentRosterModal = new bootstrap.Modal(
@@ -88,6 +89,13 @@ const editPosition = document.querySelector('#edit-roster-position');
 //modify lines
 let memLevel;
 const lineButton = document.querySelector('#modify-lines');
+const availableContainer = document.querySelector('#available-container');
+const lineContainer = document.querySelector('#line-container');
+const moveLineButton = document.querySelector('#move-to-line');
+const mixedCount = document.querySelector('#mixed-counts');
+const mCount = document.querySelector('#m-count');
+const fCount = document.querySelector('#f-count');
+const lineCount = document.querySelector('#line-count');
 
 const removeTourneys = () => {
 	getElementArray(tournamentSelect, 'option').forEach((o, i) => {
@@ -152,8 +160,12 @@ const getTeam = (e) => {
 					if (res.status === 'success') {
 						if (res.data.division.toLowerCase() === 'mixed') {
 							rosterTable.classList.add('mixed');
+							lineContainer.classList.add('mixed');
+							mixedCount.classList.remove('invisible-div');
 						} else {
 							rosterTable.classList.remove('mixed');
+							lineContainer.classList.remove('mixed');
+							mixecCount.classList.add('invisible-div');
 						}
 
 						//clear the roster table
@@ -169,7 +181,12 @@ const getTeam = (e) => {
 							};
 						});
 
-						memLevel = res.data.membershipLevel;
+						const offset = new Date().getTimezoneOffset();
+						const now = Date.parse(new Date());
+						const exp = Date.parse(res.data.membershipExpires) + offset * 60000;
+
+						if (now > exp) memLevel = 'Free';
+						else memLevel = res.data.membershipLevel;
 					} else {
 						showMessage('error', res.message);
 					}
@@ -183,6 +200,31 @@ const getTeam = (e) => {
 	}
 };
 
+const createRosterOption = (p) => {
+	const name = `${p.lastName}, ${p.firstName}`;
+	const op = createElement('.roster-option');
+	op.setAttribute('data-id', p.id);
+	op.setAttribute('data-name', name);
+	if (p.gender) op.setAttribute('data-gender', p.gender);
+	if (p.line) op.setAttribute('data-line', p.line);
+	if (p.position && p.position !== '-')
+		op.setAttribute('data-position', p.position);
+	const cb = createElement('input');
+	const newId = window.crypto.randomUUID();
+	cb.setAttribute('id', newId);
+	cb.setAttribute('data-id', `${p.id}`);
+	cb.setAttribute('type', 'checkbox');
+	cb.addEventListener('change', handleArrows);
+	const lbl = createElement('label');
+	lbl.setAttribute('for', cb.id);
+	lbl.innerHTML = `${name} (${p.gender ? p.gender + '/' : ''}${
+		p.line ? p.line + '/' : ''
+	}${p.position || '-'})`;
+	op.appendChild(cb);
+	op.appendChild(lbl);
+	return op;
+};
+
 const getTournament = (e) => {
 	if (e.target !== tournamentSelect) return;
 
@@ -192,6 +234,7 @@ const getTournament = (e) => {
 		});
 
 		if (!tourney) return showMessage('error', 'Tournament not found.');
+		maxPlayerCount = tourney.format.players;
 		populateForm(tournamentForm, tourney);
 
 		tourneyRoster = tourney.roster.map((p) => {
@@ -200,6 +243,8 @@ const getTournament = (e) => {
 				name: `${p.lastName}, ${p.firstName}`,
 			};
 		});
+
+		tourneyLines = tourney.lines;
 
 		handleLineButton();
 
@@ -232,21 +277,14 @@ const getTournament = (e) => {
 			return a1.localeCompare(b1);
 		});
 
+		//clear all roster/line options
+		getElementArray(document, '.roster-option').forEach((op) => {
+			op.remove();
+		});
+
 		let count = 0;
 		roster.forEach((p) => {
-			const name = `${p.lastName}, ${p.firstName}`;
-			const op = createElement('.roster-option');
-			op.setAttribute('data-id', p.id);
-			op.setAttribute('data-name', name);
-			const cb = createElement('input');
-			cb.setAttribute('id', `cb-${p.id}`);
-			cb.setAttribute('type', 'checkbox');
-			cb.addEventListener('change', handleArrows);
-			const lbl = createElement('label');
-			lbl.setAttribute('for', cb.id);
-			lbl.innerHTML = name;
-			op.appendChild(cb);
-			op.appendChild(lbl);
+			const op = createRosterOption(p);
 
 			if (
 				tourney.roster.some((p2) => {
@@ -254,6 +292,8 @@ const getTournament = (e) => {
 				})
 			) {
 				rosterSelect.appendChild(op);
+				const op2 = createRosterOption(p);
+				availableContainer.appendChild(op2);
 				count++;
 			} else {
 				nonRosterSelect.appendChild(op);
@@ -283,7 +323,7 @@ const handleLineButton = () => {
 		lineButton.disabled = true;
 		lineButton.parentElement.setAttribute(
 			'title',
-			'Upgrade to a basic or plus membership to '
+			'Upgrade to a basic or plus membership to create preset lines'
 		);
 	} else if (tourneyRoster.length >= 8) {
 		lineButton.disabled = false;
@@ -455,6 +495,9 @@ const insertOption = (op, container) => {
 };
 
 const handleMoveOne = (box) => {
+	const style = getComputedStyle(box);
+	if (style.display !== 'block') return;
+
 	//get the parent container and the target (other) container
 	const parent = box.closest('.player-container');
 	if (!parent) return;
@@ -536,7 +579,8 @@ const handleMoveAll = (e) => {
 const checkAll = (tgt, select) => {
 	const boxes = getElementArray(tgt, 'input[type="checkbox"]');
 	boxes.forEach((b) => {
-		b.checked = select;
+		const style = getComputedStyle(b);
+		b.checked = select && style.display === 'block';
 	});
 	if (boxes.length > 0 && select) handleArrows({ target: boxes[0] });
 };
@@ -545,18 +589,29 @@ const handleArrows = (e) => {
 	if (!e.target.checked) return;
 
 	const container = e.target.closest('.player-container');
-	if (container === nonRosterSelect) {
+	if (container.classList.contains('left-side')) {
 		moveOne.classList.add('move-right');
 		moveOne.classList.remove('move-left');
 		moveAll.classList.add('move-right');
 		moveAll.classList.remove('move-left');
-		checkAll(rosterSelect, false);
-	} else if (container === rosterSelect) {
+		moveLineButton.classList.add('move-right');
+		moveLineButton.classList.remove('move-left');
+		const other = container
+			.closest('.input-group-h')
+			?.querySelector('.right-side');
+		if (other) checkAll(other, false);
+	} else if (container.classList.contains('right-side')) {
 		moveOne.classList.add('move-left');
 		moveOne.classList.remove('move-right');
 		moveAll.classList.add('move-left');
 		moveAll.classList.remove('move-right');
+		moveLineButton.classList.add('move-left');
+		moveLineButton.classList.remove('move-right');
 		checkAll(nonRosterSelect, false);
+		const other = container
+			.closest('.input-group-h')
+			?.querySelector('.left-side');
+		if (other) checkAll(other, false);
 	}
 };
 
@@ -577,7 +632,8 @@ const handleSelectAll = (e) => {
 
 	if (e.target.classList.contains('select-all')) {
 		boxes.forEach((b) => {
-			b.checked = true;
+			const style = getComputedStyle(b);
+			b.checked = style.display === 'block';
 		});
 		otherBoxes.forEach((b) => {
 			b.checked = false;
@@ -602,14 +658,32 @@ const handleRemovePlayer = (e) => {
 	const op = document.querySelector(`.roster-option[data-id="${id}"]`);
 	if (op) op.remove();
 
+	//remove the player as an option in the available roster
+	let name;
 	roster = roster.filter((p) => {
-		return p.id !== id;
+		if (p.id === id) {
+			name = p.name;
+			return false;
+		}
+		return true;
 	});
+	//remove the player from the tourney roster, if they're on it
 	tourneyRoster = tourneyRoster.filter((p) => {
 		return p.id !== id;
 	});
+	//remove the player from any lines
+	tourneyLines.forEach((line) => {
+		line.players = line.players.filter((p) => {
+			return p !== id;
+		});
+	});
 
-	handleLineButton();
+	saveRoster(
+		`${name} has been removed from the ${
+			e.target === confirmRemoveFromRosterButton ? 'tournament' : ''
+		}roster.`,
+		null
+	);
 
 	const row = document.querySelector(`tr.tourney-roster-row[data-id="${id}"]`);
 	if (row) row.remove();
@@ -653,11 +727,52 @@ const saveRoster = (msg, after) => {
 			getElementArray(rosterBody, 'tr.tourney-roster-row').forEach((r) => {
 				removePlayerRow(r.getAttribute('data-id'));
 			});
+			//this shouldn't change anything, but we want to make sure the frontend data is the same as what the backend thinks it is.
+			tourneyRoster = res.data.roster;
+			tourneyLines = res.data.lines;
+
 			tourneyRoster.forEach((p) => {
 				addPlayerRow(p);
 			});
 			sortTournamentRosterTable();
 			handleLineButton();
+
+			//TODO: add/remove any players from the available list in the line selector
+			//add players that aren't already there
+			const ops = getElementArray(availableContainer, `.roster-option`);
+			tourneyRoster.forEach((p) => {
+				const op = availableContainer.querySelector(
+					`.roster-option[data-id="${p.id}"]`
+				);
+				if (!op) {
+					const newOpt = createRosterOption(p);
+					if (
+						!ops.some((o) => {
+							if (p.name.localeCompare(o.getAttribute('data-name')) < 0) {
+								availableContainer.insertBefore(newOpt, o);
+								return true;
+							}
+						})
+					) {
+						availableContainer.appendChild(newOpt);
+					}
+				}
+			});
+			//remove players that are no longer there
+			const ops2 = getElementArray(
+				document,
+				`#edit-lines-modal .roster-option`
+			);
+			ops2.forEach((o) => {
+				const id = o.getAttribute('data-id');
+				if (
+					!tourneyRoster.some((p) => {
+						return p.id === id;
+					})
+				) {
+					o.remove();
+				}
+			});
 			if (after) after();
 		} else {
 			showMessage('error', res.message);
@@ -745,19 +860,41 @@ const setDeleteId = (e) => {
 	nameSpan.innerHTML = `${player.lastName}, ${player.firstName}`;
 };
 
+//remove player from tournament roster (not main roster).
 const confirmDeletePlayer = (e) => {
 	if (e.target !== confirmRemoveFromRosterButton) return;
 	const inp = document.querySelector('#remove-player-id');
 	if (!inp || !inp.value) return;
 	let msg;
+	//take the player out of the tourney roster
 	tourneyRoster = tourneyRoster.filter((p) => {
 		if (p.id === inp.value) {
 			msg = `${p.lastName}, ${p.firstName} removed from tournament roster.`;
-			const box = document.querySelector(`input#cb-${p.id}[type="checkbox"]`);
-			handleMoveOne(box);
+			//move the player back to the "available" side on the roster selector
+			const box = rosterSelect.querySelector(
+				`input[type="checkbox"][data-id="${p.id}"]`
+			);
+			if (box) handleMoveOne(box);
+			else console.log('did not move box');
+
 			return false;
 		}
 		return true;
+	});
+
+	//remove the player from any lines
+	tourneyLines.forEach((line) => {
+		line.players = line.players.filter((p) => {
+			return p !== inp.value;
+		});
+	});
+	//remove the player option from the line selector
+	const ops = getElementArray(
+		document,
+		`#edit-lines-modal .roster-option[data-id="${inp.value}"]`
+	);
+	ops.forEach((o) => {
+		o.remove();
 	});
 
 	saveRoster(msg, null);
@@ -883,6 +1020,7 @@ const handleAddPlayer = (e) => {
 	const player = {
 		firstName: addFirstName.value,
 		lastName: addLastName.value,
+		name: `${addLastName.value}, ${addFirstName.value}`,
 		displayName: addDisplayName.value,
 		number: addNumber.value,
 		gender: addPlayerForm.querySelector(
@@ -894,22 +1032,10 @@ const handleAddPlayer = (e) => {
 
 	const str = `/api/v1/teams/addPlayer/${teamSelect.value}`;
 	const handler = (res) => {
-		console.log(res);
 		if (res.status !== 'fail') {
 			showMessage(res.status, res.message);
-			const name = `${res.newPlayer.lastName}, ${res.newPlayer.firstName}`;
-			const op = createElement('.roster-option');
-			op.setAttribute('data-id', res.newPlayer.id);
-			op.setAttribute('data-name', name);
-			const cb = createElement('input');
-			cb.setAttribute('id', `cb-${res.newPlayer.id}`);
-			cb.setAttribute('type', 'checkbox');
-			cb.addEventListener('change', handleArrows);
-			const lbl = createElement('label');
-			lbl.setAttribute('for', cb.id);
-			lbl.innerHTML = name;
-			op.appendChild(cb);
-			op.appendChild(lbl);
+			roster.push(res.newPlayer);
+			const op = createRosterOption(res.newPlayer);
 			insertOption(op, rosterSelect);
 			rosterCount.innerHTML =
 				rosterSelect.querySelectorAll('.roster-option').length;
@@ -941,7 +1067,6 @@ const handleEditPlayer = (e) => {
 
 	const inp = document.querySelector('#edit-player-id');
 	if (!inp) return;
-	console.log(`editing player ${inp.value}`);
 
 	tourneyRoster.some((p) => {
 		if (p.id === inp.value) {
@@ -968,6 +1093,111 @@ const handleEditPlayer = (e) => {
 	);
 };
 
+const handleFilter = (e) => {
+	//get the classname to toggle and the containers to toggle it on
+	const cn = e.target.getAttribute('data-toggle');
+	const containers = getElementArray(
+		document,
+		e.target.getAttribute('data-target')
+	);
+
+	if (!cn || !containers.length === 0) return;
+
+	if (e.target.checked)
+		containers.forEach((c) => {
+			c.classList.add(cn);
+		});
+	else
+		containers.forEach((c) => {
+			c.classList.remove(cn);
+		});
+};
+
+//TODO: implement modifying lines
+const handleMoveLine = (e) => {
+	if (e.target !== moveLineButton) return;
+	const first = e.target.classList.contains('move-right')
+		? availableContainer
+		: lineContainer;
+	const second =
+		first === availableContainer ? lineContainer : availableContainer;
+
+	//get the boxes and options to move over
+	const boxes = getElementArray(first, 'input[type="checkbox"]:checked');
+	const opts = boxes.map((b) => {
+		return b.closest('.roster-option');
+	});
+
+	//if we are adding to the line, we need to check if the ratios (default 4:3 either direction), or total line size (default 7) are being violated
+
+	if (first === availableContainer) {
+		if (
+			lineContainer.querySelectorAll('.roster-option').length + opts.length >
+			maxPlayerCount
+		) {
+			return showMessage(
+				'error',
+				`The maximum size of this line is ${maxPlayerCount}`
+			);
+		}
+		//mixed ratio check
+		if (lineContainer.classList.contains('mixed')) {
+			const males = lineContainer.querySelectorAll(
+				'.roster-option[data-gender="M"]'
+			);
+			const females = lineContainer.querySelectorAll(
+				'.roster-option[data-gender="F"]'
+			);
+
+			if (
+				males.length +
+					opts.filter((o) => {
+						return o.getAttribute('data-gender') === 'M';
+					}).length >
+				(maxPlayerCount + 1) / 2
+			) {
+				return showMessage(
+					'error',
+					`You may have a maximum of ${Math.floor(
+						(maxPlayerCount + 1) / 2
+					)} male-matching players on this line.`
+				);
+			} else if (
+				females.length +
+					opts.filter((o) => {
+						return o.getAttribute('data-gender') === 'F';
+					}).length >
+				(maxPlayerCount + 1) / 2
+			) {
+				return showMessage(
+					'error',
+					`You may have a maximum of ${Math.floor(
+						(maxPlayerCount + 1) / 2
+					)} female-matching players on this line.`
+				);
+			}
+		}
+	}
+
+	opts.forEach((o) => {
+		insertOption(o, second);
+		const b = o.querySelector('input[type="checkbox"]');
+		if (b) b.checked = false;
+	});
+
+	const m = lineContainer.querySelectorAll(
+		`.roster-option[data-gender="M"]`
+	).length;
+	const f = lineContainer.querySelectorAll(
+		`.roster-option[data-gender="F"]`
+	).length;
+	const totalCount = lineContainer.querySelectorAll(`.roster-option`).length;
+
+	mCount.innerHTML = m;
+	fCount.innerHTML = f;
+	lineCount.innerHTML = totalCount;
+};
+
 document.addEventListener('DOMContentLoaded', () => {
 	teamSelect.addEventListener('change', getTeam);
 	tournamentSelect.addEventListener('change', getTournament);
@@ -992,4 +1222,15 @@ document.addEventListener('DOMContentLoaded', () => {
 		h.addEventListener('click', handleSortRoster);
 	});
 	editPlayerForm.addEventListener('submit', handleEditPlayer);
+
+	const boxes = getElementArray(
+		document,
+		'.filter-panel input[type="checkbox"]'
+	);
+	boxes.forEach((b) => {
+		handleFilter({ target: b });
+		b.addEventListener('change', handleFilter);
+	});
+
+	moveLineButton.addEventListener('click', handleMoveLine);
 });

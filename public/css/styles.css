@@ -3,6 +3,8 @@
 	--black: #222222;
 	--gray: #777777;
 	--light-gray: #cccccc;
+	--pink: #ff8f8f;
+	--blue: #a3c9ff;
 	--blurred: rgba(0, 0, 0, 0.3);
 	--color-1: #abffa8;
 	--color-2: #06b500;
@@ -35,6 +37,11 @@ hr {
 input,
 select {
 	height: 1.8rem;
+}
+
+label {
+	display: flex;
+	align-items: center;
 }
 
 .accordion-item {

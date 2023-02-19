@@ -3,3 +3,4 @@ node_modules/
 img/*.pxz
 mvc/views/*.html
 sandbox*
+*.txt
