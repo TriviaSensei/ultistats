@@ -35,6 +35,7 @@ const winBy = document.querySelector('#win-by');
 const hardCap = document.querySelector('#hard-cap');
 const timeouts = document.querySelector('#timeouts');
 let maxPlayerCount;
+let genderMax;
 
 //roster info
 const tournamentRosterModal = new bootstrap.Modal(
@@ -88,7 +89,11 @@ const editPosition = document.querySelector('#edit-roster-position');
 
 //modify lines
 let memLevel;
+const editLinesForm = document.querySelector('#edit-lines-form');
+
 const lineButton = document.querySelector('#modify-lines');
+const lineSelect = document.querySelector('#line-select');
+const lineName = document.querySelector('#line-name');
 const availableContainer = document.querySelector('#available-container');
 const lineContainer = document.querySelector('#line-container');
 const moveLineButton = document.querySelector('#move-to-line');
@@ -235,6 +240,7 @@ const getTournament = (e) => {
 
 		if (!tourney) return showMessage('error', 'Tournament not found.');
 		maxPlayerCount = tourney.format.players;
+		genderMax = tourney.format.genderMax;
 		populateForm(tournamentForm, tourney);
 
 		tourneyRoster = tourney.roster.map((p) => {
@@ -245,6 +251,10 @@ const getTournament = (e) => {
 		});
 
 		tourneyLines = tourney.lines;
+		tourneyLines.forEach((l) => {
+			addLineOption(l);
+		});
+		sortLines();
 
 		handleLineButton();
 
@@ -1113,7 +1123,6 @@ const handleFilter = (e) => {
 		});
 };
 
-//TODO: implement modifying lines
 const handleMoveLine = (e) => {
 	if (e.target !== moveLineButton) return;
 	const first = e.target.classList.contains('move-right')
@@ -1129,7 +1138,6 @@ const handleMoveLine = (e) => {
 	});
 
 	//if we are adding to the line, we need to check if the ratios (default 4:3 either direction), or total line size (default 7) are being violated
-
 	if (first === availableContainer) {
 		if (
 			lineContainer.querySelectorAll('.roster-option').length + opts.length >
@@ -1154,12 +1162,12 @@ const handleMoveLine = (e) => {
 					opts.filter((o) => {
 						return o.getAttribute('data-gender') === 'M';
 					}).length >
-				(maxPlayerCount + 1) / 2
+				genderMax[0]
 			) {
 				return showMessage(
 					'error',
 					`You may have a maximum of ${Math.floor(
-						(maxPlayerCount + 1) / 2
+						genderMax[0]
 					)} male-matching players on this line.`
 				);
 			} else if (
@@ -1167,24 +1175,26 @@ const handleMoveLine = (e) => {
 					opts.filter((o) => {
 						return o.getAttribute('data-gender') === 'F';
 					}).length >
-				(maxPlayerCount + 1) / 2
+				genderMax[1]
 			) {
 				return showMessage(
 					'error',
 					`You may have a maximum of ${Math.floor(
-						(maxPlayerCount + 1) / 2
+						genderMax[1]
 					)} female-matching players on this line.`
 				);
 			}
 		}
 	}
 
+	//for every checked option, move it over to the other container
 	opts.forEach((o) => {
 		insertOption(o, second);
 		const b = o.querySelector('input[type="checkbox"]');
 		if (b) b.checked = false;
 	});
 
+	//update the gender match counts and total counts
 	const m = lineContainer.querySelectorAll(
 		`.roster-option[data-gender="M"]`
 	).length;
@@ -1196,6 +1206,120 @@ const handleMoveLine = (e) => {
 	mCount.innerHTML = m;
 	fCount.innerHTML = f;
 	lineCount.innerHTML = totalCount;
+};
+
+const sortLines = () => {
+	const lines = getElementArray(lineSelect, 'option').sort((a, b) => {
+		if (!a.getAttribute('data-name')) return -1;
+		else if (!b.getAttribute('data-name')) return 1;
+
+		return a
+			.getAttribute('data-name')
+			.localeCompare(b.getAttribute('data-name'));
+	});
+
+	lines.forEach((l) => {
+		lineSelect.appendChild(l);
+	});
+};
+const addLineOption = (data) => {
+	const existing = lineSelect.querySelector(`option[data-id="${data.id}"]`);
+	if (existing) {
+		existing.innerHTML = data.name;
+		existing.setAttribute('data-name', data.name);
+	} else {
+		const op = createElement('option');
+		op.setAttribute('value', data.id);
+		op.setAttribute('data-name', data.name);
+		op.innerHTML = data.name;
+		lineSelect.appendChild(op);
+	}
+};
+
+const handleSaveLine = (e) => {
+	if (e.target !== editLinesForm) return;
+	e.preventDefault();
+
+	const str = `/api/v1/tournaments/modifyLine/${tournamentSelect.value}`;
+	const body = {
+		id: lineSelect.value,
+		name: lineName.value,
+		players: getElementArray(lineContainer, '.roster-option').map((op) => {
+			return {
+				id: op.getAttribute('data-id'),
+				name: op.getAttribute('data-name'),
+			};
+		}),
+	};
+
+	/**
+	 * Expected result:
+	 * {
+	 * 	data: {
+	 * 		id: line ID,
+	 * 		name: line name,
+	 * 		players: [
+	 * 			list of IDs
+	 * 		]
+	 * 	}
+	 * }
+	 */
+	const handler = (res) => {
+		console.log(res);
+		if (res.status === 'success') {
+			if (
+				res.data.id &&
+				!tourneyLines.some((l) => {
+					if (l.id === res.data.id) {
+						l.name = res.data.name;
+						l.players = res.data.players;
+						showMessage('info', 'Successfully edited line.');
+						return true;
+					}
+				})
+			) {
+				tourneyLines.push(res.data);
+				addLineOption(res.data);
+				sortLines();
+				lineSelect.selectedIndex = getElementArray(
+					lineSelect,
+					'option'
+				).findIndex((el) => {
+					return el.id === res.data.id;
+				});
+				showMessage('info', 'Successfully added line.');
+			}
+		} else {
+			showMessage('error', res.message);
+		}
+	};
+
+	handleRequest(str, 'PATCH', body, handler);
+};
+
+const loadLine = (e) => {
+	if (e.target !== lineSelect) return;
+	//clear existing line
+	getElementArray(lineContainer, '.roster-option').forEach((op) => {
+		insertOption(op, availableContainer);
+	});
+	lineName.value = '';
+
+	if (!lineSelect.value) return;
+
+	const loadedLine = tourneyLines.find((l) => {
+		return l.id === lineSelect.value;
+	});
+	if (!loadedLine) return;
+
+	lineName.value = loadedLine.name;
+
+	loadedLine.players.forEach((p) => {
+		const op = availableContainer.querySelector(
+			`.roster-option[data-id="${p}"]`
+		);
+		if (op) insertOption(op, lineContainer);
+	});
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1233,4 +1357,6 @@ document.addEventListener('DOMContentLoaded', () => {
 	});
 
 	moveLineButton.addEventListener('click', handleMoveLine);
+	editLinesForm.addEventListener('submit', handleSaveLine);
+	lineSelect.addEventListener('change', loadLine);
 });

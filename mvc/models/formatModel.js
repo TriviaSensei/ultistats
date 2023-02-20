@@ -24,6 +24,11 @@ const formatSchema = new mongoose.Schema({
 	players: {
 		type: Number,
 		required: [true, 'Players per team is required.'],
+		default: 7,
+	},
+	genderMax: {
+		type: [Number],
+		default: [4, 4],
 	},
 	periods: {
 		type: Number,

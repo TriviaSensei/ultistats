@@ -5,24 +5,52 @@ const Tournament = require('../models/tournamentModel');
 const Team = require('../models/teamModel');
 const Game = require('../models/gameModel');
 const Format = require('../models/formatModel');
+const { v4: uuidV4 } = require('uuid');
+
+const { memberships } = require('../../utils/settings');
 
 exports.verifyOwnership = catchAsync(async (req, res, next) => {
 	if (!res.locals.user)
 		return next(new AppError('You are not logged in.', 403));
 
-	const t = await Tournament.findById(req.params.id);
+	const t = await Tournament.findById(req.params.id).populate({
+		path: 'format',
+	});
 	if (!t) return next(new AppError('Tournament ID not found', 404));
 	res.locals.tournament = t;
 
-	console.log(t.format.toString());
-
-	res.locals.format = await Format.findById(t.format.toString());
+	res.locals.format = t.format;
 	if (!res.locals.format) return next(new AppError('Invalid format', 400));
 
-	res.locals.team = await Team.findById(t.team).populate({
+	res.locals.team = await Team.findById(t.team.toString()).populate({
 		path: 'managers',
 		select: 'firstName lastName displayName _id',
 	});
+
+	//check the membership level and expiration.
+	const offset = new Date().getTimezoneOffset();
+	const now = Date.parse(new Date());
+	const exp = Date.parse(res.locals.team.membershipExpires) + offset * 60000;
+
+	if (memberships.length === 0)
+		res.locals.membership = {
+			name: 'Free',
+			maxLines: 0,
+		};
+	else if (now > exp) res.locals.membership = memberships[0];
+	else if (
+		!memberships.some((m) => {
+			if (
+				m.name.toLowerCase().trim() ===
+				res.locals.team.membershipLevel.toLowerCase().trim()
+			) {
+				res.locals.membership = m;
+				return true;
+			}
+		})
+	) {
+		res.locals.membership = memberships[0];
+	}
 
 	if (!res.locals.team) return next(new AppError('Team not found', 404));
 	else if (
@@ -157,6 +185,145 @@ exports.removePlayers = catchAsync(async (req, res, next) => {
 		successes: initialLength - newLength,
 		data,
 	});
+});
+
+exports.modifyLine = catchAsync(async (req, res, next) => {
+	/**
+	 * req.body:
+	 * {
+	 * 	id: uuid for line (optional - if not blank, we're trying to modify a line; if blank, we're creating a new one)
+	 *  name: name of line, free form
+	 * 	players: [String] (player IDs; must match an ID in the roster, max total length of 7, max 4 of either gender)
+	 * }
+	 */
+	const tournament = res.locals.tournament;
+	const maxLines = res.locals.membership.maxLines;
+	const maxLevel = memberships[memberships.length - 1];
+
+	//verify that the membership level allows the user to set lines
+	if (!req.body.id && tournament.lines.length >= maxLines)
+		return next(
+			new AppError(
+				`You may create a total of ${maxLines} preset lines. ${
+					res.locals.team.membershipLevel.toLowerCase().trim() ===
+					maxLevel.name.toLowerCase().trim()
+						? ''
+						: 'Please upgrade your membership for more.'
+				}`,
+				400
+			)
+		);
+
+	let id;
+	const name = req.body.name;
+	if (!req.body.id) {
+		if (!name)
+			return next(new AppError('You must specify the name of the line.', 400));
+		else if (
+			res.locals.tournament.lines.some((l) => {
+				return (
+					l.name.trim().toLowerCase() === req.body.name.trim().toLowerCase()
+				);
+			})
+		)
+			return next(
+				new AppError(
+					`That line name (${req.body.name.trim()}) is used for this tournament`,
+					400
+				)
+			);
+		id = uuidV4();
+	} else {
+		tournament.lines.some((l) => {
+			if (l.id === req.body.id) {
+				id = req.body.id;
+				return true;
+			}
+		});
+		if (!id) return next(new AppError('Line not found', 404));
+	}
+
+	//we can push a new line, and it has a valid name. Verify that each player is on the roster
+	let f = 0;
+	let m = 0;
+	const lineSize = tournament.format.players || 7;
+	if (
+		!req.body.players.every((p) => {
+			return tournament.roster.some((p2) => {
+				if (p2.id === p.id) {
+					if (res.locals.team.division === 'Mixed' && p2.gender === 'M') m++;
+					else if (res.locals.team.division === 'Mixed' && p2.gender === 'F')
+						f++;
+					return true;
+				}
+			});
+		})
+	) {
+		return next(
+			new AppError(
+				`Player ${p.name} was not found on the tournament roster. Please refresh your page and try again.`,
+				400
+			)
+		);
+	}
+	//verify that gender ratio (if mixed division) and total line size aren't violated
+	else if (
+		res.locals.team.division === 'Mixed' &&
+		(m > tournament.format.genderMax[0] ||
+			f > tournament.format.genderMax[1] ||
+			req.body.players.length > lineSize)
+	) {
+		if (m > tournament.format.genderMax[0])
+			return next(
+				new AppError(
+					`There is a maximum of ${tournament.format.genderMax[0]} male-matching players on a line.`,
+					400
+				)
+			);
+		else if (f > tournament.format.genderMax[1])
+			return next(
+				new AppError(
+					`There is a maximum of ${tournament.format.genderMax[1]} female-matching players on a line.`,
+					400
+				)
+			);
+		else if (req.body.players.length > lineSize) {
+			return next(
+				new AppError(
+					`There is a maximum of ${tournament.format.players} players on a line.`,
+					400
+				)
+			);
+		}
+	} else {
+		//generate an ID for the line, and push it to the tournament lines. Return the line and the tournament to the user
+		const data = {
+			id,
+			name,
+			players: req.body.players.map((p) => {
+				return p.id;
+			}),
+		};
+		if (req.body.id) {
+			tournament.lines = tournament.lines.map((l) => {
+				if (l.id === id) {
+					return data;
+				} else {
+					return l;
+				}
+			});
+		} else {
+			tournament.lines.push(data);
+		}
+		tournament.markModified('lines');
+		const toReturn = await tournament.save();
+
+		res.status(200).json({
+			status: 'success',
+			data,
+			tournament: toReturn,
+		});
+	}
 });
 
 exports.createTournament = factory.createOne(Tournament);

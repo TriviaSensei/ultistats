@@ -23,6 +23,7 @@ const sendErrorProd = (err, req, res) => {
 			return res.status(err.statusCode).json({
 				status: err.status,
 				message: err.message,
+				stack: err.stack,
 			});
 		}
 		//B) programming or other unknown error. Do not leak details to client.
@@ -32,6 +33,7 @@ const sendErrorProd = (err, req, res) => {
 		return res.status(500).json({
 			status: 'error',
 			message: 'Something went wrong.',
+			stack: err.stack,
 		});
 	}
 

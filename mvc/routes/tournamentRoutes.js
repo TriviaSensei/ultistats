@@ -9,12 +9,13 @@ router.use(authController.protect);
 router.post('/', tournamentController.createTournament);
 
 router.use('/*/:id', tournamentController.verifyOwnership);
-router.use('/:id', tournamentController.verifyOwnership);
 
 router.patch('/changeTeam/:id', tournamentController.changeTeam);
 router.patch('/addPlayers/:id', tournamentController.addPlayers);
 router.patch('/removePlayers/:id', tournamentController.removePlayers);
+router.patch('/modifyLine/:id', tournamentController.modifyLine);
 
+router.use('/:id', tournamentController.verifyOwnership);
 router
 	.route('/:id')
 	.get(tournamentController.getTournament)

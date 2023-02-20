@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Filter = require('bad-words');
 const filter = new Filter();
+const { memberships } = require('../../utils/settings');
 
 const noBadWords = (val) => !filter.isProfane(val);
 
@@ -95,8 +96,10 @@ const teamSchema = new mongoose.Schema({
 	 */
 	membershipLevel: {
 		type: String,
-		enum: ['Free', 'Basic', 'Plus'],
-		default: 'Free',
+		enum: memberships.map((m) => {
+			return m.name;
+		}),
+		default: memberships[0].name,
 	},
 	membershipExpires: {
 		type: Date,
