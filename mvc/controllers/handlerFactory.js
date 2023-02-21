@@ -95,18 +95,20 @@ exports.updateOne = (Model) =>
 						)
 					);
 			}
-		}
-		// else if (loc.toLowerCase() === 'tournaments') {
-		// 	if (
-		// 		req.body.team ||
-		// 		req.body.roster ||
-		// 		req.body.format ||
-		// 		req.body.games
-		// 	) {
-		// 		return next(new AppError('Invalid field.', 400));
-		// 	}
-		// }
-		else if (loc.toLowerCase() === 'teams') {
+		} else if (loc.toLowerCase() === 'tournaments') {
+			let roster =
+				undefined || (await Tournament.findById(req.params.id)).roster;
+
+			if (req.body.lines) {
+				req.body.lines.forEach((l) => {
+					l.players = l.players.filter((p) => {
+						return roster.some((p2) => {
+							return p2.id === p;
+						});
+					});
+				});
+			}
+		} else if (loc.toLowerCase() === 'teams') {
 			if (req.body.membershipLevel || req.body.membershipExpires) {
 				return next(
 					new AppError(

@@ -496,11 +496,15 @@ const insertOption = (op, container) => {
 			const otherName = o.getAttribute('data-name');
 			if (op.getAttribute('data-name').localeCompare(otherName) <= 0) {
 				container.insertBefore(op, o);
+				const box = op.querySelector('input[type="checkbox"]');
+				if (box) box.checked = false;
 				return true;
 			}
 		})
 	) {
 		container.appendChild(op);
+		const box = op.querySelector('input[type="checkbox"]');
+		if (box) box.checked = false;
 	}
 };
 
@@ -783,6 +787,9 @@ const saveRoster = (msg, after) => {
 					o.remove();
 				}
 			});
+
+			updateCounts();
+
 			if (after) after();
 		} else {
 			showMessage('error', res.message);
@@ -1123,6 +1130,20 @@ const handleFilter = (e) => {
 		});
 };
 
+const updateCounts = () => {
+	const m = lineContainer.querySelectorAll(
+		`.roster-option[data-gender="M"]`
+	).length;
+	const f = lineContainer.querySelectorAll(
+		`.roster-option[data-gender="F"]`
+	).length;
+	const totalCount = lineContainer.querySelectorAll(`.roster-option`).length;
+
+	mCount.innerHTML = m;
+	fCount.innerHTML = f;
+	lineCount.innerHTML = totalCount;
+};
+
 const handleMoveLine = (e) => {
 	if (e.target !== moveLineButton) return;
 	const first = e.target.classList.contains('move-right')
@@ -1195,17 +1216,7 @@ const handleMoveLine = (e) => {
 	});
 
 	//update the gender match counts and total counts
-	const m = lineContainer.querySelectorAll(
-		`.roster-option[data-gender="M"]`
-	).length;
-	const f = lineContainer.querySelectorAll(
-		`.roster-option[data-gender="F"]`
-	).length;
-	const totalCount = lineContainer.querySelectorAll(`.roster-option`).length;
-
-	mCount.innerHTML = m;
-	fCount.innerHTML = f;
-	lineCount.innerHTML = totalCount;
+	updateCounts();
 };
 
 const sortLines = () => {
@@ -1273,6 +1284,8 @@ const handleSaveLine = (e) => {
 					if (l.id === res.data.id) {
 						l.name = res.data.name;
 						l.players = res.data.players;
+						const opt = lineSelect.querySelector(`option[value="${l.id}"]`);
+						opt.innerHTML = l.name;
 						showMessage('info', 'Successfully edited line.');
 						return true;
 					}
@@ -1320,6 +1333,7 @@ const loadLine = (e) => {
 		);
 		if (op) insertOption(op, lineContainer);
 	});
+	updateCounts();
 };
 
 document.addEventListener('DOMContentLoaded', () => {
