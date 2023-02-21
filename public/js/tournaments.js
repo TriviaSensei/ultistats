@@ -301,12 +301,17 @@ const getTournament = (e) => {
 					return p2.id === p.id;
 				})
 			) {
-				rosterSelect.appendChild(op);
+				if (!rosterSelect.querySelector(`.roster-option[data-id="${p.id}"]`))
+					rosterSelect.appendChild(op);
 				const op2 = createRosterOption(p);
-				availableContainer.appendChild(op2);
+				if (
+					!availableContainer.querySelector(`.roster-option[data-id="${p.id}"]`)
+				)
+					availableContainer.appendChild(op2);
 				count++;
 			} else {
-				nonRosterSelect.appendChild(op);
+				if (!nonRosterSelect.querySelector(`.roster-option[data-id="${p.id}"]`))
+					nonRosterSelect.appendChild(op);
 			}
 
 			rosterCount.innerHTML = count;
@@ -763,12 +768,22 @@ const saveRoster = (msg, after) => {
 					if (
 						!ops.some((o) => {
 							if (p.name.localeCompare(o.getAttribute('data-name')) < 0) {
-								availableContainer.insertBefore(newOpt, o);
+								if (
+									!availableContainer.querySelector(
+										`.roster-option[data-id="${p.id}"]`
+									)
+								)
+									availableContainer.insertBefore(newOpt, o);
 								return true;
 							}
 						})
 					) {
-						availableContainer.appendChild(newOpt);
+						if (
+							!availableContainer.querySelector(
+								`.roster-option[data-id="${p.id}"]`
+							)
+						)
+							availableContainer.appendChild(newOpt);
 					}
 				}
 			});
@@ -1053,7 +1068,8 @@ const handleAddPlayer = (e) => {
 			showMessage(res.status, res.message);
 			roster.push(res.newPlayer);
 			const op = createRosterOption(res.newPlayer);
-			insertOption(op, rosterSelect);
+			if (!rosterSelect.querySelector(`.roster-option[data-id="${p.id}"]`))
+				insertOption(op, rosterSelect);
 			rosterCount.innerHTML =
 				rosterSelect.querySelectorAll('.roster-option').length;
 			addPlayerModal.hide();
