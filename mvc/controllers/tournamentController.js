@@ -10,6 +10,7 @@ const { v4: uuidV4 } = require('uuid');
 const { memberships } = require('../../utils/settings');
 
 exports.verifyOwnership = catchAsync(async (req, res, next) => {
+	console.log('verifying ownership');
 	if (!res.locals.user)
 		return next(new AppError('You are not logged in.', 403));
 
@@ -324,6 +325,18 @@ exports.modifyLine = catchAsync(async (req, res, next) => {
 			tournament: toReturn,
 		});
 	}
+});
+
+exports.deleteLine = catchAsync(async (req, res, next) => {
+	res.locals.tournament.lines = res.locals.tournament.lines.filter((l) => {
+		return l.id !== req.body.id;
+	});
+	res.locals.tournament.markModified('lines');
+	const data = await res.locals.tournament.save();
+	res.status(200).json({
+		status: 'success',
+		data,
+	});
 });
 
 exports.createTournament = factory.createOne(Tournament);

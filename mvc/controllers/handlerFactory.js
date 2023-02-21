@@ -150,11 +150,7 @@ exports.createOne = (Model) =>
 				});
 			}
 			req.body.membershipLevel = 'Free';
-			const d = new Date().setFullYear(9999);
-			d.setHours(0);
-			d.setHours(0);
-			d.setSeconds(0);
-			d.setMilliseconds(0);
+			const d = new Date(9999, 0, 0, 0, 0, 0, 0);
 			req.body.membershipExpires = d;
 		} else if (loc === 'games') {
 			console.log(req.body);

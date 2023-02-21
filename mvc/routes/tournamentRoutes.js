@@ -14,6 +14,7 @@ router.patch('/changeTeam/:id', tournamentController.changeTeam);
 router.patch('/addPlayers/:id', tournamentController.addPlayers);
 router.patch('/removePlayers/:id', tournamentController.removePlayers);
 router.patch('/modifyLine/:id', tournamentController.modifyLine);
+router.patch('/deleteLine/:id', tournamentController.deleteLine);
 
 router.use('/:id', tournamentController.verifyOwnership);
 router

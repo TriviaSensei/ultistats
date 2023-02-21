@@ -1,0 +1,10 @@
+.modal.fade#delete-line-modal(tabindex="-1" aria-labelledby="delete-line-label" aria-hidden="true")
+    .modal-dialog.modal-dialog-centered
+        .modal-content#delete-line-modal-content
+            .modal-header
+                h5.modal-title#delete-line-label Delete line?
+            .modal-body
+                p Are you sure you wish to delete this line?
+            .modal-footer
+                button.btn.btn-primary#confirm-delete-line(type="button" data-bs-dismiss="modal") Yes
+                button.btn.btn-secondary(type="button" data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="#edit-lines-modal") No

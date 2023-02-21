@@ -8,7 +8,7 @@
                 h6 Note: Editing a player on the tournament roster does NOT propogate the change to the team's main roster.
                 form#edit-rostered-player-form(autocomplete="off")
                     input#edit-rostered-player-id(type='hidden' value='' data-field="id")
-                    .input-group-h.mb-3
+                    .input-group-h.w-100.mb-3
                         .input-group-f.input-group-1
                             label.form-label(for="edit-first-name") First name:
                             .input-group
@@ -17,7 +17,7 @@
                             label.form-label(for="edit-last-name") Last name:
                             .input-group
                                 input#edit-roster-last-name.form-control(type="text" placeholder="Last Name" data-field="lastName" required)
-                    .input-group-h.mb-3
+                    .input-group-h.w-100.mb-3
                         .input-group-f.input-group-3
                             label.form-label(for="edit-display-name") Display name:
                             .input-group
@@ -26,7 +26,7 @@
                             label.form-label(for="edit-number") Number:
                             .input-group
                                 input#edit-roster-number.form-control(type="text" placeholder="##" size="2" pattern="[0-9]{1,2}" maxlength="2" data-field="number")
-                    .input-group-h.mb-3
+                    .input-group-h.w-100.mb-3
                         #edit-gender-match.input-group-f.input-group-1
                             label.form-label(for="edit-roster-gender-match") Gender match:
                             .input-group

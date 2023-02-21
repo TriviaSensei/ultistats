@@ -101,6 +101,14 @@ const mixedCount = document.querySelector('#mixed-counts');
 const mCount = document.querySelector('#m-count');
 const fCount = document.querySelector('#f-count');
 const lineCount = document.querySelector('#line-count');
+const deleteLine = document.querySelector('#delete-line');
+const confirmDeleteLine = document.querySelector('#confirm-delete-line');
+const deleteLineModal = new bootstrap.Modal(
+	document.querySelector('#delete-line-modal')
+);
+const editLinesModal = new bootstrap.Modal(
+	document.querySelector('#edit-lines-modal')
+);
 
 const removeTourneys = () => {
 	getElementArray(tournamentSelect, 'option').forEach((o, i) => {
@@ -161,9 +169,9 @@ const getTeam = (e) => {
 					tournamentSelect.appendChild(op);
 				});
 				const str2 = `/api/v1/teams/${teamSelect.value}`;
-				const handler2 = (res) => {
-					if (res.status === 'success') {
-						if (res.data.division.toLowerCase() === 'mixed') {
+				const handler2 = (res2) => {
+					if (res2.status === 'success') {
+						if (res2.data.division.toLowerCase() === 'mixed') {
 							rosterTable.classList.add('mixed');
 							lineContainer.classList.add('mixed');
 							mixedCount.classList.remove('invisible-div');
@@ -178,8 +186,10 @@ const getTeam = (e) => {
 							r.remove();
 						});
 
+						console.log(res2.data);
+
 						//set the available roster to the roster of the team
-						roster = res.data.roster.map((p) => {
+						roster = res2.data.roster.map((p) => {
 							return {
 								...p,
 								name: `${p.lastName}, ${p.firstName}`,
@@ -188,10 +198,11 @@ const getTeam = (e) => {
 
 						const offset = new Date().getTimezoneOffset();
 						const now = Date.parse(new Date());
-						const exp = Date.parse(res.data.membershipExpires) + offset * 60000;
+						const exp =
+							Date.parse(res2.data.membershipExpires) + offset * 60000;
 
 						if (now > exp) memLevel = 'Free';
-						else memLevel = res.data.membershipLevel;
+						else memLevel = res2.data.membershipLevel;
 					} else {
 						showMessage('error', res.message);
 					}
@@ -271,7 +282,7 @@ const getTournament = (e) => {
 
 		const fmts = getElementArray(formatSelect, 'option');
 		fmts.some((f, i) => {
-			if (f.value === tourney.format) {
+			if (f.value === tourney.format._id) {
 				formatSelect.selectedIndex = i;
 				return true;
 			}
@@ -354,6 +365,7 @@ const handleLineButton = () => {
 
 const getFormat = (e) => {
 	if (e.target !== formatSelect) return;
+	if (!formatSelect.value) return;
 
 	const str = `/api/v1/formats/${formatSelect.value}`;
 	const handler = (res) => {
@@ -369,8 +381,9 @@ const getFormat = (e) => {
 			gameTo.value = res.data[0].defaultPointCap;
 			winBy.value = 1;
 			hardCap.value = res.data[0].defaultPointCap;
-			timeouts.selectIndex =
+			const si =
 				res.data[0].defaultTimeouts >= 0 ? res.data[0].defaultTimeouts : 4;
+			timeouts.selectedIndex = si;
 		}
 	};
 	handleRequest(str, 'GET', null, handler);
@@ -385,6 +398,7 @@ const handleSaveTournament = (e) => {
 	}`;
 	const handler = (res) => {
 		if (res.status === 'success') {
+			console.log(res.data);
 			populateForm(tournamentForm, res.data);
 			const offset = new Date().getTimezoneOffset();
 			const d = new Date(Date.parse(res.data.startDate) + offset * 60000);
@@ -429,7 +443,7 @@ const handleSaveTournament = (e) => {
 						return true;
 					}
 				});
-				timeouts.selectedIndex = tourney.timeouts;
+				timeouts.selectedIndex = res.data.timeouts;
 			} else {
 				const op = tournamentSelect.options[tournamentSelect.selectedIndex];
 				if (op) {
@@ -1314,7 +1328,7 @@ const handleSaveLine = (e) => {
 					lineSelect,
 					'option'
 				).findIndex((el) => {
-					return el.id === res.data.id;
+					return el.value === res.data.id;
 				});
 				showMessage('info', 'Successfully added line.');
 			}
@@ -1333,8 +1347,11 @@ const loadLine = (e) => {
 		insertOption(op, availableContainer);
 	});
 	lineName.value = '';
+	deleteLine.disabled = true;
+	updateCounts();
 
 	if (!lineSelect.value) return;
+	deleteLine.disabled = false;
 
 	const loadedLine = tourneyLines.find((l) => {
 		return l.id === lineSelect.value;
@@ -1350,6 +1367,53 @@ const loadLine = (e) => {
 		if (op) insertOption(op, lineContainer);
 	});
 	updateCounts();
+};
+
+const handleDeleteLine = (e) => {
+	if (e.target !== confirmDeleteLine) return;
+
+	if (!lineSelect.value) return;
+
+	const opt = lineSelect.options[lineSelect.selectedIndex];
+	const name = opt?.getAttribute('data-name');
+	const str = `/api/v1/tournaments/deleteLine/${tournamentSelect.value}`;
+	const body = {
+		id: lineSelect.value,
+	};
+	const handler = (res) => {
+		if (res.status === 'success') {
+			showMessage(
+				'info',
+				name
+					? `Successfully deleted line ${name}.`
+					: 'Successfully deleted line.'
+			);
+			tourneyLines = res.data.lines;
+			opt.remove();
+			lineSelect.selectedIndex = 0;
+			loadLine({ target: lineSelect });
+			deleteLineModal.hide();
+			editLinesModal.show();
+		} else {
+			showMessage('error', res.message);
+		}
+	};
+	showMessage('info', 'Deleting line...');
+	handleRequest(str, 'PATCH', body, handler);
+};
+
+const handleNewPlayer = (e) => {
+	console.log(e.detail);
+	if (teamSelect.value === e.detail.team) {
+		console.log(roster);
+		roster.push({
+			...e.detail.player,
+			name: `${e.detail.player.lastName}, ${e.detail.player.firstName}`,
+		});
+		const op = createRosterOption(e.detail.player);
+		console.log(op);
+		insertOption(op, nonRosterSelect);
+	}
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1389,4 +1453,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	moveLineButton.addEventListener('click', handleMoveLine);
 	editLinesForm.addEventListener('submit', handleSaveLine);
 	lineSelect.addEventListener('change', loadLine);
+	confirmDeleteLine.addEventListener('click', handleDeleteLine);
+
+	document.addEventListener('new-player', handleNewPlayer);
 });

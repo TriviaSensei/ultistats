@@ -1,15 +1,17 @@
-label.form-label(for="team-select") Select a team:&nbsp;
-    select#team-select.mb-3
-        option(value="") [Create New]
-        each team in user.teams
-            option(value=`${team._id}`)= `${team.name} (${team.season})`
+.input-group-h.w-100.mb-3
+    .m-auto.input-group-h
+        label.form-label(for="team-select") Select a team:&nbsp;
+        select#team-select
+            option(value="") [Create New]
+            each team in user.teams
+                option(value=`${team._id}`)= `${team.name} (${team.season})`
 .accordion#team-accordion.w-100
     .accordion-item 
         h2.accordion-header#team-info-header
             button.accordion-button(type="button" data-bs-toggle="collapse" data-bs-target="#team-info" aria-expanded="true" aria-controls="team-info") Team Info
         #team-info.accordion-collapse.collapse.show(aria-labelled-by="team-info-header" data-bs-parent="#team-accordion")
             form#team-form.my-3.w-100(autocomplete="off")
-                .input-group-h.mb-3
+                .input-group-h.w-100.mb-3
                     .input-group-f.input-group-3
                         label.form-label(for="team-name") Team name:
                         .input-group
@@ -26,7 +28,7 @@ label.form-label(for="team-select") Select a team:&nbsp;
                         option(value="Mixed") Mixed
                 .input-group-f
                     label.form-label Colors:
-                .input-group-h.mb-2
+                .input-group-h.w-100.mb-2
                     .input-group-f.input-group-1.ai-c
                         label.form-label(for="color-1") Light:
                         input#color-1(type="color" value="#ffffff" data-field="color1")
@@ -39,7 +41,7 @@ label.form-label(for="team-select") Select a team:&nbsp;
                     .input-group-f.input-group-1.ai-c
                         label.form-label(for="color-4") Dark #s:
                         input#color-4(type="color" value="#ffffff" data-field="color4")
-                .input-group-h.f-sb
+                .input-group-h.w-100.f-sb
                     .jersey-container
                         .jersey-preview#preview-1(style="color:#000000;background-color:#ffffff")
                             .jersey-name#name-light 
@@ -55,7 +57,7 @@ label.form-label(for="team-select") Select a team:&nbsp;
             form#roster-form.my-3(autocomplete="off")
                 .input-group-f 
                     label.form-label Roster (#[span#roster-size 0]/#[span#roster-limit= rosterLimit]&nbsp;used)
-                .input-group-h.mb-3
+                .input-group-h.w-100.mb-3
                     .input-group-f.input-group-1
                         label.form-label(for="first-name") First name:
                         .input-group
@@ -64,7 +66,7 @@ label.form-label(for="team-select") Select a team:&nbsp;
                         label.form-label(for="last-name") Last name:
                         .input-group
                             input#last-name.form-control(type="text" placeholder="Last Name" required)
-                .input-group-h.mb-3
+                .input-group-h.w-100.mb-3
                     .input-group-f.input-group-3
                         label.form-label(for="display-name") Display name:
                         .input-group
@@ -73,7 +75,7 @@ label.form-label(for="team-select") Select a team:&nbsp;
                         label.form-label(for="number") Number:
                         .input-group
                             input#number.form-control(type="text" placeholder="##" size="2" pattern="[0-9]{1,2}" maxlength="2")
-                .input-group-h.mb-3
+                .input-group-h.w-100.mb-3
                     #gender-match.input-group-f.input-group-1.invisible-div
                         label.form-label Gender match:
                         .input-group

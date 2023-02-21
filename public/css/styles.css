@@ -43,6 +43,10 @@ label {
 	display: flex;
 	align-items: center;
 }
+/* 
+.m-auto {
+	margin: auto;
+} */
 
 .accordion-item {
 	background-color: var(--white);

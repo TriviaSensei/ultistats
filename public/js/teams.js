@@ -38,6 +38,7 @@ const number = document.querySelector('#number');
 const position = document.querySelector('#position');
 const pre1 = document.querySelector('#preview-1');
 const pre2 = document.querySelector('#preview-2');
+
 let roster = [];
 
 //roster table
@@ -366,6 +367,13 @@ const addPlayer = (player) => {
 				});
 				addPlayerRow(res.newPlayer);
 				updateRosterSize();
+				const newPlayerEvent = new CustomEvent('new-player', {
+					detail: {
+						team: teamSelect.value,
+						player: res.newPlayer,
+					},
+				});
+				document.dispatchEvent(newPlayerEvent);
 			}
 		};
 		handleRequest(str, 'PATCH', toPush, handler);
@@ -612,7 +620,6 @@ const createTeam = () => {
 			teamSelect.selectedIndex =
 				teamSelect.querySelectorAll('option').length - 1;
 			const op2 = op.cloneNode();
-			console.log(op2);
 			op2.innerHTML = `${res.data.name} (${res.data.season})`;
 			tourneyTeamSelect.appendChild(op2);
 			getTeam({ target: teamSelect });
