@@ -55,7 +55,6 @@ const rosterSelect = document.querySelector('#tourney-roster-container');
 const rosterCount = document.querySelector('#roster-count');
 const moveOne = document.querySelector('#move-one');
 const moveAll = document.querySelector('#move-all');
-const fillerRow = document.querySelector('#tournament-filler-row');
 const confirmRemoveFromRosterButton = document.querySelector(
 	'#confirm-remove-from-roster'
 );
@@ -132,7 +131,6 @@ const clearTourneyRosterTable = () => {
 	rows.forEach((r) => {
 		r.remove();
 	});
-	fillerRow.classList.remove('invisible-div');
 };
 
 const getTeam = (e) => {
@@ -253,6 +251,8 @@ const getTournament = (e) => {
 		maxPlayerCount = tourney.format.players;
 		genderMax = tourney.format.genderMax;
 		populateForm(tournamentForm, tourney);
+		const evt = new CustomEvent('load-tourney', { detail: tourney });
+		document.dispatchEvent(evt);
 
 		tourneyRoster = tourney.roster.map((p) => {
 			return {
@@ -720,11 +720,6 @@ const handleRemovePlayer = (e) => {
 
 	const row = document.querySelector(`tr.tourney-roster-row[data-id="${id}"]`);
 	if (row) row.remove();
-
-	const rows = document.querySelector('.tourney-roster-row');
-	if (!rows) {
-		if (fillerRow) fillerRow.classList.remove('invisible-div');
-	}
 };
 
 const cancelSaveRoster = (e) => {
@@ -886,10 +881,6 @@ const removePlayerRow = (id) => {
 		`tr.tourney-roster-row[data-id="${id}"]`
 	);
 	if (row) row.remove();
-	const rows = rosterBody.querySelector(`tr.tourney-roster-row`);
-	if (!rows) {
-		if (fillerRow) fillerRow.classList.remove('invisible-div');
-	}
 };
 
 const setDeleteId = (e) => {
@@ -1056,7 +1047,6 @@ const addPlayerRow = (player) => {
 	) {
 		rosterBody.appendChild(newRow);
 	}
-	if (fillerRow) fillerRow.classList.add('invisible-div');
 };
 
 const handleAddPlayer = (e) => {

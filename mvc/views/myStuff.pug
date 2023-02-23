@@ -15,6 +15,7 @@ block modals
     include components/modals/editRosteredPlayerModal
     include components/modals/editLinesModal
     include components/modals/deleteLineModal
+    include components/modals/editGameModal
 
 block content 
     section.navbar-container
@@ -27,20 +28,21 @@ block content
             li.nav-item(role="presentation")
                 button.nav-link#team-tab(data-bs-toggle="tab" data-bs-target="#team-div" type="button" role="tab" aria-controls="team-div" aria-selected="false") Teams
             li.nav-item(role="presentation")
-                button.nav-link.active#tournament-tab(data-bs-toggle="tab" data-bs-target="#tournament-div" type="button" role="tab" aria-controls="tournament-div" aria-selected="true") Tournaments
+                button.nav-link.active#tournament-tab(data-bs-toggle="tab" data-bs-target="#tournament-div" type="button" role="tab" aria-controls="tournament-div" aria-selected="true") Events
             li.nav-item(role="presentation")
-                button.nav-link#game-tab(data-bs-toggle="tab" data-bs-target="#game-div" type="button" role="tab" aria-controls="game-div" aria-selected="false") Games
+                button.nav-link#stats-tab(data-bs-toggle="tab" data-bs-target="#stats-div" type="button" role="tab" aria-controls="stats-div" aria-selected="false") Stats
         .tab-content#myTabContent
             .tab-pane.fade#team-div(role="tabpanel" aria-labelledby="team-tab" tabindex="0")
                 .tab-inner.flex-col.ai-c
                     include user/teams
-            .tab-pane.fade.show.active#tournament-div(role="tabpanel" aria-labelledby="tournament-tab" tabindex="0")
+            .tab-pane.fade.show.active#event-div(role="tabpanel" aria-labelledby="event-tab" tabindex="0")
                 .tab-inner.flex-col.ai-c
-                    include user/tournaments
-            .tab-pane.fade#game-div(role="tabpanel" aria-labelledby="game-tab" tabindex="0")
+                    include user/events
+            .tab-pane.fade#stats-div(role="tabpanel" aria-labelledby="stats-tab" tabindex="0")
                 .tab-inner.flex-col.ai-c
-                    include user/games
+                    include user/stats
 
 block scripts 
     script(src="/js/teams.js" type="module" defer)
     script(src="/js/tournaments.js" type="module" defer)
+    script(src="/js/games.js" type="module" defer)

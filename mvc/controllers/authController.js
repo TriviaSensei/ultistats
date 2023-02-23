@@ -240,9 +240,7 @@ exports.protect = catchAsync(async (req, res, next) => {
 	}
 
 	if (!token) {
-		return next(
-			new AppError('You are not logged in. Please log in for access.', 401)
-		);
+		return res.redirect('/login');
 	}
 	// validate the token
 	const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
@@ -274,6 +272,7 @@ exports.protect = catchAsync(async (req, res, next) => {
 	//we've passed the gauntlet. Grant access to the protected route.
 	req.user = currentUser;
 	res.locals.user = currentUser;
+
 	next();
 });
 

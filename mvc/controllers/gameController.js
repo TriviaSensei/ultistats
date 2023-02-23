@@ -13,18 +13,17 @@ exports.verifyOwnership = catchAsync(async (req, res, next) => {
 	if (!res.locals.user)
 		return next(new AppError('You are not logged in.', 403));
 
-	res.locals.game = await Game.find(req.params.id);
+	res.locals.game = await Game.findById(req.params.id);
 	if (!res.locals.game) return next(new AppError('Game ID not found', 404));
 
-	const t = await Tournament.find(g.tournament);
+	const t = await Tournament.findById(res.locals.game.tournament.toString());
 	if (!t) return next(new AppError('Tournament ID not found', 404));
 	res.locals.tournament = t;
-
-	const fmt = await Format.findById(t.format);
-	if (fmt) return next(new AppError('Invalid format', 400));
+	const fmt = await Format.findById(t.format.toString());
+	if (!fmt) return next(new AppError('Invalid format', 400));
 	res.locals.format = fmt;
 
-	const tm = await Team.find(t.team);
+	const tm = await Team.findById(t.team.toString());
 	if (!tm) return next(new AppError('Team ID not found', 404));
 	res.locals.team = tm;
 
@@ -238,7 +237,7 @@ exports.addPass = catchAsync(async (req, res, next) => {
 		} else if (pass.event === 'sub') {
 			//make sure both halves of the substitue are valid
 			if (
-				!res.locals.team.roster.some((p) => {
+				!res.locals.tournament.roster.some((p) => {
 					return p.id === pass.in;
 				})
 			) {

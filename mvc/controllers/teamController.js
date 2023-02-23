@@ -385,9 +385,16 @@ exports.getTournaments = catchAsync(async (req, res, next) => {
 	const data = await Tournament.find({
 		team: req.params.id,
 	})
-		.populate({
-			path: 'format',
-		})
+		.populate([
+			{
+				path: 'format',
+			},
+			{
+				path: 'games',
+				select:
+					'_id round opponent result score oppScore period cap winBy hardCap timeouts',
+			},
+		])
 		.sort({
 			startDate: 1,
 		});

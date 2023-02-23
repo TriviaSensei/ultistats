@@ -1,0 +1,131 @@
+.input-group-f.w-100.mb-4
+    .input-group-h.w-100.ai-c.mb-3
+        .input-group-f.input-group-1.px-2.overflow-hidden
+            label.form-label(for="tourney-team-select") Select team:
+            select#tourney-team-select
+                option(value="") [Select a team]
+                each team in user.teams 
+                    option(value=`${team.id}`)= `${team.name} (${team.season})`
+        .input-group-f.input-group-1.px-2.overflow-hidden
+            label.form-label(for="tournament-select") Select event: 
+            select#tournament-select(disabled)
+                option(value="") [Create new]
+    .accordion#tournament-accordion.w-100.accordion-flush
+        .accordion-item#info-item
+            h2.accordion-header#tournament-info-header
+                button#info-button.accordion-button.collapsed(type="button" data-bs-toggle="collapse" data-bs-target="#tournament-info" aria-expanded="false" aria-controls="tournament-info" disabled) Info
+            #tournament-info.accordion-collapse.collapse(aria-labelled-by="tournament-info-header" data-bs-parent="#tournament-accordion")
+                form#tournament-form.w-100(autocomplete="off")
+                    .input-group-h.w-100.my-4 
+                        .input-group-f.input-group-1
+                            label.form-label(for="tournament-name") Name: 
+                            input#tournament-name(type="text" placeholder="Tournament/Event Name" data-field="name" required)
+                    .input-group-h.w-100.mb-3
+                        .input-group-f.input-group-1.pe-2
+                            label.form-label(for="start-date") Start Date: 
+                            input#start-date(type="date" placeholder="Start Date" required)
+                        .input-group-f.input-group-1.ps-2
+                            label.form-label(for="end-date") End Date: 
+                            input#end-date(type="date" placeholder="End Date" required)
+        .accordion-item#rules-item
+            h2.accordion-header#tournament-rules-header
+                button#rules-button.accordion-button.collapsed(type="button" data-bs-toggle="collapse" data-bs-target="#tournament-rules" aria-expanded="false" aria-controls="tournament-rules" disabled) Rules
+            #tournament-rules.accordion-collapse.collapse(aria-labelled-by="tournament-rules-header" data-bs-parent="#tournament-accordion")
+                .input-group-f.input-group-1.my-3
+                    label.form-label(for="format-select") Format: 
+                    select#format-select(name="format-select" form="tournament-form")
+                        option(value="") [Select a format]
+                        each format in formats
+                            option(value=`${format._id}`)= format.name
+                .input-group-h.w-100.mb-3
+                    .input-group-f.input-group-1.jc-fe.px-2
+                        label.form-label(for="point-cap") Game to: 
+                        input#point-cap(type="number" min="0" value=`${formats.length > 0 ? formats[0].defaultPointCap : 15}` style="width:100%;" data-field="cap" form='tournament-form')
+                    .input-group-f.input-group-1.jc-fe.px-2 
+                        label.form-label(for="win-by") Win by: 
+                        input#win-by(type="number" min="1" max="2" value=`1` style="width:100%;" data-field="winBy" form="tournament-form")
+                    .input-group-f.input-group-1.jc-fe.px-2 
+                        label.form-label(for="hard-cap") Hard cap: 
+                        input#hard-cap(type="number" min="0" value=`${formats.length > 0 ? formats[0].defaultPointCap : 15}` data-field="hardCap" form="tournament-form" disabled style="width:100%;")
+                    .input-group-f.input-group-1.jc-fe.px-2 
+                        label.form-label(for="timeouts") T/Os: 
+                        select#timeouts(form="tournament-form")
+                            option(value="0") None 
+                            option(value="1") 1/Game
+                            option(value="2") 1/Half
+                            option(value="3") 1/Half + Floater 
+                            option(value="4" selected) 2/Half
+        .accordion-item#roster-item.invisible-div
+            h2.accordion-header#tournament-roster-header
+                button#roster-button.accordion-button.collapsed(type="button" data-bs-toggle="collapse" data-bs-target="#tournament-roster" aria-expanded="false" aria-controls="tournament-roster" ) Roster/Lines
+            #tournament-roster.accordion-collapse.collapse(aria-labelled-by="tournament-roster-header" data-bs-parent="#tournament-accordion")
+                .input-group-h.w-100.my-3
+                    .input-group-1
+                        .w-100.d-grid.gap-2.px-2
+                            button.btn.btn-primary#modify-roster(type="button" data-bs-toggle="modal" data-bs-target="#tournament-roster-modal") Modify Roster
+                    .input-group-1 
+                        .w-100.d-grid.gap-2.px-2(title="You must add at least 8 players to the roster to set lines.")
+                            button.btn.btn-primary#modify-lines(type="button" data-bs-toggle="modal" data-bs-target="#edit-lines-modal" disabled) Modify Lines
+                .table-container
+                    table#tournament-roster-table.roster-table.w-100.mb-3
+                        thead#tournament-roster-header.roster-header
+                            th.sort-header.active-sort.sort-asc(data-attr="number") #
+                            th.sort-header(data-attr="name") Name 
+                            th.sort-header.gen-cell(data-attr="gender") Gen 
+                            th.sort-header(data-attr="line") Ln 
+                            th.sort-header(data-attr="position") Pos 
+                            th ✏️
+                            th ❌
+                        tbody#tournament-roster-body.roster-list
+                            tr.filler-row
+                                td(colspan="7") Add players to your roster above.
+        .accordion-item#games-item.invisible-div
+            h2.accordion-header#tournament-games-header
+                button#games-button.accordion-button.collapsed(type="button" data-bs-toggle="collapse" data-bs-target="#tournament-games" aria-expanded="false" aria-controls="tournament-games" ) Games
+            #tournament-games.accordion-collapse.collapse(aria-labelled-by="tournament-games-header" data-bs-parent="#tournament-accordion")
+                .w-100.my-3
+                    table#game-table.roster-table.w-100
+                        thead
+                            tr 
+                                th Round 
+                                th Opponent 
+                                th Cap
+                                th Status
+                                th ✏️
+                                th ❌
+                        tbody#game-table-body 
+                            tr.filler-row
+                                td(colspan="6") Add games to this event with the form below.
+                .input-group-f.w-100.mb-3
+                    form#add-game-form
+                        .input-group-h.w-100.mb-3 
+                            .input-group-1.px-1
+                                label.form-label(for="round-select") Round
+                                select#round-select.w-100
+                            .input-group-2.px-1
+                                label.form-label(for="opponent") Opponent
+                                input#opponent.w-100(type="text" placeholder="Opponent" required)
+                        .input-group-h.w-100.mb-3
+                            .input-group-f.input-group-1.jc-fe.px-2
+                                label.form-label(for="game-point-cap") Game to: 
+                                input#game-point-cap(type="number" min="0" data-field="cap" style="width:100%;" required)
+                            .input-group-f.input-group-1.jc-fe.px-2 
+                                label.form-label(for="game-win-by") Win by: 
+                                input#game-win-by(type="number" min="1" max="2" value=`1` style="width:100%;" data-field="winBy" required)
+                            .input-group-f.input-group-1.jc-fe.px-2 
+                                label.form-label(for="game-hard-cap") Hard cap: 
+                                input#game-hard-cap(type="number" min="0" style="width:100%;" data-field="hardCap" disabled required)
+                            .input-group-f.input-group-1.jc-fe.px-2 
+                                label.form-label(for="game-timeouts") T/Os: 
+                                select#game-timeouts(data-field="timeouts")
+                                    option(value="0") None 
+                                    option(value="1") 1/Game
+                                    option(value="2") 1/Half
+                                    option(value="3") 1/Half + Floater 
+                                    option(value="4" selected) 2/Half
+                        .w-100.d-grid.gap-2.my-3
+                            button.btn.btn-primary(type="submit") Save game
+        .w-100.d-grid.gap-2.my-3
+            button.btn.btn-primary(type="submit") Save Tournament
+                    
+

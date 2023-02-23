@@ -12,12 +12,12 @@ const gameSchema = new mongoose.Schema({
 	cap: {
 		type: Number,
 		default: 15,
-		min: [7, 'The minimum point cap is 7'],
+		min: [0, 'Point cap must not be negative.'],
 	},
 	hardCap: {
 		type: Number,
 		default: 15,
-		min: [7, 'The minimum point cap is 7'],
+		min: [0, 'Hard cap must not be negative.'],
 	},
 	winBy: {
 		type: Number,
@@ -34,8 +34,21 @@ const gameSchema = new mongoose.Schema({
 		type: String,
 		enum: ['W', 'L', 'T', ''],
 	},
-	score: Number,
-	oppScore: Number,
+	score: {
+		type: Number,
+		default: 0,
+		min: 0,
+	},
+	oppScore: {
+		type: Number,
+		default: 0,
+		min: 0,
+	},
+	period: {
+		type: Number,
+		default: 0,
+		min: 0,
+	},
 	points: {
 		type: [Object],
 	},

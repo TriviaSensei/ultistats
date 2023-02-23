@@ -54,36 +54,12 @@ exports.updateOne = (Model) =>
 			}
 
 			if (req.body.tournament) {
-				const t = await Tournament.findById(req.body.tournament);
-				if (!t) return next(new AppError('Tournament ID not found.', 404));
-
-				const team = await Team.findById(t.team);
-				if (!team) return next(new AppError('Team ID not found.', 404));
-
-				if (!team.managers.includes(res.locals.user._id))
-					return next(new AppError('You are not a manager of this team.', 403));
-
-				//at this point, there is a valid new tournament, the team ID is valid, the team for the tournament is valid, and the user
-				//is a manager of this team. We can make the changes to the tournament that it is currently part of, and the new one
-				const game = await Model.findById(req.params.id);
-				if (!game) return next(new AppError('Game ID not found', 404));
-
-				game.cap = t.cap;
-				game.hardCap = t.hardCap;
-				game.winBy = t.winBy;
-
-				const oldTourney = await Tournament.findById(game.tournament);
-				if (oldTourney) {
-					oldTourney.games = oldTourney.games.filter((g) => {
-						return g !== game._id;
-					});
-					oldTourney.markModified('games');
-					await oldTourney.save();
-				}
-
-				t.games.push(req.body.tournament);
-				t.markModified(games);
-				await t.save();
+				return next(
+					new AppError(
+						'You may not modify the tournament that a game is a part of.',
+						400
+					)
+				);
 			}
 
 			if (req.body.cap || req.body.hardCap) {
@@ -153,7 +129,6 @@ exports.createOne = (Model) =>
 			const d = new Date(9999, 0, 0, 0, 0, 0, 0);
 			req.body.membershipExpires = d;
 		} else if (loc === 'games') {
-			console.log(req.body);
 			if (!req.body.cap && !req.body.hardCap) {
 				req.body.cap = 15;
 				req.body.hardCap = 15;
@@ -167,6 +142,10 @@ exports.createOne = (Model) =>
 						400
 					)
 				);
+
+			req.body.points = [];
+			req.body.result = '';
+			req.body.period = 0;
 		} else if (loc === 'tournaments') {
 			req.body.roster = [];
 			req.body.lines = [];
@@ -179,8 +158,6 @@ exports.createOne = (Model) =>
 			if (!team) return next(new AppError('Team not found', 404));
 
 			//...and that the logged in user is a manager of the team
-			console.log(team.managers);
-			console.log(res.locals.user._id);
 			if (
 				!team.managers.some((m) => {
 					return m._id.toString() === res.locals.user._id.toString();
@@ -204,6 +181,12 @@ exports.createOne = (Model) =>
 				path: 'managers',
 				select: 'firstName lastName displayName _id',
 			});
+		} else if (loc === 'games') {
+			const t = await Tournament.findById(req.body.tournament);
+			if (!t) return next(new AppError('Tournament not found.', 404));
+			t.games.push(doc._id);
+			t.markModified('games');
+			await t.save();
 		}
 
 		res.status(201).json({

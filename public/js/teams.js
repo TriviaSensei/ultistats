@@ -45,9 +45,9 @@ let roster = [];
 const rosterTable = document.querySelector('#main-roster-table');
 const rosterHeader = document.querySelector('#main-roster-header');
 const rosterBody = document.querySelector('#main-roster-list');
-const fillerRow = document.querySelector('#filler-row');
 
 //manager table
+const managerItem = document.querySelector('#manager-item');
 const managerTable = document.querySelector('#manager-table');
 const managerList = document.querySelector('#manager-list');
 
@@ -177,11 +177,6 @@ const handleSortRoster = (e) => {
 const removePlayerRow = (id) => {
 	const row = document.querySelector(`tr.player-row[data-id="${id}"]`);
 	if (row) row.remove();
-
-	const rows = document.querySelector('.player-row');
-	if (!rows) {
-		if (fillerRow) fillerRow.classList.remove('invisible-div');
-	}
 };
 
 const handleRemovePlayer = (e) => {
@@ -263,7 +258,6 @@ const openEditModal = (e) => {
 
 const addPlayerRow = (player) => {
 	if (!player) return;
-	if (fillerRow) fillerRow.classList.add('invisible-div');
 
 	const info = [
 		player.number,
@@ -510,6 +504,9 @@ const getTeam = (e) => {
 
 	//if "create new team" is selected
 	if (!teamSelect.value) {
+		managerItem.classList.add('invisible-div');
+		addManagerButton.disabled = true;
+		rosterSize.innerHTML = 0;
 		//reset the color values
 		color1.value = '#ffffff';
 		color2.value = '#000000';
@@ -549,7 +546,8 @@ const getTeam = (e) => {
 		if (res.status === 'success') {
 			populateForm(teamForm, res.data);
 			handleColorChange({ target: color1 });
-
+			managerItem.classList.remove('invisible-div');
+			addManagerButton.disabled = false;
 			getElementArray(division, 'option').some((op, i) => {
 				if (op.value.toLowerCase() === res.data.division.toLowerCase()) {
 					division.selectedIndex = i;
@@ -705,7 +703,10 @@ const handleDivisionChange = (e) => {
 
 const handleRequestManager = () => {
 	if (!teamSelect.value)
-		showMessage('error', 'You must save your team before adding a manager.');
+		return showMessage(
+			'error',
+			'You must save your team before adding a manager.'
+		);
 	const str = `/api/v1/teams/addManager/${teamSelect.value}`;
 	const body = {
 		email: document.querySelector('#new-manager-email').value,

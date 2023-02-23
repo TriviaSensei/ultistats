@@ -216,6 +216,10 @@ button > a > div {
 	overflow-y: hidden;
 }
 
+tbody > tr.filler-row:not(:last-child) {
+	display: none;
+}
+
 @media (pointer: fine) {
 	.desktop-only {
 		display: unset;

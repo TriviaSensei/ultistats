@@ -1,0 +1,36 @@
+.modal.fade#edit-game-modal(tabindex="-1" aria-labelledby="edit-game-label" aria-hidden="true")
+    .modal-dialog.modal-dialog-centered
+        .modal-content#edit-game-modal-content
+            .modal-header
+                h5.modal-title#edit-game-label Edit game info
+                button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+            .modal-body
+                form#edit-game-form
+                    .input-group-h.w-100.mb-3 
+                        .input-group-1.px-1
+                            label.form-label(for="round-select") Round
+                            select#edit-round-select.w-100(data-field="round" name="round")
+                        .input-group-2.px-1
+                            label.form-label(for="opponent") Opponent
+                            input#edit-opponent.w-100(type="text" name="opponent" data-field="opponent" placeholder="Opponent" required)
+                    .input-group-h.w-100.mb-3
+                        .input-group-f.input-group-1.jc-fe.px-2
+                            label.form-label(for="edit-game-point-cap") Game to: 
+                            input#edit-game-point-cap(type="number" min="0" data-field="cap" name="cap" style="width:100%;" required)
+                        .input-group-f.input-group-1.jc-fe.px-2 
+                            label.form-label(for="edit-game-win-by") Win by: 
+                            input#edit-game-win-by(type="number" min="1" max="2" value=`1` style="width:100%;" data-field="winBy" name="winBy" required)
+                        .input-group-f.input-group-1.jc-fe.px-2 
+                            label.form-label(for="game-hard-cap") Hard cap: 
+                            input#edit-game-hard-cap(type="number" min="0" style="width:100%;" data-field="hardCap" name="hardCap" disabled required)
+                        .input-group-f.input-group-1.jc-fe.px-2 
+                            label.form-label(for="game-timeouts") T/Os: 
+                            select#edit-game-timeouts(data-field="timeouts" name="timeouts")
+                                option(value="0") None 
+                                option(value="1") 1/Game
+                                option(value="2") 1/Half
+                                option(value="3") 1/Half + Floater 
+                                option(value="4" selected) 2/Half
+            .modal-footer
+                button.btn.btn-secondary#cancel-edit-game(type="button" data-bs-dismiss="modal") Close
+                button.btn.btn-primary#confirm-edit-game(type="submit" form="edit-game-form" data-id="") Save

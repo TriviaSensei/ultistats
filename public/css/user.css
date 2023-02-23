@@ -167,6 +167,7 @@ body {
 	border: 1px solid black;
 	text-align: center;
 	overflow-wrap: break-word;
+	padding: 0.3rem;
 }
 
 .table-container {
@@ -220,5 +221,10 @@ h6 {
 
 	#request-table {
 		width: 50%;
+	}
+
+	.roster-table td,
+	#manager-table td {
+		padding: 0;
 	}
 }
