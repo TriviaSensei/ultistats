@@ -18,7 +18,71 @@ block styles
 
 block content
     .w-100.h-100.d-flex.flex-column.ai-c.overflow-hidden
-        .profile-body.h-100.m-auto.p-4
-            .field.ratio(style=`--bs-aspect-ratio:${ratio}%`)
-            p= ratio
+        .profile-body.h-100.m-auto.p-2
+            .w-100.p-2
+                table#score-bug.w-100.mb-3.p-2
+                    tr#us 
+                        td.team-name Cocktails
+                        td.team-score 10
+                        td.team-timeouts
+                            .timeout-container
+                                .timeout-marker.w-100.f-1
+                                .timeout-marker.w-100.f-1
+                        td.game-period(rowspan="2") 2nd
+                    tr#them 
+                        td.team-name DC Swampbenders
+                        td.team-score 9
+                        td.team-timeouts
+                            .timeout-container
+                                .timeout-marker.w-100.f-1.used-timeout
+                                .timeout-marker.w-100.f-1
+            .field-container.w-100.p-2
+                .field.ratio(style=`--bs-aspect-ratio:${ratio}%;`)
+                    .disc
+                    canvas#field-canvas
+
+block scripts
+    script.
+        const can = document.querySelector('#field-canvas');
+        const rect = can.getBoundingClientRect();
+        function toNearestHalf(n) {
+            return parseFloat((Math.round(n+.5)-0.5).toFixed(1));
+        }
+
+        can.setAttribute('width',`${rect.width}px`);
+        can.setAttribute('height',`${rect.height}px`);
+
+        const ez = parseFloat(#{endZone});
+        const brick = parseFloat(#{brick});
+        //draw the left end zone line
+        const x1 = toNearestHalf(ez * parseFloat(rect.width));
+        const x2 = toNearestHalf((1-ez) * parseFloat(rect.width));
+        
+        const ctx = can.getContext('2d');
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x1,0);
+        ctx.lineTo(x1,rect.height);
+        ctx.moveTo(x2,0);
+        ctx.lineTo(x2,rect.height);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.setLineDash([5,5]);
+        const mid = toNearestHalf((x1+x2)/2); 
+        ctx.moveTo(mid,0);
+        ctx.lineTo(mid,rect.height);
+        ctx.stroke();
+
+        const b1 = toNearestHalf(brick * parseFloat(rect.width));
+        const b2 = toNearestHalf((1-brick) * parseFloat(rect.width));
+        ctx.beginPath();
+        ctx.fillStyle = "white";
+        ctx.arc(b1,toNearestHalf(rect.height/2),2,0,2*Math.PI);   
+        ctx.fill();
+        ctx.beginPath();
+        ctx.fillStyle = "white";
+        ctx.arc(b2,toNearestHalf(rect.height/2),2,0,2*Math.PI);   
+        ctx.fill();
+    script(src="/js/editGame.js" type="module" defer)
             

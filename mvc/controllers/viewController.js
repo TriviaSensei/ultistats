@@ -163,7 +163,10 @@ exports.getGame = catchAsync(async (req, res, next) => {
 	res.status(200).render('game', {
 		title: 'Enter game',
 		colors: [tm.color1, tm.color2, tm.color3, tm.color4],
-		endZone: (100 * (fmt.endzone / (fmt.endzone * 2 + fmt.length))).toFixed(2),
+		endZone: (fmt.endzone / (fmt.endzone * 2 + fmt.length)).toFixed(4),
+		brick: ((fmt.endzone + fmt.brick) / (fmt.endzone * 2 + fmt.length)).toFixed(
+			4
+		),
 		ratio: ((100 * fmt.width) / (fmt.endzone * 2 + fmt.length)).toFixed(2),
 	});
 });
