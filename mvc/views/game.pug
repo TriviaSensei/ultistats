@@ -1,0 +1,24 @@
+extends _base
+
+block styles 
+    link(rel="stylesheet" href="/css/game.css")
+    //- - var color1 = colors[0];
+    //- - var color2 = colors[1];
+    //- - var color3 = colors[2];
+    //- - var color4 = colors[3];
+    style.
+        .light-jersey {
+            background-color: #{colors[0]};
+            color: #{colors[1]};
+        }
+        .dark-jersey {
+            background-color:#{colors[2]};
+            color: #{colors[3]};
+        }
+
+block content
+    .w-100.h-100.d-flex.flex-column.ai-c.overflow-hidden
+        .profile-body.h-100.m-auto.p-4
+            .field.ratio(style=`--bs-aspect-ratio:${ratio}%`)
+            p= ratio
+            

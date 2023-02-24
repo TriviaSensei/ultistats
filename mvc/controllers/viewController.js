@@ -1,7 +1,9 @@
 const AppError = require('../../utils/appError');
 const catchAsync = require('../../utils/catchAsync');
 const Format = require('../models/formatModel');
-
+const Team = require('../models/teamModel');
+const Game = require('../models/gameModel');
+const Tournament = require('../models/tournamentModel');
 const { rosterLimit } = require('../../utils/settings');
 
 exports.loginRedirect = catchAsync(async (req, res, next) => {
@@ -93,4 +95,75 @@ exports.getManagerPage = catchAsync(async (req, res) => {
 	});
 });
 
-exports.handleManagerRequest = catchAsync(async (req, res, next) => {});
+exports.handleManagerRequest = catchAsync(async (req, res, next) => {
+	try {
+		const t = await Team.findById(req.params.id);
+		if (!t) {
+			return res.redirect('/me');
+		}
+
+		if (req.url.startsWith('/confirmManager')) {
+			t.managers.push(res.locals.user._id);
+			t.requestedManagers = t.requestedManagers.filter((m) => {
+				return m.toString() !== res.locals.user._id.toString();
+			});
+			t.markModified('managers');
+			t.markModified('requestedManagers');
+			await t.save({ validateBeforeSave: false });
+
+			res.locals.user.teams.push(t._id);
+			console.log(`team: ${t._id.toString()}`);
+			res.locals.user.teamRequests = res.locals.user.teamRequests.filter(
+				(r) => {
+					return r._id.toString() !== t._id.toString();
+				}
+			);
+			res.locals.user.markModified('teams');
+			res.locals.user.markModified('teamRequests');
+			await res.locals.user.save({ validateBeforeSave: false });
+
+			return res.status(200).render('handleManagerRequest', {
+				title: 'Manager request',
+				msg: `You are now a manager of ${t.name} (${t.season}).`,
+			});
+		} else if (req.url.startsWith('/declineManager')) {
+			t.requestedManagers = t.requestedManagers.filter((m) => {
+				return m.toString() !== res.locals.user._id.toString();
+			});
+			res.locals.user.teamRequests = res.locals.user.teamRequests.filter(
+				(r) => {
+					return r._id.toString() !== t._id.toString();
+				}
+			);
+
+			t.markModified('requestedManagers');
+			res.locals.user.markModified('teamRequests');
+			await t.save({ validateBeforeSave: false });
+			await res.locals.user.save({ validateBeforeSave: false });
+
+			return res.status(200).render('handleManagerRequest', {
+				title: 'Manager request',
+				msg: `Request from ${t.name} (${t.season}) deleted.`,
+			});
+		}
+
+		res.status(200).render('home', {
+			title: 'Home',
+			user: res.locals.user,
+		});
+	} catch (err) {
+		res.redirect('/me');
+	}
+});
+
+exports.getGame = catchAsync(async (req, res, next) => {
+	const tm = res.locals.team;
+	const fmt = res.locals.format;
+
+	res.status(200).render('game', {
+		title: 'Enter game',
+		colors: [tm.color1, tm.color2, tm.color3, tm.color4],
+		endZone: (100 * (fmt.endzone / (fmt.endzone * 2 + fmt.length))).toFixed(2),
+		ratio: ((100 * fmt.width) / (fmt.endzone * 2 + fmt.length)).toFixed(2),
+	});
+});

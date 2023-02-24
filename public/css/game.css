@@ -1,0 +1,9 @@
+.profile-body {
+	width: min(100%, 600px);
+}
+
+.field {
+	background-color: #005c0c;
+	width: 100%;
+	box-sizing: border-box;
+}

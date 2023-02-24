@@ -39,17 +39,19 @@ const sendErrorProd = (err, req, res) => {
 
 	if (err.isOperational) {
 		console.log(err.message);
-		return res.status(err.statusCode).render('error', {
-			title: 'Something went wrong.',
-			msg: err.message,
-		});
+		// return res.status(err.statusCode).render('home', {
+		// 	title: 'Something went wrong.',
+		// 	msg: err.message,
+		// });
+		return res.redirect('/');
 	}
 	console.error('ERROR', err);
 
-	return res.status(err.statusCode).render('error', {
-		title: 'Something went wrong',
-		msg: 'Please try again later.',
-	});
+	// return res.status(err.statusCode).render('error', {
+	// 	title: 'Something went wrong',
+	// 	msg: 'Please try again later.',
+	// });
+	return res.redirect('/');
 };
 
 const handleCastErrorDB = (err) => {
