@@ -14,7 +14,7 @@ router.get('/login', viewController.getLoginForm);
 
 router.use(authController.protect);
 router.get('/me', viewController.getAccount);
-router.get('/mystuff', viewController.getManagerPage);
+router.get('/mystuff/:id?', viewController.getManagerPage);
 router.get('/confirmManager/:id', viewController.handleManagerRequest);
 router.get('/declineManager/:id', viewController.handleManagerRequest);
 router.get(

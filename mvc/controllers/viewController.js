@@ -4,7 +4,10 @@ const Format = require('../models/formatModel');
 const Team = require('../models/teamModel');
 const Game = require('../models/gameModel');
 const Tournament = require('../models/tournamentModel');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
 const { rosterLimit } = require('../../utils/settings');
+const { memberships } = require('../../utils/settings');
 
 exports.loginRedirect = catchAsync(async (req, res, next) => {
 	if (!res.locals.user) {
@@ -81,17 +84,46 @@ exports.getAccount = (req, res) => {
 };
 
 exports.getManagerPage = catchAsync(async (req, res) => {
+	console.log(req.params);
+
 	if (!req.user) return res.redirect('/login');
 
 	const formats = await Format.find();
+
+	const products = await stripe.products.list();
+	const priceData = await Promise.all(
+		products.data.map((p) => {
+			return stripe.prices.retrieve(p.default_price);
+		})
+	);
+
+	const productList = products.data
+		.map((p) => {
+			const pd = priceData.find((pr) => {
+				return pr.id === p.default_price;
+			});
+			return {
+				...p,
+				priceData: pd,
+			};
+		})
+		.filter((p) => {
+			return p.priceData;
+		})
+		.sort((a, b) => {
+			return a.priceData.unit_amount - b.priceData.unit_amount;
+		});
 
 	const user = await req.user.populate('teams');
 	res.status(200).render('myStuff', {
 		title: 'My Stuff',
 		user,
-		year: new Date().getFullYear(),
+		selectedTeam: req.params.id,
 		rosterLimit,
 		formats,
+		stripeKey: process.env.STRIPE_PUBLIC_KEY,
+		memberships,
+		productList,
 	});
 });
 

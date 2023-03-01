@@ -4,9 +4,8 @@ const AppError = require('../../utils/appError');
 const Team = require('../models/teamModel');
 const User = require('../models/userModel');
 const Tournament = require('../models/tournamentModel');
-
 const Email = require('../../utils/email');
-
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { v4: uuidV4 } = require('uuid');
 const { rosterLimit } = require('../../utils/settings');
 
@@ -82,7 +81,7 @@ exports.addPlayer = catchAsync(async (req, res, next) => {
 	let pushIt = true;
 	let toPush;
 
-	const existingPlayer = team.roster.find((p) => {
+	const existingPlayer = team.roster.find((p, i) => {
 		if (
 			p.active &&
 			p.firstName.toLowerCase() === req.body.firstName.toLowerCase() &&
@@ -102,6 +101,13 @@ exports.addPlayer = catchAsync(async (req, res, next) => {
 			p.lastName = req.body.lastName;
 			p.displayName = req.body.displayName;
 			p.number = req.body.number;
+			team.roster.some((p2, j) => {
+				if (parseInt(p2.number) === parseInt(req.body.number) && i !== j) {
+					status = 'warning';
+					message = `${message}\nNumber ${p2.number} is already being worn by ${p2.firstName} ${p2.lastName}`;
+					return true;
+				}
+			});
 			p.gender = req.body.gender;
 			p.line = req.body.line;
 			p.position = req.body.position;

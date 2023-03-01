@@ -26,23 +26,27 @@ block content
         h3 My Stuff
         ul.nav.nav-tabs.nav-fill.mb-3#myTab(role="tablist")
             li.nav-item(role="presentation")
-                button.nav-link#team-tab(data-bs-toggle="tab" data-bs-target="#team-div" type="button" role="tab" aria-controls="team-div" aria-selected="false") Teams
+                button.nav-link.active#team-tab(data-bs-toggle="tab" data-bs-target="#team-div" type="button" role="tab" aria-controls="team-div" aria-selected="true") Teams
             li.nav-item(role="presentation")
-                button.nav-link.active#event-tab(data-bs-toggle="tab" data-bs-target="#event-div" type="button" role="tab" aria-controls="event-div" aria-selected="true") Events
+                button.nav-link#event-tab(data-bs-toggle="tab" data-bs-target="#event-div" type="button" role="tab" aria-controls="event-div" aria-selected="false") Events
             li.nav-item(role="presentation")
                 button.nav-link#stats-tab(data-bs-toggle="tab" data-bs-target="#stats-div" type="button" role="tab" aria-controls="stats-div" aria-selected="false") Stats
         .tab-content#myTabContent
-            .tab-pane.fade#team-div(role="tabpanel" aria-labelledby="team-tab" tabindex="0")
+            #team-div.tab-pane.fade.show.active(role="tabpanel" aria-labelledby="team-tab" tabindex="0")
                 .tab-inner.flex-col.ai-c
                     include user/teams
-            .tab-pane.fade.show.active#event-div(role="tabpanel" aria-labelledby="event-tab" tabindex="0")
+            #event-div.tab-pane.fade(role="tabpanel" aria-labelledby="event-tab" tabindex="0")
                 .tab-inner.flex-col.ai-c
                     include user/events
-            .tab-pane.fade#stats-div(role="tabpanel" aria-labelledby="stats-tab" tabindex="0")
+            #stats-div.tab-pane.fade(role="tabpanel" aria-labelledby="stats-tab" tabindex="0")
                 .tab-inner.flex-col.ai-c
                     include user/stats
 
 block scripts 
+    //- script(src="https://js.stripe.com/v3/" defer)
+    //- script(src="/js/utils/stripe.js" type="module" defer)
     script(src="/js/teams.js" type="module" defer)
     script(src="/js/tournaments.js" type="module" defer)
     script(src="/js/games.js" type="module" defer)
+    script(src="/js/subscription.js" type="module" defer)
+    

@@ -22,19 +22,6 @@ const teamSchema = new mongoose.Schema({
 			message: 'Invalid team name - please watch your language.',
 		},
 	},
-	season: {
-		type: Number,
-		required: [true, 'You must specify your season'],
-		validate: {
-			validator: (val) => {
-				const currentDate = new Date();
-				const testDate = new Date();
-				testDate.setFullYear(val);
-				return testDate.getFullYear() <= currentDate.getFullYear() + 1;
-			},
-			message: `You must choose a year no more than 1 in the future.`,
-		},
-	},
 	division: {
 		type: String,
 		enum: ['Men', 'Women', 'Mixed'],
@@ -94,16 +81,9 @@ const teamSchema = new mongoose.Schema({
 			- Offense, defense, and up to 6 additional preset lines for each tournament
 	 * 		
 	 */
-	membershipLevel: {
-		type: String,
-		enum: memberships.map((m) => {
-			return m.name;
-		}),
-		default: memberships[0].name,
-	},
-	membershipExpires: {
-		type: Date,
-		default: new Date().setFullYear(9999),
+	membership: {
+		type: [mongoose.Schema.ObjectId],
+		ref: 'Subscriptions',
 	},
 });
 

@@ -7,6 +7,8 @@ const Tournament = require('../models/tournamentModel');
 const Team = require('../models/teamModel');
 const Game = require('../models/gameModel');
 const Format = require('../models/formatModel');
+const Subscription = require('../models/subscriptionModel');
+const { memberships } = require('../../utils/settings');
 
 //this will delete one of any document, depending on what gets passed to it.
 exports.deleteOne = (Model) =>
@@ -126,6 +128,7 @@ exports.createOne = (Model) =>
 				});
 			}
 			req.body.membershipLevel = 'Free';
+			req.body.membershipType = 'sub';
 			const d = new Date(9999, 0, 0, 0, 0, 0, 0);
 			req.body.membershipExpires = d;
 		} else if (loc === 'games') {
@@ -208,15 +211,26 @@ exports.getOne = (Model, popOptions) =>
 		let doc = await query;
 
 		if (loc === 'teams') {
-			doc = await Model.findById(req.params.id)
-				.populate({
+			doc = await Model.findById(req.params.id).populate([
+				{
 					path: 'managers',
 					select: 'firstName lastName displayName _id',
-				})
-				.populate({
+				},
+				{
 					path: 'requestedManagers',
 					select: 'firstName lastName displayName _id',
-				});
+				},
+				{
+					path: 'membership',
+					match: {
+						endDate: { $gt: new Date() },
+					},
+				},
+			]);
+			// .populate({
+			// 	path: 'requestedManagers',
+			// 	select: 'firstName lastName displayName _id',
+			// });
 
 			if (
 				doc &&
@@ -230,6 +244,25 @@ exports.getOne = (Model, popOptions) =>
 			doc.roster = doc.roster.filter((p) => {
 				return p.active;
 			});
+
+			const currentMem = memberships.find((m) => {
+				return m.name === doc.membershipLevel;
+			});
+
+			if (!currentMem) {
+				doc.availableMemberships = memberships.filter((m) => {
+					return m.cost > 0;
+				});
+			} else {
+				doc = {
+					...doc.toJSON(),
+					availableMemberships: memberships.filter((m) => {
+						return m.level >= currentMem.level && m.cost > 0;
+					}),
+				};
+
+				console.log(doc);
+			}
 			// doc.managers = doc.managers.sort((a, b) => {
 			// 	const a1 = a._id.toString() === res.locals.user._id.toString() ? 1 : 0;
 			// 	const b1 = b._id.toString() === res.locals.user._id.toString() ? 1 : 0;

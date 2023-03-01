@@ -12,7 +12,6 @@ const rosterSize = document.querySelector('#roster-size');
 const teamForm = document.querySelector('#team-form');
 const teamSelect = document.querySelector('#team-select');
 const teamName = document.querySelector('#team-name');
-const teamSeason = document.querySelector('#season');
 const division = document.querySelector('#division');
 const color1 = document.querySelector('#color-1');
 const color2 = document.querySelector('#color-2');
@@ -83,6 +82,10 @@ const editLastName = document.querySelector('#edit-last-name');
 const editDisplayName = document.querySelector('#edit-display-name');
 const editNumber = document.querySelector('#edit-number');
 const editPosition = document.querySelector('#edit-position');
+
+//subscription accordion
+const subInfo = new bootstrap.Collapse('#subscription-info');
+const subItem = document.querySelector('#subscription-item');
 
 //other
 const tourneyTeamSelect = document.querySelector('#tourney-team-select');
@@ -505,6 +508,7 @@ const getTeam = (e) => {
 	//if "create new team" is selected
 	if (!teamSelect.value) {
 		managerItem.classList.add('invisible-div');
+		subItem.classList.add('invisible-div');
 		addManagerButton.disabled = true;
 		rosterSize.innerHTML = 0;
 		//reset the color values
@@ -514,11 +518,9 @@ const getTeam = (e) => {
 		color4.value = '#ffffff';
 		handleColorChange({ target: color1 });
 		//...and the inputs
-		[teamName, teamSeason, firstName, lastName, displayName, number].forEach(
-			(i) => {
-				i.value = '';
-			}
-		);
+		[teamName, firstName, lastName, displayName, number].forEach((i) => {
+			i.value = '';
+		});
 
 		getElementArray(rosterForm, `input[type="radio"]`).forEach((el) => {
 			el.checked = false;
@@ -547,6 +549,8 @@ const getTeam = (e) => {
 			populateForm(teamForm, res.data);
 			handleColorChange({ target: color1 });
 			managerItem.classList.remove('invisible-div');
+			subItem.classList.remove('invisible-div');
+
 			addManagerButton.disabled = false;
 			getElementArray(division, 'option').some((op, i) => {
 				if (op.value.toLowerCase() === res.data.division.toLowerCase()) {
@@ -588,10 +592,18 @@ const getTeam = (e) => {
 			res.data.requestedManagers.forEach((m) => {
 				addManagerRow(m, true);
 			});
-			teamInfo.show();
+			//handle the subscription area
+			const subEvent = new CustomEvent('set-sub-level', {
+				detail: { subscriptions: res.data.membership },
+			});
+			document.dispatchEvent(subEvent);
+
+			// teamInfo.show();
+			subInfo.show();
 		} else {
 			showMessage('error', res.message);
 		}
+		// 63dd4c563968f111e026e6d3
 	};
 	handleRequest(str, 'GET', null, handler);
 };
@@ -599,7 +611,6 @@ const getTeam = (e) => {
 const createTeam = () => {
 	const body = {
 		name: teamName.value,
-		season: parseInt(teamSeason.value),
 		division: division.value,
 		color1: color1.value,
 		color2: color2.value,
@@ -612,13 +623,13 @@ const createTeam = () => {
 		if (res.status === 'success') {
 			showMessage('info', 'Successfully created team.');
 			const op = document.createElement('option');
-			op.innerHTML = `${res.data.name} (${res.data.season})`;
+			op.innerHTML = `${res.data.name}`;
 			op.value = res.data._id;
 			teamSelect.appendChild(op);
 			teamSelect.selectedIndex =
 				teamSelect.querySelectorAll('option').length - 1;
 			const op2 = op.cloneNode();
-			op2.innerHTML = `${res.data.name} (${res.data.season})`;
+			op2.innerHTML = `${res.data.name}`;
 			tourneyTeamSelect.appendChild(op2);
 			getTeam({ target: teamSelect });
 		}
@@ -629,7 +640,6 @@ const createTeam = () => {
 const saveTeam = () => {
 	const body = {
 		name: teamName.value,
-		season: parseInt(teamSeason.value),
 		division: division.value,
 		color1: color1.value,
 		color2: color2.value,
@@ -641,12 +651,12 @@ const saveTeam = () => {
 		if (res.status === 'success') {
 			showMessage('info', 'Successfully saved team.');
 			const opt = teamSelect.options[teamSelect.selectedIndex];
-			opt.innerHTML = `${res.data.name} (${res.data.season})`;
+			opt.innerHTML = `${res.data.name}`;
 			const opt2 = tourneyTeamSelect.querySelector(
 				`option[value="${res.data._id}"]`
 			);
 			if (opt2) {
-				opt2.innerHTML = `${res.data.name} (${res.data.season})`;
+				opt2.innerHTML = `${res.data.name}`;
 			}
 			getTeam({ target: teamSelect });
 		} else {
@@ -798,5 +808,6 @@ document.addEventListener('DOMContentLoaded', (e) => {
 
 	document.addEventListener('show.bs.tab', handleTabChange);
 
+	getTeam({ target: teamSelect });
 	changeJerseyPreviews();
 });

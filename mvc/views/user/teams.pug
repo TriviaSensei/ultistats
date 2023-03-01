@@ -4,7 +4,7 @@
         select#team-select
             option(value="") [Create New]
             each team in user.teams
-                option(value=`${team._id}`)= `${team.name} (${team.season})`
+                option(value=`${team._id}` selected=team._id.toString()===selectedTeam)= team.name
 .accordion#team-accordion.w-100
     .accordion-item 
         h2.accordion-header#team-info-header
@@ -16,10 +16,6 @@
                         label.form-label(for="team-name") Team name:
                         .input-group
                             input#team-name.form-control(type="text" name="name" placeholder="Team Name" data-field="name" required)
-                    .input-group-f.input-group-1
-                        label.form-label(for="season") Season:
-                        .input-group
-                            input#season.form-control(type="number" name="season" placeholder="Season" min=`${year}` data-field="season" required)
                 .input-group-f.mb-3
                     label.form-label(for="division") Division: 
                     select#division
@@ -136,6 +132,115 @@
                         input#new-manager-email.form-control(type="email" placeholder="E-mail")
                 .d-grid.gap-2.mb-3 
                     button#add-manager.btn.btn-primary(type="button" disabled) Request Add Manager
+    #subscription-item.accordion-item.invisible-div
+        h2.accordion-header#subscription-header
+            button.accordion-button(type="button" data-bs-toggle="collapse" data-bs-target="#subscription-info" aria-expanded="false" aria-controls="subscription-info") Subscription
+        #subscription-info.accordion-collapse.collapse(aria-labelled-by="subscription-header" data-bs-parent="#team-accordion")
+            form#membership-form.my-3.w-100
+                .input-group-h.w-100.mb-2
+                    .input-group-f.input-group-1
+                        .form-label Current membership: 
+                        div(style="text-align:left") #[span#current-membership Free] #[a#cancel-membership-link.invisible-div (Modify)]
+                    .input-group-f.input-group-1
+                        #mem-end.form-label Expires: 
+                        #current-membership-expires(style="text-align:left") Never
+                #upgrade-membership.input-group-f.w-100.mb-2
+                    #mem-features.w-100.collapse
+                        table.feature-table.m-2
+                            thead 
+                                th Membership Feature 
+                                each m in memberships
+                                    th= m.name  
+                            tbody 
+                                tr 
+                                    td O/D lines 
+                                    each m in memberships 
+                                        td ✓
+                                tr 
+                                    td Points played
+                                    each m in memberships 
+                                        td ✓
+                                tr 
+                                    td Goals and Assists 
+                                    each m in memberships 
+                                        td ✓
+                                tr 
+                                    td Turns and Blocks 
+                                    each m in memberships 
+                                        td ✓
+                                tr 
+                                    td Total Touches
+                                    each m in memberships 
+                                        td= `${m.touches ? '✓' : ''}`
+                                
+                                tr 
+                                    td Passing and Receiving Yards
+                                    each m in memberships 
+                                        td= `${m.yards ? '✓' : ''}`
+                                tr 
+                                    td Plus/Minus
+                                    each m in memberships 
+                                        td= `${m.plusMinus ? '✓' : ''}`
+                                tr 
+                                    td Offensive/Defensive Efficiency
+                                    each m in memberships 
+                                        td= `${m.efficiency ? '✓' : ''}`
+                                tr 
+                                    td Graphical Reports and Visual Statistics
+                                    each m in memberships 
+                                        td= `${m.heatmaps ? '✓' : ''}`
+                                tr
+                                    td Maximum preset lines 
+                                    each m in memberships
+                                        td= m.maxLines 
+                                tr
+                                    td Cost 
+                                    each m in memberships
+                                        td= `${m.cost === 0 ? 'Free' : '$' + m.cost + '/yr'}` 
+                                tr 
+                                    td After first year w/auto-renew
+                                    each m in memberships
+                                        td= `${m.cost === 0 ? 'Free' : '$' + (m.cost*0.9).toFixed(0) + '/yr'}`
+                    button#feature-toggle.btn.btn-primary.btn-sm.w-25.mb-3(type="button" data-bs-toggle="collapse" data-bs-target="#mem-features" aria-expanded="false" aria-controls="mem-features") View features
+                    #membership-area.input-group-f.input-group-1
+                        .form-label.mb-2 Upgrade/extend membership:
+                        .input-group-h.w-100.mb-2
+                            #select-mem-type.selection-container.input-group-f.justify-content-end
+                                .form-label Membership Type 
+                                .radio-container.input-group-h
+                                    - let i = 0;
+                                    each product in productList
+                                        input(id=`${product.id}` type="radio" name="mem-type" value=`${product.id}` data-price=`${product.priceData.unit_amount}` checked=i===productList.length-1)
+                                        label(for=`${product.id}`)= product.name 
+                                        - i++;
+                            #select-upgrade.selection-container.input-group-f.justify-content-end 
+                                .form-label Upgrade existing membership #[a(data-bs-toggle="tooltip" data-bs-title="Upgrade membership for rest of current period as well") #[img(src="/img/info.svg")]]
+                                .radio-container.input-group-h
+                                    input#upgrade-yes(type="radio" name="upgrade-existing" value="yes" checked)
+                                    label(for="upgrade-yes") Yes 
+                                    input#upgrade-no(type="radio" name="upgrade-existing" value="no")
+                                    label(for="upgrade-no") No 
+                            #select-recurrence.selection-container.input-group-f.justify-content-end 
+                                .form-label Auto-renew #[a(data-bs-toggle="tooltip" data-bs-title="Automatically renew membership at a 10% discount after the first year") #[img(src="/img/info.svg")]]
+                                .radio-container.input-group-h
+                                    input#renew-yes(type="radio" name="renew" value="yes" checked)
+                                    label(for="renew-yes") On 
+                                    input#renew-no(type="radio" name="renew" value="no")
+                                    label(for="renew-no") Off
+                        table 
+                            tr
+                                td.w-50
+                                    .form-label Today's total estimated cost: 
+                                td.w-50
+                                    .form-label $#[span#total-cost 0.00]
+                            tr#renew-row
+                                td 
+                                    #renew-price.form-label Renewal cost: 
+                                td 
+                                    #renewal-cost.form-label $0.00/year until cancelled
+                        button#checkout.btn.btn-primary(type="submit") Checkout
+                                    
+
 .w-100.d-grid.gap-2.my-3
     button.btn.btn-primary(type="submit" form="team-form") Save Team
     

@@ -163,7 +163,8 @@ body {
 }
 
 .roster-table td,
-#manager-table td {
+#manager-table td,
+.feature-table td {
 	border: 1px solid black;
 	text-align: center;
 	overflow-wrap: break-word;
@@ -204,8 +205,34 @@ h6 {
 }
 
 .roster-list tr.player-row:hover,
-#manager-list tr.manager-row:hover {
+#manager-list tr.manager-row:hover,
+.feature-table tbody > tr:hover {
 	background-color: var(--color-1);
+}
+
+#membership-area input[type='radio'] {
+	display: none;
+}
+
+#membership-area label {
+	padding: 10px;
+	border: 1px solid var(--black);
+}
+
+#membership-area img {
+	max-height: 1.5rem;
+	max-width: 1.5rem;
+}
+
+#membership-area label {
+	color: var(--med-gray);
+	font-weight: bold;
+	cursor: pointer;
+}
+
+#membership-area input[type='radio']:checked + label {
+	background-color: var(--color-1);
+	color: var(--black);
 }
 
 .fill-scroll {
