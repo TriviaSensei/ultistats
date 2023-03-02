@@ -17,7 +17,7 @@ exports.memberships = [
 		cost: 0,
 		recurringCost: 0,
 		points: true,
-		touches: false,
+		touches: true,
 		goals: true,
 		assists: true,
 		turns: true,

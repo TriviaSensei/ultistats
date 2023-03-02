@@ -594,12 +594,28 @@ const getTeam = (e) => {
 			});
 			//handle the subscription area
 			const subEvent = new CustomEvent('set-sub-level', {
-				detail: { subscriptions: res.data.membership },
+				detail: {
+					subscription: res.data.subscription,
+					isMe: res.data.isMe,
+					currentManager: res.data.currentManager,
+				},
 			});
 			document.dispatchEvent(subEvent);
 
 			// teamInfo.show();
-			subInfo.show();
+			const show = document.querySelector('#show');
+			if (show) {
+				if (
+					show.value &&
+					document.querySelector(`#${show.value}.accordion-collapse`)
+				) {
+					const a = new bootstrap.Collapse(`#${show.value}`);
+					if (a) a.show();
+				}
+				show.remove();
+			} else {
+				subInfo.show();
+			}
 		} else {
 			showMessage('error', res.message);
 		}

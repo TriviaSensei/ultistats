@@ -28,30 +28,7 @@ exports.verifyOwnership = catchAsync(async (req, res, next) => {
 		select: 'firstName lastName displayName _id',
 	});
 
-	//check the membership level and expiration.
-	const offset = new Date().getTimezoneOffset();
-	const now = Date.parse(new Date());
-	const exp = Date.parse(res.locals.team.membershipExpires) + offset * 60000;
-
-	if (memberships.length === 0)
-		res.locals.membership = {
-			name: 'Free',
-			maxLines: 0,
-		};
-	else if (now > exp) res.locals.membership = memberships[0];
-	else if (
-		!memberships.some((m) => {
-			if (
-				m.name.toLowerCase().trim() ===
-				res.locals.team.membershipLevel.toLowerCase().trim()
-			) {
-				res.locals.membership = m;
-				return true;
-			}
-		})
-	) {
-		res.locals.membership = memberships[0];
-	}
+	//todo: check the membership and expiration
 
 	if (!res.locals.team) return next(new AppError('Team not found', 404));
 	else if (

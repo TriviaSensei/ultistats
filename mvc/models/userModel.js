@@ -66,6 +66,10 @@ const userSchema = new mongoose.Schema({
 		type: [mongoose.Schema.ObjectId],
 		ref: 'Teams',
 	},
+	customerIds: {
+		type: [String],
+		default: [],
+	},
 });
 
 userSchema.pre('save', async function (next) {

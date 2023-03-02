@@ -1,28 +1,30 @@
 const mongoose = require('mongoose');
-const { memberships } = require('../../utils/settings');
 
 const subscriptionSchema = new mongoose.Schema({
 	team: {
 		type: mongoose.Schema.ObjectId,
 		ref: 'Teams',
 	},
+	user: {
+		type: mongoose.Schema.ObjectId,
+		ref: 'Users',
+	},
 	//stripe sub ID
 	subscriptionId: String,
-	type: {
-		type: String,
-		enum: memberships
-			.filter((m) => {
-				return m.cost > 0;
-			})
-			.map((m) => {
-				return m.name;
-			}),
-	},
+	name: String,
 	price: Number,
-	level: Number,
-	startDate: Date,
-	endDate: Date,
-	autoRenew: Boolean,
+	createdAt: {
+		type: Date,
+		default: Date.now(),
+	},
+	expires: {
+		type: Date,
+		default: new Date().setFullYear(9999),
+	},
+	active: {
+		type: Boolean,
+		default: true,
+	},
 });
 
 const Subscriptions = mongoose.model(

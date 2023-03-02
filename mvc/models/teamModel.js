@@ -81,8 +81,8 @@ const teamSchema = new mongoose.Schema({
 			- Offense, defense, and up to 6 additional preset lines for each tournament
 	 * 		
 	 */
-	membership: {
-		type: [mongoose.Schema.ObjectId],
+	subscription: {
+		type: mongoose.Schema.ObjectId,
 		ref: 'Subscriptions',
 	},
 });

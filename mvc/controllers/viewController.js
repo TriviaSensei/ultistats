@@ -7,7 +7,31 @@ const Tournament = require('../models/tournamentModel');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const { rosterLimit } = require('../../utils/settings');
-const { memberships } = require('../../utils/settings');
+
+exports.handleAlert = (req, res, next) => {
+	if (!req.query.alert) {
+		return next();
+	}
+	switch (req.query.alert) {
+		case 'payment-cancel':
+			res.locals.alert = {
+				status: 'warning',
+				message: 'Payment cancelled',
+				duration: 1000,
+			};
+			break;
+		case 'payment-success':
+			res.locals.alert = {
+				status: 'info',
+				message:
+					'Payment successful. If the subscription area does not reflect your purchase, please refresh the page or come back later.',
+				duration: 3000,
+			};
+			break;
+		default:
+	}
+	next();
+};
 
 exports.loginRedirect = catchAsync(async (req, res, next) => {
 	if (!res.locals.user) {
@@ -72,7 +96,7 @@ exports.confirmRegistration = catchAsync(async (req, res, next) => {
 });
 
 exports.getAccount = (req, res) => {
-	console.log(res.locals.user);
+	// console.log(res.locals.user);
 	res.status(200).render('myAccount', {
 		title: 'My Account',
 		user: res.locals.user,
@@ -84,8 +108,6 @@ exports.getAccount = (req, res) => {
 };
 
 exports.getManagerPage = catchAsync(async (req, res) => {
-	console.log(req.params);
-
 	if (!req.user) return res.redirect('/login');
 
 	const formats = await Format.find();
@@ -114,6 +136,25 @@ exports.getManagerPage = catchAsync(async (req, res) => {
 			return a.priceData.unit_amount - b.priceData.unit_amount;
 		});
 
+	let mems = await stripe.products.list();
+
+	let memberships = await Promise.all(
+		mems.data.map(async (m) => {
+			const priceData = await stripe.prices.retrieve(m.default_price);
+			// console.log(m.metadata);
+			return {
+				...m,
+				...m.metadata,
+				cost: priceData.unit_amount / 100,
+			};
+		})
+	);
+	memberships = memberships.sort((a, b) => {
+		return a.cost - b.cost;
+	});
+
+	// console.log(memberships);
+
 	const user = await req.user.populate('teams');
 	res.status(200).render('myStuff', {
 		title: 'My Stuff',
@@ -121,9 +162,16 @@ exports.getManagerPage = catchAsync(async (req, res) => {
 		selectedTeam: req.params.id,
 		rosterLimit,
 		formats,
-		stripeKey: process.env.STRIPE_PUBLIC_KEY,
 		memberships,
 		productList,
+		action:
+			req.url.search('/success/') > 0
+				? 'success'
+				: req.url.search('/cancel/') > 0
+				? 'cancel'
+				: undefined,
+		show: req.query.show,
+		alert: res.locals.alert,
 	});
 });
 

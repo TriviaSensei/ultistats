@@ -8,7 +8,7 @@ const Team = require('../models/teamModel');
 const Game = require('../models/gameModel');
 const Format = require('../models/formatModel');
 const Subscription = require('../models/subscriptionModel');
-const { memberships } = require('../../utils/settings');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 //this will delete one of any document, depending on what gets passed to it.
 exports.deleteOne = (Model) =>
@@ -48,6 +48,14 @@ exports.updateOne = (Model) =>
 		const loc = arr.length > 3 ? arr[3] : '';
 
 		if (loc.toLowerCase() === 'users') {
+			if (req.body.paymentMethod) {
+				return next(
+					new AppError(
+						'This route is not for updating your payment method',
+						400
+					)
+				);
+			}
 		} else if (loc.toLowerCase() === 'games') {
 			if (req.body.points) {
 				return next(
@@ -127,10 +135,6 @@ exports.createOne = (Model) =>
 					p.active = true;
 				});
 			}
-			req.body.membershipLevel = 'Free';
-			req.body.membershipType = 'sub';
-			const d = new Date(9999, 0, 0, 0, 0, 0, 0);
-			req.body.membershipExpires = d;
 		} else if (loc === 'games') {
 			if (!req.body.cap && !req.body.hardCap) {
 				req.body.cap = 15;
@@ -204,7 +208,7 @@ exports.getOne = (Model, popOptions) =>
 		const arr = req.originalUrl.trim().split('/');
 		const loc = arr.length > 3 ? arr[3] : '';
 		let filter = { _id: req.params.id };
-
+		let isMe;
 		query = Model.find(filter);
 
 		if (popOptions) query = query.populate(popOptions);
@@ -221,9 +225,10 @@ exports.getOne = (Model, popOptions) =>
 					select: 'firstName lastName displayName _id',
 				},
 				{
-					path: 'membership',
-					match: {
-						endDate: { $gt: new Date() },
+					path: 'subscription',
+					populate: {
+						path: 'user',
+						select: '_id firstName lastName',
 					},
 				},
 			]);
@@ -245,24 +250,22 @@ exports.getOne = (Model, popOptions) =>
 				return p.active;
 			});
 
-			const currentMem = memberships.find((m) => {
-				return m.name === doc.membershipLevel;
-			});
-
-			if (!currentMem) {
-				doc.availableMemberships = memberships.filter((m) => {
-					return m.cost > 0;
-				});
-			} else {
-				doc = {
+			let toReturn;
+			if (doc.subscription) {
+				toReturn = {
 					...doc.toJSON(),
-					availableMemberships: memberships.filter((m) => {
-						return m.level >= currentMem.level && m.cost > 0;
-					}),
+					isMe:
+						doc.subscription.user._id.toString() ===
+						res.locals.user._id.toString(),
+					currentManager: `${doc.subscription.user.firstName} ${doc.subscription.user.lastName}`,
 				};
-
-				console.log(doc);
+			} else {
+				toReturn = doc.toJSON();
 			}
+			return res.status(200).json({
+				status: 'success',
+				data: toReturn,
+			});
 			// doc.managers = doc.managers.sort((a, b) => {
 			// 	const a1 = a._id.toString() === res.locals.user._id.toString() ? 1 : 0;
 			// 	const b1 = b._id.toString() === res.locals.user._id.toString() ? 1 : 0;

@@ -18,6 +18,7 @@ block modals
     include components/modals/editGameModal
 
 block content 
+    input#show(type="hidden" value=`${show}`)
     section.navbar-container
         .container-fluid
             .container-fill

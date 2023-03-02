@@ -13,6 +13,7 @@ const teamRouter = require('./mvc/routes/teamRoutes');
 const tournamentRouter = require('./mvc/routes/tournamentRoutes');
 const userRouter = require('./mvc/routes/userRoutes');
 const viewRouter = require('./mvc/routes/viewRoutes');
+const subscriptionRouter = require('./mvc/routes/subscriptionRoutes');
 
 // const viewRouter = require('./routes/viewRoutes');
 
@@ -59,6 +60,7 @@ app.use('/api/v1/games/', gameRouter);
 app.use('/api/v1/teams/', teamRouter);
 app.use('/api/v1/tournaments/', tournamentRouter);
 app.use('/api/v1/users/', userRouter);
+app.use('/api/v1/subscriptions/', subscriptionRouter);
 app.use('/', viewRouter);
 
 app.all('*', (req, res, next) => {

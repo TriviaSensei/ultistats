@@ -3,19 +3,20 @@ import { getElementArray } from './utils/getElementArray.js';
 import { showMessage } from './utils/messages.js';
 import { handleRequest } from './utils/requestHandler.js';
 
+const teamSelect = document.querySelector('#team-select');
+
 const expires = document.querySelector('#current-membership-expires');
 const memLevel = document.querySelector('#current-membership');
 const memArea = document.querySelector('#membership-area');
 const checkoutForm = document.querySelector('#membership-form');
 const memEnd = document.querySelector('#mem-end');
+const manager = document.querySelector('#current-manager');
 const memSelect = document.querySelector('#select-mem-type');
-const selectUpgrade = document.querySelector('#select-upgrade');
 const pricePreview = document.querySelector('#total-cost');
 const renewRow = document.querySelector('#renew-row');
-const renewSelect = document.querySelector('#select-recurrence');
 const renewalPreview = document.querySelector('#renewal-cost');
 const memCheckout = document.querySelector('#checkout');
-const cancelLink = document.querySelector('#cancel-membership-link');
+const toggleRenew = document.querySelector('#toggle-renew-button');
 const featureToggle = document.querySelector('#feature-toggle');
 
 let currentMembership;
@@ -41,67 +42,34 @@ const tooltipList = [...tooltipTriggerList].map(
  * Plus                     Yes                 Only option to turn on auto-renew
  */
 const handleSubscriptionArea = (e) => {
-	//try to find the current membership
-	if (
-		!e.detail.subscriptions.some((s) => {
-			const sd = Date.parse(s.startDate);
-			const ed = Date.parse(s.endDate);
-			const now = Date.parse(new Date());
+	console.log(e.detail);
+	currentMembership = e.detail.subscription;
 
-			//if we have a current membership, populate it
-			if (now < ed && now >= sd) {
-				currentMembership = s;
-				memLevel.innerHTML = s.type;
-				const d = new Date(ed);
-				let expDate = d.toLocaleDateString();
-				if (d.getFullYear > 9000) expDate = 'Never';
-				else {
-					const timeLeft = (ed - now) / (1000 * 60 * 60 * 24);
-					if (timeLeft <= 1) {
-						expDate = `${expDate} (< 1 day)`;
-					} else if (timeLeft <= 30) {
-						expDate = `${expDate} (${Math.floor(timeLeft)} days)`;
-					}
-				}
-				expires.innerHTML = expDate;
-				if (s.autoRenew) {
-					memEnd.innerHTML = 'Renews:';
-				} else {
-					memEnd.innerHTML = 'Expires:';
-				}
-				return true;
-			}
-		})
-	) {
+	//try to find the current membership
+	//no subscription - show every option
+	if (!e.detail.subscription) {
 		currentMembership = undefined;
 		memLevel.innerHTML = 'Free';
 		memEnd.innerHTML = 'Expires';
 		expires.innerHTML = 'Never';
+		manager.innerHTML = 'N/A';
+	} else {
+		memLevel.innerHTML = currentMembership.name;
+		memEnd.innerHTML = currentMembership.active ? 'Renews' : 'Expires';
+		manager.innerHTML = e.detail.isMe ? 'Me' : e.detail.currentManager;
+		const newDate = new Date(Date.parse(currentMembership.createdAt));
+		newDate.setFullYear(newDate.getFullYear() + 1);
+		expires.innerHTML = newDate.toLocaleDateString();
+
+		//right now, everything is showing.
 	}
 
-	if (!currentMembership) {
-		selectUpgrade.classList.add('invisible-div');
+	console.log(e.detail.isMe, currentMembership);
+	if (!e.detail.isMe && currentMembership) {
+		memArea.classList.add('invisible-div');
+	} else {
+		memArea.classList.remove('invisible-div');
 	}
-
-	// if (
-	// 	e.detail.availableMemberships.length > 0 && //at least one membership available
-	// 	(e.detail.availableMemberships.length > 1 || e.detail.type !== 'sub') && //we don't have a recurring highest membership
-	// 	(d.getFullYear() <= 9000 || e.detail.subscription === 'Free') //the membership will expire, or it's the free membership
-	// ) {
-	// 	//show the checkout form
-	// 	const opts = getElementArray(memSelect, 'option');
-	// 	opts.forEach((o) => {
-	// 		o.remove();
-	// 	});
-	// 	e.detail.availableMemberships.forEach((a) => {
-	// 		const opt = createElement('option');
-	// 		opt.setAttribute('value', a.name);
-	// 		opt.innerHTML = `${a.name} - $${a.cost}/year`;
-	// 		memSelect.appendChild(opt);
-	// 	});
-	// 	if (memSelect) memSelect.selectedIndex = 0;
-	// 	checkoutForm.classList.remove('invisible-div');
-	// }
 
 	handlePrices(null);
 };
@@ -130,21 +98,39 @@ const handlePrices = (e) => {
 	pricePreview.innerHTML = cost.toFixed(2);
 
 	//auto-renew
-	const renew = checkoutForm.querySelector(
-		`input[type="radio"][name="renew"]:checked`
-	)?.value;
-	if (renew === 'yes') {
-		renewRow.classList.remove('invisible-div');
-		const basePrice = checkoutForm
-			.querySelector('input[type="radio"][name="mem-type"]:checked')
-			?.getAttribute('data-price');
-		if (basePrice) {
-			const c = (parseInt(basePrice) / 100) * 0.9;
-			renewalPreview.innerHTML = `$${c.toFixed(2)}/year until cancelled`;
-		}
-	} else {
-		renewalPreview.innerHTML = `N/A`;
+
+	const basePrice = checkoutForm
+		.querySelector('input[type="radio"][name="mem-type"]:checked')
+		?.getAttribute('data-price');
+	if (basePrice) {
+		const c = (parseInt(basePrice) / 100) * 0.9;
+		renewalPreview.innerHTML = `$${c.toFixed(2)}/year until cancelled`;
 	}
+};
+
+const handleCheckout = (e) => {
+	if (e.target !== checkoutForm) return;
+	e.preventDefault();
+	if (!teamSelect.value) return;
+
+	const str = `/api/v1/subscriptions/create-checkout-session/${teamSelect.value}`;
+	const body = {
+		product: checkoutForm.querySelector(
+			`input[type="radio"][name="mem-type"]:checked`
+		).value,
+		upgradeExisting:
+			checkoutForm.querySelector(
+				`input[type="radio"][name="upgrade-existing"]:checked`
+			)?.value === 'yes',
+	};
+	const handler = (res) => {
+		if (res.status === 'success') {
+			location.href = res.data.url;
+		} else {
+			showMessage('error', res.message);
+		}
+	};
+	handleRequest(str, 'POST', body, handler);
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -154,4 +140,6 @@ document.addEventListener('DOMContentLoaded', () => {
 	getElementArray(memArea, 'input[type="radio"]').forEach((r) => {
 		r.addEventListener('change', handlePrices);
 	});
+
+	checkoutForm.addEventListener('submit', handleCheckout);
 });
