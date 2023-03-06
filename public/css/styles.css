@@ -23,6 +23,7 @@ body {
 	background-color: var(--white);
 	color: var(--black);
 	margin: 0;
+	font-size: 0.9rem;
 }
 
 * {
@@ -53,6 +54,30 @@ a {
 	margin: auto;
 } */
 
+.f-1 {
+	flex: 1;
+}
+.f-2 {
+	flex: 2;
+}
+.f-3 {
+	flex: 3;
+}
+.f-4 {
+	flex: 4;
+}
+.f-5 {
+	flex: 5;
+}
+
+.modal-dialog {
+	max-height: 80%;
+}
+
+.modal-content {
+	max-height: 90vh;
+}
+
 .accordion-item {
 	background-color: var(--white);
 	border: none;
@@ -73,6 +98,7 @@ a {
 
 .form-label {
 	text-overflow: ellipsis;
+	font-weight: bold;
 }
 
 .container-all {
@@ -140,10 +166,6 @@ nav {
 	font-size: 2rem;
 }
 
-.btn {
-	padding: 0;
-}
-
 button > a {
 	text-decoration: none;
 	color: inherit;
@@ -181,7 +203,7 @@ button > a > div {
 
 .tab-inner {
 	height: 100%;
-	overflow-y: scroll;
+	overflow-y: auto;
 	overflow-x: hidden;
 }
 
@@ -218,6 +240,21 @@ button > a > div {
 	color: white;
 }
 
+.accordion-button {
+	padding-top: 0.5rem;
+	padding-bottom: 0.5rem;
+	font-size: 0.8rem;
+}
+
+.accordion-button:not(.collapsed) {
+	background-color: var(--color-1);
+	color: var(--black);
+}
+
+.accordion-button:focus {
+	border-color: var(--color-2);
+}
+
 .invisible-div {
 	display: none !important;
 }
@@ -232,6 +269,81 @@ button > a > div {
 
 tbody > tr.filler-row:not(:last-child) {
 	display: none;
+}
+
+.hidden-radios input[type='radio'] {
+	display: none;
+}
+
+.hidden-radios label {
+	padding: 10px;
+	border: 1px solid var(--black);
+}
+
+.hidden-radios img {
+	max-height: 1.5rem;
+	max-width: 1.5rem;
+}
+
+.hidden-radios label {
+	color: var(--med-gray);
+	font-weight: bold;
+	cursor: pointer;
+}
+
+.hidden-radios input[type='radio']:checked + label {
+	background-color: var(--color-1);
+	color: var(--black);
+}
+
+.hidden-radios .radio-container {
+	height: 2rem;
+}
+
+.fill-scroll {
+	height: 100%;
+	max-height: 100%;
+	overflow-y: auto;
+}
+
+.roster-option {
+	display: flex;
+	align-items: center;
+	max-width: 100%;
+}
+
+.roster-option > * {
+	margin-left: 0.25rem;
+	margin-right: 0.25rem;
+	white-space: nowrap;
+	text-overflow: clip;
+	font-size: 0.8rem;
+}
+
+.roster-option > input[type='checkbox'] {
+	width: 1rem;
+	height: 1rem;
+	min-width: 1rem;
+	max-width: 1rem;
+	min-height: 1rem;
+	max-height: 1rem;
+}
+
+.player-container:not(.male) > .roster-option[data-gender='M'],
+.player-container:not(.female) > .roster-option[data-gender='F'],
+.player-container:not(.defense) > .roster-option[data-line='D'],
+.player-container:not(.offense) > .roster-option[data-line='O'],
+.player-container:not(.handler) > .roster-option[data-position='H'],
+.player-container:not(.cutter) > .roster-option[data-position='C'],
+.player-container:not(.hybrid) > .roster-option[data-position='Hy'] {
+	display: none !important;
+}
+
+#m-count {
+	color: var(--blue);
+}
+#f-count {
+	color: var(--pink);
 }
 
 @media (pointer: fine) {

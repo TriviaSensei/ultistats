@@ -1,0 +1,33 @@
+.modal.fade#start-settings-modal(tabindex="-1" aria-labelledby="start-settings-label" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true")
+    .modal-dialog.modal-dialog-centered
+        .modal-content#start-settings-modal-content
+            .modal-header
+                h5.modal-title#start-settings-label Game start settings
+            .modal-body
+                form#game-start-settings.w-100.hidden-radios
+                    .settings-row.d-flex.w-100.mb-3
+                        .setting-label.form-label.my-auto We start on 
+                        .setting-container
+                            .radio-container.d-flex 
+                                input#start-offense(type="radio" value="true" name="start-on" data-field="offense")
+                                label(for="start-offense") Offense 
+                                input#start-defense(type="radio" value="false" name="start-on" data-field="offense")
+                                label(for="start-defense") Defense
+                    -if (division === "Mixed")
+                        .settings-row.d-flex.w-100.mb-3
+                            .setting-label.form-label.my-auto Starting gender majority 
+                            .setting-container 
+                                .radio-container.d-flex 
+                                    input#gender-m(type="radio" value="m" name="start-gender" data-field="genderRatio")
+                                    label(for="gender-m") Male 
+                                    input#gender-f(type="radio" value="f" name="start-gender" data-field="genderRatio")
+                                    label(for="gender-f") Female
+                    .settings-row.d-flex.w-100.mb-3
+                        .setting-label.form-label.my-auto Our starting attacking direction
+                        .setting-container
+                            .radio-container.d-flex 
+                                input#start-left(type="radio" value="-1" name="start-direction" data-field="direction")
+                                label(for="start-left") ⇦ 
+                                input#start-right(type="radio" value="1" name="start-direction" data-field="direction")
+                                label(for="start-right") ⇨
+                    button.btn.btn-primary(type="submit" disabled) Save

@@ -3,45 +3,6 @@
 	width: min(95%, 600px);
 }
 
-.roster-option {
-	display: flex;
-	align-items: center;
-}
-
-.roster-option > * {
-	margin-left: 0.25rem;
-	margin-right: 0.25rem;
-	white-space: nowrap;
-	text-overflow: clip;
-	font-size: 0.8rem;
-}
-
-.roster-option > input[type='checkbox'] {
-	width: 1rem;
-	height: 1rem;
-	min-width: 1rem;
-	max-width: 1rem;
-	min-height: 1rem;
-	max-height: 1rem;
-}
-
-.player-container:not(.male) > .roster-option[data-gender='M'],
-.player-container:not(.female) > .roster-option[data-gender='F'],
-.player-container:not(.defense) > .roster-option[data-line='D'],
-.player-container:not(.offense) > .roster-option[data-line='O'],
-.player-container:not(.handler) > .roster-option[data-position='H'],
-.player-container:not(.cutter) > .roster-option[data-position='C'],
-.player-container:not(.hybrid) > .roster-option[data-position='Hy'] {
-	display: none !important;
-}
-
-#m-count {
-	color: var(--blue);
-}
-#f-count {
-	color: var(--pink);
-}
-
 input[type='checkbox']:checked + label {
 	font-weight: bold;
 }

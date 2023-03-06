@@ -6,8 +6,8 @@ const Team = require('../models/teamModel');
 const Game = require('../models/gameModel');
 const Format = require('../models/formatModel');
 const { v4: uuidV4 } = require('uuid');
-
-const { memberships } = require('../../utils/settings');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const { freeMembership } = require('../../utils/settings');
 
 exports.verifyOwnership = catchAsync(async (req, res, next) => {
 	console.log('verifying ownership');
@@ -23,13 +23,18 @@ exports.verifyOwnership = catchAsync(async (req, res, next) => {
 	res.locals.format = t.format;
 	if (!res.locals.format) return next(new AppError('Invalid format', 400));
 
-	res.locals.team = await Team.findById(t.team.toString()).populate({
-		path: 'managers',
-		select: 'firstName lastName displayName _id',
-	});
+	res.locals.team = await Team.findById(t.team.toString()).populate([
+		{
+			path: 'managers',
+			select: 'firstName lastName displayName _id',
+		},
+		{
+			path: 'subscription',
+			select: 'subscriptionId expires',
+		},
+	]);
 
-	//todo: check the membership and expiration
-
+	//make sure the user is a manager of this team
 	if (!res.locals.team) return next(new AppError('Team not found', 404));
 	else if (
 		!res.locals.team.managers.some((m) => {
@@ -37,6 +42,24 @@ exports.verifyOwnership = catchAsync(async (req, res, next) => {
 		})
 	) {
 		return next(new AppError('You are not a manager of this team.', 403));
+	}
+
+	//todo: check the membership and expiration
+	res.locals.membership = freeMembership;
+	const subObj = res.locals.team.subscription;
+	if (subObj) {
+		const stripeSub = await stripe.subscriptions.retrieve(
+			subObj.subscriptionId
+		);
+		if (stripeSub) {
+			const product = await stripe.products.retrieve(
+				stripeSub.items.data[0].price.product
+			);
+			res.locals.membership = {
+				...product.metadata,
+				maxLines: parseInt(product.metadata.maxLines),
+			};
+		}
 	}
 
 	next();
@@ -176,18 +199,12 @@ exports.modifyLine = catchAsync(async (req, res, next) => {
 	 */
 	const tournament = res.locals.tournament;
 	const maxLines = res.locals.membership.maxLines;
-	const maxLevel = memberships[memberships.length - 1];
 
 	//verify that the membership level allows the user to set lines
 	if (!req.body.id && tournament.lines.length >= maxLines)
 		return next(
 			new AppError(
-				`You may create a total of ${maxLines} preset lines. ${
-					res.locals.team.membershipLevel.toLowerCase().trim() ===
-					maxLevel.name.toLowerCase().trim()
-						? ''
-						: 'Please upgrade your membership for more.'
-				}`,
+				`Your subscription allows a total of ${maxLines} preset lines per event.`,
 				400
 			)
 		);

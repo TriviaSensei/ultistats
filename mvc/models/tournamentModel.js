@@ -50,6 +50,11 @@ const tournamentSchema = new mongoose.Schema({
 		default: 15,
 		min: [7, 'The minimum point cap is 7'],
 	},
+	genderRule: {
+		type: String,
+		enum: ['A', 'B', 'X'],
+		default: 'A',
+	},
 	games: {
 		type: [mongoose.Schema.ObjectId],
 		ref: 'Games',

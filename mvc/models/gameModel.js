@@ -49,6 +49,14 @@ const gameSchema = new mongoose.Schema({
 		default: 0,
 		min: 0,
 	},
+	startSettings: {
+		type: Object,
+		default: {
+			offense: undefined,
+			genderRatio: undefined,
+			direction: undefined,
+		},
+	},
 	points: {
 		type: [Object],
 	},

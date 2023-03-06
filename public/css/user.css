@@ -22,7 +22,7 @@ body {
 .nav-link,
 .navbar-nav .nav-link.active {
 	color: var(--black);
-	font-size: 1.25rem;
+	font-size: 1rem;
 }
 
 .nav-tabs .nav-link {
@@ -47,7 +47,7 @@ body {
 	height: 100%;
 	display: flex;
 	flex-direction: column;
-	overflow-y: scroll;
+	overflow-y: auto;
 	align-items: center;
 }
 
@@ -208,37 +208,6 @@ h6 {
 #manager-list tr.manager-row:hover,
 .feature-table tbody > tr:hover {
 	background-color: var(--color-1);
-}
-
-#membership-area input[type='radio'] {
-	display: none;
-}
-
-#membership-area label {
-	padding: 10px;
-	border: 1px solid var(--black);
-}
-
-#membership-area img {
-	max-height: 1.5rem;
-	max-width: 1.5rem;
-}
-
-#membership-area label {
-	color: var(--med-gray);
-	font-weight: bold;
-	cursor: pointer;
-}
-
-#membership-area input[type='radio']:checked + label {
-	background-color: var(--color-1);
-	color: var(--black);
-}
-
-.fill-scroll {
-	height: 100%;
-	max-height: 100%;
-	overflow-y: scroll;
 }
 
 @media (min-width: 992px) {

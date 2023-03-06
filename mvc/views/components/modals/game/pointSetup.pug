@@ -1,0 +1,82 @@
+.modal.fade#point-setup-modal(tabindex="-1" aria-labelledby="point-setup-label" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true")
+    .modal-dialog.modal-dialog-centered
+        .modal-content#point-setup-modal-content
+            .modal-header
+                h5.modal-title#point-setup-label New Point Setup
+                button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+            .modal-body.overflow-auto
+                .w-100.h-100
+                    form#point-setup.w-100.h-100
+                        .settings-row.d-flex.w-100.mb-2.fw-bold.border-bottom.border-3.border-dark
+                            #our-name-modal.f-5.text-end= team
+                            .f-2.text-center #[span#our-score-modal 0]-#[span#their-score-modal 0] 
+                            #their-name-modal.f-5.text-start= gameData.opponent
+                        .settings-row.d-flex.w-100.mb-2
+                            .setting-label.form-label.my-auto We are on
+                            .setting-container.hidden-radios
+                                .radio-container.d-flex 
+                                    input#od-offense(type="radio" value="true" name="od" data-field="offense")
+                                    label(for="od-offense") Offense 
+                                    input#od-defense(type="radio" value="false" name="od" data-field="offense")
+                                    label(for="od-defense") Defense
+                        .settings-row.d-flex.w-100.mb-2
+                            .setting-label.form-label.my-auto Going
+                            .setting-container.hidden-radios
+                                .radio-container.d-flex 
+                                    input#direction-left(type="radio" value="-1" name="attack-direction" data-field="direction")
+                                    label(for="direction-left") ⇦ 
+                                    input#direction-right(type="radio" value="1" name="attack-direction" data-field="direction")
+                                    label(for="direction-right") ⇨
+                        .settings-row.d-flex.w-100.mb-2
+                            .setting-label.form-label.my-auto Gender ratio
+                            #prescribed-gender-ratio.setting-container 4M / 3F
+                        .settings-row.d-flex.w-100.mb-2 
+                            .setting-label.form-label.my-auto Preset line
+                            .setting-container 
+                                select#line-select
+                                    option(value="") (Manual)
+                                button.btn.btn-primary.btn-sm.mx-2(type="button") Set
+                        .settings-row.d-flex.w-100.mb-2
+                            .w-100.d-flex.flex-column
+                                #line-filter-panel.filter-panel.d-flex.w-100.ms-2
+                                    .d-flex.f-1.flex-column.align-items-center
+                                        .form-label.mb-1 Gen 
+                                        .d-flex.f-1.w-100.justify-content-center
+                                            input#toggle-line-mm(type="checkbox" data-target="#available-container,#line-container" data-toggle="male" checked)
+                                            label.ms-1.me-2(for="toggle-line-mm") M
+                                            input#toggle-line-fm(type="checkbox" data-target="#available-container,#line-container" data-toggle="female" checked)
+                                            label.ms-1.me-2(for="toggle-line-fm") F
+                                    .d-flex.f-1.flex-column.align-items-center
+                                        .form-label.mb-1 Ln
+                                        .d-flex.f-1.w-100.justify-content-center
+                                            input#toggle-line-dl(type="checkbox" data-target="#available-container,#line-container" data-toggle="defense" checked)
+                                            label.ms-1.me-2(for="toggle-line-dl") D
+                                            input#toggle-line-ol(type="checkbox" data-target="#available-container,#line-container" data-toggle="offense" checked)
+                                            label.ms-1.me-2(for="toggle-line-ol") O
+                                    .d-flex.f-1.flex-column.align-items-center
+                                        .form-label.mb-1 Pos 
+                                        .d-flex.f-1.w-100.justify-content-center
+                                            input#toggle-line-hd(type="checkbox" data-target="#available-container,#line-container" data-toggle="handler" checked)
+                                            label.ms-1.me-2(for="toggle-line-hd") H
+                                            input#toggle-line-ct(type="checkbox" data-target="#available-container,#line-container" data-toggle="cutter" checked)
+                                            label.ms-1.me-2(for="toggle-line-ct") C
+                                            input#toggle-line-hy(type="checkbox" data-target="#available-container,#line-container" data-toggle="hybrid" checked)
+                                            label.ms-1.me-2(for="toggle-line-hy") Hy              
+                                .d-flex.f-1.w-100.overflow-hidden
+                                    .d-flex.flex-column.f-1.px-1.h-100.overflow-hidden
+                                        .form-label Available 
+                                        .h-100.w-100.d-flex.f-1.overflow-hidden
+                                            #available-container.player-container.w-100.left-side.overflow-auto.male.female.defense.offense.handler.cutter.hybrid
+                                    .px-1.m-auto
+                                        .input-group-f.w-100
+                                            .my-1.w-100
+                                                button#move-to-line.move-one.w-100.move-right(type="button" title="Move selected")
+                                            .my-1.w-100 
+                                                button#clear-line.move-all.w-100.move-left(type="button" title="Clear line")
+                                    .d-flex.flex-column.f-1.px-1.h-100.overflow-hidden
+                                        .form-label Selected (#[span#mixed-counts #[span#m-count 0]+#[span#f-count 0]=]#[span#line-count 0])
+                                        .h-100.w-100.d-flex.f-1.overflow-hidden
+                                            #line-container.player-container.w-100.right-side.overflow-auto.male.female.defense.offense.handler.cutter.hybrid
+                    
+            .modal-footer
+                button.btn.btn-primary(type="submit" form="point-setup" disabled) Start point

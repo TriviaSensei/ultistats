@@ -3,9 +3,17 @@ import { showMessage } from './utils/messages.js';
 import { getElementArray } from './utils/getElementArray.js';
 import { createElement } from './utils/createElementFromSelector.js';
 import { populateForm } from './utils/populateForm.js';
+import { createRosterOption, insertOption } from './utils/rosterOption.js';
 
 const teamSelect = document.querySelector('#tourney-team-select');
 const tournamentSelect = document.querySelector('#tournament-select');
+
+const tooltipTriggerList = document.querySelectorAll(
+	'[data-bs-toggle="tooltip"]'
+);
+const tooltipList = [...tooltipTriggerList].map(
+	(tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl)
+);
 
 //accordion stuff
 const accordion = document.querySelector('#tournament-accordion');
@@ -34,6 +42,7 @@ const gameTo = document.querySelector('#point-cap');
 const winBy = document.querySelector('#win-by');
 const hardCap = document.querySelector('#hard-cap');
 const timeouts = document.querySelector('#timeouts');
+const genderArea = document.querySelector('#gender-ratio-inputs');
 let maxPlayerCount;
 let genderMax;
 
@@ -173,18 +182,18 @@ const getTeam = (e) => {
 							rosterTable.classList.add('mixed');
 							lineContainer.classList.add('mixed');
 							mixedCount.classList.remove('invisible-div');
+							genderArea.classList.remove('invisible-div');
 						} else {
 							rosterTable.classList.remove('mixed');
 							lineContainer.classList.remove('mixed');
-							mixecCount.classList.add('invisible-div');
+							mixedCount.classList.add('invisible-div');
+							genderArea.classList.add('invisible-div');
 						}
 
 						//clear the roster table
 						getElementArray(rosterBody, '.player-row').forEach((r) => {
 							r.remove();
 						});
-
-						console.log(res2.data);
 
 						//set the available roster to the roster of the team
 						roster = res2.data.roster.map((p) => {
@@ -212,31 +221,6 @@ const getTeam = (e) => {
 		};
 		handleRequest(str, 'GET', null, handler);
 	}
-};
-
-const createRosterOption = (p) => {
-	const name = `${p.lastName}, ${p.firstName}`;
-	const op = createElement('.roster-option');
-	op.setAttribute('data-id', p.id);
-	op.setAttribute('data-name', name);
-	if (p.gender) op.setAttribute('data-gender', p.gender);
-	if (p.line) op.setAttribute('data-line', p.line);
-	if (p.position && p.position !== '-')
-		op.setAttribute('data-position', p.position);
-	const cb = createElement('input');
-	const newId = window.crypto.randomUUID();
-	cb.setAttribute('id', newId);
-	cb.setAttribute('data-id', `${p.id}`);
-	cb.setAttribute('type', 'checkbox');
-	cb.addEventListener('change', handleArrows);
-	const lbl = createElement('label');
-	lbl.setAttribute('for', cb.id);
-	lbl.innerHTML = `${name} (${p.gender ? p.gender + '/' : ''}${
-		p.line ? p.line + '/' : ''
-	}${p.position || '-'})`;
-	op.appendChild(cb);
-	op.appendChild(lbl);
-	return op;
 };
 
 const getTournament = (e) => {
@@ -298,6 +282,8 @@ const getTournament = (e) => {
 			return a1.localeCompare(b1);
 		});
 
+		console.log(roster);
+
 		//clear all roster/line options
 		getElementArray(document, '.roster-option').forEach((op) => {
 			op.remove();
@@ -305,7 +291,7 @@ const getTournament = (e) => {
 
 		let count = 0;
 		roster.forEach((p) => {
-			const op = createRosterOption(p);
+			const op = createRosterOption(p, handleArrows);
 
 			if (
 				tourney.roster.some((p2) => {
@@ -314,7 +300,7 @@ const getTournament = (e) => {
 			) {
 				if (!rosterSelect.querySelector(`.roster-option[data-id="${p.id}"]`))
 					rosterSelect.appendChild(op);
-				const op2 = createRosterOption(p);
+				const op2 = createRosterOption(p, handleArrows);
 				if (
 					!availableContainer.querySelector(`.roster-option[data-id="${p.id}"]`)
 				)
@@ -337,10 +323,13 @@ const getTournament = (e) => {
 		tournamentInfo.show();
 	} else {
 		clearForm();
+		clearTourneyRosterTable();
 		rosterItem.classList.add('invisible-div');
 		gamesItem.classList.add('invisible-div');
 		tournamentInfo.hide();
 		tournamentRules.hide();
+		tourneyRoster = [];
+		tourneyLines = [];
 	}
 };
 
@@ -404,6 +393,7 @@ const handleSaveTournament = (e) => {
 			const d = new Date(Date.parse(res.data.startDate) + offset * 60000);
 
 			if (!tournamentSelect.value) {
+				console.log(roster);
 				const op = createElement('option');
 				op.setAttribute('value', res.data._id);
 				op.innerHTML = `${res.data.name} (${d.toLocaleDateString()})`;
@@ -444,6 +434,11 @@ const handleSaveTournament = (e) => {
 					}
 				});
 				timeouts.selectedIndex = res.data.timeouts;
+
+				roster.forEach((p) => {
+					const op = createRosterOption(p, handleArrows);
+					insertOption(op, nonRosterSelect);
+				});
 			} else {
 				const op = tournamentSelect.options[tournamentSelect.selectedIndex];
 				if (op) {
@@ -471,6 +466,9 @@ const handleSaveTournament = (e) => {
 			cap: gameTo.value,
 			winBy: winBy.value,
 			hardCap: hardCap.value,
+			genderRule: document.querySelector(
+				`input[type="radio"][name="gender-rule"]:checked`
+			)?.value,
 			timeouts: parseInt(timeouts.value),
 		},
 		handler
@@ -504,26 +502,6 @@ const handleDates = () => {
 		startDate.setAttribute('max', endDate.value);
 	} else {
 		startDate.setAttribute('max', '');
-	}
-};
-
-const insertOption = (op, container) => {
-	//figure out where to insert the option (they're sorted alphabetically)
-	const otherOptions = getElementArray(container, '.roster-option');
-	if (
-		!otherOptions.some((o) => {
-			const otherName = o.getAttribute('data-name');
-			if (op.getAttribute('data-name').localeCompare(otherName) <= 0) {
-				container.insertBefore(op, o);
-				const box = op.querySelector('input[type="checkbox"]');
-				if (box) box.checked = false;
-				return true;
-			}
-		})
-	) {
-		container.appendChild(op);
-		const box = op.querySelector('input[type="checkbox"]');
-		if (box) box.checked = false;
 	}
 };
 
@@ -773,7 +751,7 @@ const saveRoster = (msg, after) => {
 					`.roster-option[data-id="${p.id}"]`
 				);
 				if (!op) {
-					const newOpt = createRosterOption(p);
+					const newOpt = createRosterOption(p, handleArrows);
 					if (
 						!ops.some((o) => {
 							if (p.name.localeCompare(o.getAttribute('data-name')) < 0) {
@@ -1071,7 +1049,7 @@ const handleAddPlayer = (e) => {
 		if (res.status !== 'fail') {
 			showMessage(res.status, res.message);
 			roster.push(res.newPlayer);
-			const op = createRosterOption(res.newPlayer);
+			const op = createRosterOption(res.newPlayer, handleArrows);
 			if (!rosterSelect.querySelector(`.roster-option[data-id="${p.id}"]`))
 				insertOption(op, rosterSelect);
 			rosterCount.innerHTML =
@@ -1400,7 +1378,7 @@ const handleNewPlayer = (e) => {
 			...e.detail.player,
 			name: `${e.detail.player.lastName}, ${e.detail.player.firstName}`,
 		});
-		const op = createRosterOption(e.detail.player);
+		const op = createRosterOption(e.detail.player, handleArrows);
 		console.log(op);
 		insertOption(op, nonRosterSelect);
 	}

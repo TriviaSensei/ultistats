@@ -3,11 +3,12 @@
 }
 
 .profile-body {
-	width: min(100%, 600px);
+	width: min(100%, 450px);
 }
 
 #score-bug {
 	height: 1rem;
+	font-weight: bold;
 }
 
 #score-bug > tbody > tr:first-child > td:not(:last-child) {
@@ -16,6 +17,48 @@
 
 .team-name {
 	text-align: left;
+}
+
+.direction-span {
+	min-width: 2rem;
+	margin-left: 1rem;
+}
+
+.direction-span.left::after {
+	content: '⇦';
+	font-weight: bold;
+}
+
+.direction-span.right::after {
+	content: '⇨';
+	font-weight: bold;
+}
+
+.player-container {
+	height: 200px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	border: 1px solid var(--black);
+	flex-grow: 0;
+}
+
+input[type='checkbox']:checked + label {
+	font-weight: bold;
+}
+
+.move-one.move-left::after {
+	content: '<';
+	font-weight: bold;
+}
+
+.move-one.move-right::after {
+	content: '>';
+	font-weight: bold;
+}
+
+.move-all.move-left::after {
+	content: 'x';
+	font-weight: bold;
 }
 
 .team-timeouts {
@@ -31,10 +74,6 @@
 	flex-direction: column;
 }
 
-.f-1 {
-	flex: 1;
-}
-
 .timeout-marker {
 	background-color: var(--black);
 	margin: 1px;
@@ -47,6 +86,7 @@
 
 .field-container {
 	background-color: var(--field-color);
+	width: min(100%, 450px);
 }
 
 .field {
@@ -67,4 +107,23 @@
 	top: 50%;
 	left: 50%;
 	transform: translate(-50%, -50%);
+}
+
+#event-container {
+	width: min(450px, 100%);
+}
+
+.settings-row > .setting-label {
+	flex: 1;
+	width: 100%;
+	display: flex;
+	justify-content: flex-end;
+	margin-right: 1rem;
+	text-align: right;
+}
+
+.settings-row > .setting-container {
+	flex: 1;
+	display: flex;
+	margin-left: 1rem;
 }

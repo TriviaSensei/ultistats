@@ -16,31 +16,87 @@ block styles
             color: #{colors[3]};
         }
 
+block modals 
+    include components/modals/game/startSettings
+    include components/modals/game/pointSetup
+
 block content
+    #data-area.invisible-div
+        #game-data(data-value=`${gameData._id}` data-cap=`${gameData.cap}` data-hard-cap=`${gameData.hardCap}` data-win-by=`${gameData.winBy}` data-timeouts=`${gameData.timeouts}` data-period=`${gameData.period}`)
+        #score-data(data-us=`${gameData.score}` data-them=`${gameData.oppScore}`)
+        #roster-data 
+            each player in roster 
+                .player(data-first-name=`${player.firstName}` data-last-name=`${player.lastName}` data-display-name=`${player.displayName}` data-number=`${player.number}` data-line=`${player.line}` data-position=`${player.position}` data-gender=`${player.gender}` data-id=`${player.id}` data-name=`${player.name}`)
+        #line-data
+            each line in lines 
+                .line(data-id=`${line.id}` data-name=`${line.name}`)
+                    each player in line.players 
+                        .player(data-id=`${player}`)
+        #division(data-value=`${division}`)
+        #gender-data(data-rule=`${genderRule}`)
+        #our-name(data-name=`${team}`)
+        #their-name(data-name=`${gameData.opponent}`)
+        #start-settings(data-offense=`${gameData.startSettings.offense}` data-gender-ratio=`${gameData.startSettings.genderRatio}` data-direction=`${gameData.startSettings.direction}`)
+        #format-settings(data-max-male=`${gameData.format.genderMax[0]}` data-max-female=`${gameData.format.genderMax[1]}` data-allow-period-end=`${gameData.format.allowPeriodEnd}`)
+        - if (currentPoint)
+            #current-point(data-score=`${currentPoint.score}` data-opp-score=`${currentPoint.oppScore}` data-offense=`${currentPoint.offense}` data-direction=`${currentPoint.direction}` data-scored=`${currentPoint.scored}` )
+                #lineup
+                    - if (currentPoint.lineup)
+                        each player in currentPoint.lineup
+                            .player(data-id=`${player}`)
+                #injuries 
+                    - if (currentPoint.injuries)
+                        each player in currentPoint.injuries 
+                            .player(data-id=`${player}`)
+                #passes 
+                    - if (currentPoint.passes)
+                        each pass in currentPoint.passes 
+                            .pass(data-thrower=`${pass.thrower}` data-receiver=`${pass.receiver}` data-defender=`${pass.defender}` data-x0=`${pass.x0}` data-y0=`${pass.y0}` data-x1=`${pass.x1}` data-y1=`${pass.y1}` data-result=`${pass.result}` data-goal=`${pass.goal}`)
     .w-100.h-100.d-flex.flex-column.ai-c.overflow-hidden
-        .profile-body.h-100.m-auto.p-2
+        .profile-body.h-100.m-auto.d-flex.flex-column.align-items-center.p-2
             .w-100.p-2
-                table#score-bug.w-100.mb-3.p-2
+                table#score-bug.m-auto
                     tr#us 
-                        td.team-name Cocktails
-                        td.team-score 10
+                        td.team-name.w-75 #[span#team-name= team] #[span#team-direction.direction-span]
+                        td.team-score= gameData.score
                         td.team-timeouts
-                            .timeout-container
-                                .timeout-marker.w-100.f-1
-                                .timeout-marker.w-100.f-1
-                        td.game-period(rowspan="2") 2nd
+                            .timeout-container.p-1
+                                - if (gameData.timeouts >= 3)
+                                    .timeout-marker.w-100.f-1
+                                - else
+                                    .timeout-marker.w-100.f-1.used-timeout
+                                - if (gameData.timeouts >= 1)
+                                    .timeout-marker.w-100.f-1
+                                - else
+                                    .timeout-marker.w-100.f-1.used-timeout
+                        td.game-period.ps-2(rowspan="2")= `${gameData.period === 0 ? 'Pre' : gameData.period===1 ? '1st' : gameData.period === 2 ? '2nd' : gameData.period === 3 ? '3rd' : gameData.period === 4 ? '4th':''}`
                     tr#them 
-                        td.team-name DC Swampbenders
-                        td.team-score 9
+                        td.team-name #[span#opp-name= gameData.opponent] #[span#opp-direction.direction-span] 
+                        td.team-score= gameData.oppScore
                         td.team-timeouts
-                            .timeout-container
-                                .timeout-marker.w-100.f-1.used-timeout
-                                .timeout-marker.w-100.f-1
+                            .timeout-container.p-1
+                                - if (gameData.timeouts >= 3)
+                                    .timeout-marker.w-100.f-1
+                                - else
+                                    .timeout-marker.w-100.f-1.used-timeout
+                                - if (gameData.timeouts >= 1)
+                                    .timeout-marker.w-100.f-1
+                                - else
+                                    .timeout-marker.w-100.f-1.used-timeout
             .field-container.w-100.p-2
                 .field.ratio(style=`--bs-aspect-ratio:${ratio}%;`)
                     .disc
                     canvas#field-canvas
-
+            #event-container.w-100.d-flex.align-items-center.mt-2.mb-3
+                button#undo-button.btn.btn-warning.btn-sm.p-1(disabled) Undo 
+                #event-desc.px-2.f-1 Pre-game 
+                button#redo-button.btn.btn-primary.btn-sm.p-1(disabled) Redo
+            .f-1.w-100.overflow-hidden
+                .w-100.h-100.overflow-auto
+                    #point-settings.d-flex.flex-column.invisible
+                        button.btn.btn-primary.mb-3(type="button" data-bs-toggle="modal" data-bs-target="#point-setup-modal") Setup Point
+                        button.btn.btn-secondary(type="button" data-bs-toggle="modal" data-bs-target="#start-settings-modal") Edit game start settings
+                    #action-div.invisible
 block scripts
     script.
         const can = document.querySelector('#field-canvas');

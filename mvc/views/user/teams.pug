@@ -218,7 +218,7 @@
                                     each m in memberships
                                         td= `${m.cost === 0 ? 'Free' : '$' + (m.cost*0.9).toFixed(0) + '/yr'}`
                     button#feature-toggle.btn.btn-primary.btn-sm.w-25.mb-3(type="button" data-bs-toggle="collapse" data-bs-target="#mem-features" aria-expanded="false" aria-controls="mem-features") View features
-                    #membership-area.input-group-f.input-group-1
+                    #membership-area.hidden-radios.input-group-f.input-group-1
                         .form-label.mb-2 Upgrade/extend membership:
                         .input-group-h.w-100.mb-2
                             #select-mem-type.selection-container.input-group-f.justify-content-end

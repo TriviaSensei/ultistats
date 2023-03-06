@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const Filter = require('bad-words');
 const filter = new Filter();
-const { memberships } = require('../../utils/settings');
 
 const noBadWords = (val) => !filter.isProfane(val);
 

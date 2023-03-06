@@ -45,6 +45,8 @@ const formatSchema = new mongoose.Schema({
 		enum: [0, 1, 2, 3, 4],
 		default: 4,
 	},
+	//AUDL allows a point to end without scoring a goal if the period expires.
+	allowPeriodEnd: { type: Boolean, default: false },
 	roundNames: {
 		type: [String],
 		required: [true, 'List of round names is required'],

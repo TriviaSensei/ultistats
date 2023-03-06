@@ -5,7 +5,7 @@
             select#tourney-team-select
                 option(value="") [Select a team]
                 each team in user.teams 
-                    option(value=`${team.id}`)= `${team.name} (${team.season})`
+                    option(value=`${team.id}`)= `${team.name}`
         .input-group-f.input-group-1.px-2.overflow-hidden
             label.form-label(for="tournament-select") Select event: 
             select#tournament-select(disabled)
@@ -55,6 +55,16 @@
                             option(value="2") 1/Half
                             option(value="3") 1/Half + Floater 
                             option(value="4" selected) 2/Half
+                #gender-ratio-inputs.hidden-radios.input-group-h.align-items-start.mb-2
+                    .input-group-f 
+                        .form-label Gender ratio rule
+                        .radio-container.input-group-h
+                            input#gender-a(form="tournament-form" type="radio" value="A" name="gender-rule" data-field="genderRule")
+                            label(for="gender-a" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="<strong>WFDF Rule A - prescribed ratio</strong><br>Flip to decide which team selects the gender ratio on the first point. The second and third point are played with the reverse ratio, the fourth and fifth return to the original ratio, and so on. Halftime has no effect on this rule.") A 
+                            input#gender-b(form="tournament-form" type="radio" value="B" name="gender-rule" data-field="genderRule")
+                            label(for="gender-b" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="<strong>WFDF Rule B - end-zone decides</strong><br>Perform an additional flip, with the winner selecting which end zone is 'Endzone A', with the other becoming 'Endzone B'. In the first half, the team starting the point at Endzone A decides the gender ratio. In the second half, the team starting the point at Endzone B decides the ratio. ") B 
+                            input#gender-x(form="tournament-form" type="radio" value="X" name="gender-rule" data-field="genderRule")
+                            label(for="gender-x" data-bs-toggle="tooltip" data-bs-title="The app will not remind you of any gender-ratios.") N/A
         .accordion-item#roster-item.invisible-div
             h2.accordion-header#tournament-roster-header
                 button#roster-button.accordion-button.collapsed(type="button" data-bs-toggle="collapse" data-bs-target="#tournament-roster" aria-expanded="false" aria-controls="tournament-roster" ) Roster/Lines
@@ -126,6 +136,6 @@
                         .w-100.d-grid.gap-2.my-3
                             button.btn.btn-primary(type="submit") Save game
         .w-100.d-grid.gap-2.my-3
-            button.btn.btn-primary(type="submit") Save Tournament
+            button.btn.btn-primary(type="submit" form="tournament-form") Save Tournament
                     
 

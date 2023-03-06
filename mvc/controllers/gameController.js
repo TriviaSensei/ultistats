@@ -116,10 +116,11 @@ exports.startPoint = catchAsync(async (req, res, next) => {
 	//initialize the point:
 	/**
 	 * scores
-	 * half - if we specify that we're starting the second half, or if we're already in the second half, or if either score is at or above halftime, we're in half 2
+	 * period - if we specify that we're starting the second half, or if we're already in the second half, or if either score is at or above halftime, we're in half 2
 	 * offense/direction - specified in body
 	 * scored - no one has scored this point, so we don't initialize it
 	 * passes: empty array - no passes yet
+	 * endPeriod: (boolean) this point ends the period. Automatically set at halftime (if score reaches halftime and we haven't manually ended the half due to a cap yet).
 	 */
 	res.locals.game.points.push({
 		score,
@@ -159,10 +160,11 @@ exports.startPoint = catchAsync(async (req, res, next) => {
  *  x0, y0, x1, y1,
  *  result: enum('complete','throwaway','drop','block','pickup')
  *  goal: 0 (none), 1 (for us), -1 (for them)
- *  event: if defined, then this is not a pass. Values can be 'sub', 'timeout'
- *  in: player in ID
- *  out: player out ID
- *  timeout: +/- 1 (us/them)
+ *  event: if defined, then this is not a pass. Names can be 'sub', 'timeout', or 'end' (in AUDL, end of period ends a point without a goal being scored)
+ * 		name: sub or timeout
+ *  	in: player in ID
+ *  	out: player out ID
+ *  	timeout: +/- 1 (us/them)
  *
  */
 exports.addPass = catchAsync(async (req, res, next) => {

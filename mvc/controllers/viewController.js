@@ -240,6 +240,30 @@ exports.getGame = catchAsync(async (req, res, next) => {
 	const tm = res.locals.team;
 	const fmt = res.locals.format;
 
+	const game = await Game.findById(req.params.id).populate([
+		{
+			path: 'tournament',
+			populate: {
+				path: 'team',
+				select: 'name division',
+			},
+		},
+		{
+			path: 'format',
+			populate: 'allowPeriodEnd genderMax',
+		},
+	]);
+
+	const division = game?.tournament?.team?.division;
+	const teamName = game?.tournament?.team?.name;
+	if (!teamName) return next(new AppError('Team not found', 404));
+
+	const gameData = {
+		...game.toJSON(),
+		startSettings: game.startSettings,
+		tournament: undefined,
+	};
+	console.log(gameData);
 	res.status(200).render('game', {
 		title: 'Enter game',
 		colors: [tm.color1, tm.color2, tm.color3, tm.color4],
@@ -248,5 +272,17 @@ exports.getGame = catchAsync(async (req, res, next) => {
 			4
 		),
 		ratio: ((100 * fmt.width) / (fmt.endzone * 2 + fmt.length)).toFixed(2),
+		team: teamName,
+		roster: game.tournament.roster.filter((p) => {
+			return p.active;
+		}),
+		lines: game.tournament.lines,
+		division,
+		genderRule: game.tournament.genderRule,
+		gameData,
+		currentPoint:
+			gameData.points.length > 0
+				? gameData.points[gameData.points.length - 1]
+				: undefined,
 	});
 });
