@@ -33,11 +33,14 @@ block content
                     each player in line.players 
                         .player(data-id=`${player}`)
         #division(data-value=`${division}`)
-        #gender-data(data-rule=`${genderRule}`)
+        #gender-data(data-rule=`${genderRule}` data-start=`${genderRule === 'A' ? gameData.startSettings.genderRatio : gameData.startSettings.genderRatioChoice}`)
         #our-name(data-name=`${team}`)
         #their-name(data-name=`${gameData.opponent}`)
-        #start-settings(data-offense=`${gameData.startSettings.offense}` data-gender-ratio=`${gameData.startSettings.genderRatio}` data-direction=`${gameData.startSettings.direction}`)
-        #format-settings(data-max-male=`${gameData.format.genderMax[0]}` data-max-female=`${gameData.format.genderMax[1]}` data-allow-period-end=`${gameData.format.allowPeriodEnd}`)
+        #start-settings(data-offense=`${gameData.startSettings.offense}` data-gender-ratio=`${gameData.startSettings.genderRatio}` data-gender-ratio-choice=`${gameData.startSettings.genderRatioChoice}` data-direction=`${gameData.startSettings.direction}`)
+        #format-settings(data-max-male=`${gameData.format.genderMax[0]}` data-max-female=`${gameData.format.genderMax[1]}` data-allow-period-end=`${gameData.format.allowPeriodEnd}` data-players=`${gameData.format.players}` data-periods=`${gameData.format.periods}`)
+        #point-data 
+            each point in gameData.points 
+                .point(data-score=`${point.score}` data-opp-score=`${point.oppScore}` data-end-period=`${point.endPeriod}` data-scored=`${point.scored}` data-offense=`${point.offense}`)
         - if (currentPoint)
             #current-point(data-score=`${currentPoint.score}` data-opp-score=`${currentPoint.oppScore}` data-offense=`${currentPoint.offense}` data-direction=`${currentPoint.direction}` data-scored=`${currentPoint.scored}` )
                 #lineup

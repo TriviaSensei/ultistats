@@ -22,6 +22,15 @@
                                     label(for="gender-m") Male 
                                     input#gender-f(type="radio" value="f" name="start-gender" data-field="genderRatio")
                                     label(for="gender-f") Female
+                        - if (genderRule === 'B')
+                            .settings-row.d-flex.w-100.mb-3
+                                .setting-label.form-label.my-auto Starting gender majority choice 
+                                .setting-container 
+                                    .radio-container.d-flex 
+                                        input#gender-b-true(type="radio" value="true" name="gender-b-choice" data-field="genderRatioChoice")
+                                        label(for="gender-b-true") Ours
+                                        input#gender-b-false(type="radio" value="false" name="gender-b-choice" data-field="genderRatioChoice")
+                                        label(for="gender-b-false") Theirs
                     .settings-row.d-flex.w-100.mb-3
                         .setting-label.form-label.my-auto Our starting attacking direction
                         .setting-container

@@ -250,7 +250,7 @@ exports.getGame = catchAsync(async (req, res, next) => {
 		},
 		{
 			path: 'format',
-			populate: 'allowPeriodEnd genderMax',
+			populate: 'allowPeriodEnd players periods genderMax',
 		},
 	]);
 

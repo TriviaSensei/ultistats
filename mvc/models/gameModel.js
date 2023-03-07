@@ -54,6 +54,7 @@ const gameSchema = new mongoose.Schema({
 		default: {
 			offense: undefined,
 			genderRatio: undefined,
+			genderRatioChoice: undefined,
 			direction: undefined,
 		},
 	},
