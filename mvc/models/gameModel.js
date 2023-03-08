@@ -53,6 +53,7 @@ const gameSchema = new mongoose.Schema({
 		type: Object,
 		default: {
 			offense: undefined,
+			jersey: undefined,
 			genderRatio: undefined,
 			genderRatioChoice: undefined,
 			direction: undefined,

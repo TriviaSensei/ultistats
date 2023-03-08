@@ -8,12 +8,13 @@ router.use(authController.protect);
 
 router.post('/', gameController.createGame);
 
-router.use('/:id', gameController.verifyOwnership);
 router.use('/*/:id', gameController.verifyOwnership);
 
 router.patch('/startPoint/:id', gameController.startPoint);
 router.patch('/addPass/:id', gameController.addPass);
 router.patch('/endGame/:id', gameController.endGame);
+
+router.use('/:id', gameController.verifyOwnership);
 router
 	.route('/:id')
 	.get(gameController.getGame)

@@ -6,6 +6,14 @@
             .modal-body
                 form#game-start-settings.w-100.hidden-radios
                     .settings-row.d-flex.w-100.mb-3
+                        .setting-label.form-label.my-auto Jersey
+                        .setting-container.hidden-radios
+                            .radio-container.d-flex 
+                                input#jersey-light.light-jersey(type="radio" value="light" name="jersey" data-field="jersey")
+                                label(for="jersey-light") Light
+                                input#jersey-dark.dark-jersey(type="radio" value="dark" name="jersey" data-field="jersey")
+                                label(for="jersey-dark") Dark
+                    .settings-row.d-flex.w-100.mb-3
                         .setting-label.form-label.my-auto We start on 
                         .setting-container
                             .radio-container.d-flex 

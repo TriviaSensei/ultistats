@@ -46,6 +46,12 @@ input[type='checkbox']:checked + label {
 	font-weight: bold;
 }
 
+input[name='jersey']:checked + label {
+	border: 5px solid var(--black);
+	border-collapse: collapse;
+	box-sizing: border-box;
+}
+
 .move-one.move-left::after {
 	content: '<';
 	font-weight: bold;

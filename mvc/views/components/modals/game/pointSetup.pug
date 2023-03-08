@@ -36,7 +36,7 @@
                             .setting-container 
                                 select#line-select
                                     option(value="") (Manual)
-                                button.btn.btn-primary.btn-sm.mx-2(type="button") Reset
+                                button#reset-line.btn.btn-primary.btn-sm.mx-2(type="button") Reset
                         .settings-row.d-flex.w-100.mb-2
                             .w-100.d-flex.flex-column
                                 #line-filter-panel.filter-panel.d-flex.w-100.ms-2
@@ -44,27 +44,27 @@
                                         .d-flex.f-1.flex-column.align-items-center
                                             .form-label.mb-1 Gen 
                                             .d-flex.f-1.w-100.justify-content-center
-                                                input#toggle-line-mm(type="checkbox" data-target="#available-container,#line-container" data-toggle="male" checked)
+                                                input#toggle-line-mm(type="checkbox" data-target="#available-container" data-toggle="male" checked)
                                                 label.ms-1.me-2(for="toggle-line-mm") M
-                                                input#toggle-line-fm(type="checkbox" data-target="#available-container,#line-container" data-toggle="female" checked)
+                                                input#toggle-line-fm(type="checkbox" data-target="#available-container" data-toggle="female" checked)
                                                 label.ms-1.me-2(for="toggle-line-fm") F
                                     .d-flex.f-1.flex-column.align-items-center
                                         .form-label.mb-1 Ln
                                         .d-flex.f-1.w-100.justify-content-center
-                                            input#toggle-line-dl(type="checkbox" data-target="#available-container,#line-container" data-toggle="defense" checked)
+                                            input#toggle-line-dl(type="checkbox" data-target="#available-container" data-toggle="defense" checked)
                                             label.ms-1.me-2(for="toggle-line-dl") D
-                                            input#toggle-line-ol(type="checkbox" data-target="#available-container,#line-container" data-toggle="offense" checked)
+                                            input#toggle-line-ol(type="checkbox" data-target="#available-container" data-toggle="offense" checked)
                                             label.ms-1.me-2(for="toggle-line-ol") O
                                     .d-flex.f-1.flex-column.align-items-center
                                         .form-label.mb-1 Pos 
                                         .d-flex.f-1.w-100.justify-content-center
-                                            input#toggle-line-hd(type="checkbox" data-target="#available-container,#line-container" data-toggle="handler" checked)
+                                            input#toggle-line-hd(type="checkbox" data-target="#available-container" data-toggle="handler" checked)
                                             label.ms-1.me-2(for="toggle-line-hd") H
-                                            input#toggle-line-ct(type="checkbox" data-target="#available-container,#line-container" data-toggle="cutter" checked)
+                                            input#toggle-line-ct(type="checkbox" data-target="#available-container" data-toggle="cutter" checked)
                                             label.ms-1.me-2(for="toggle-line-ct") C
-                                            input#toggle-line-hy(type="checkbox" data-target="#available-container,#line-container" data-toggle="hybrid" checked)
+                                            input#toggle-line-hy(type="checkbox" data-target="#available-container" data-toggle="hybrid" checked)
                                             label.ms-1.me-2(for="toggle-line-hy") Hy              
-                                .d-flex.f-1.w-100.overflow-hidden
+                                #line-selector.d-flex.f-1.w-100.overflow-hidden
                                     .d-flex.flex-column.f-1.px-1.h-100.overflow-hidden
                                         .form-label Available 
                                         .h-100.w-100.d-flex.f-1.overflow-hidden
@@ -81,7 +81,9 @@
                                         - else
                                             .form-label Selected (#[span#line-count 0])
                                         .h-100.w-100.d-flex.f-1.overflow-hidden
-                                            #line-container.player-container.w-100.right-side.overflow-auto.male.female.defense.offense.handler.cutter.hybrid
-                    
+                                            #line-container.player-container.w-100.right-side.overflow-auto.male.female.defense.offense.handler.cutter.hybrid   
             .modal-footer
-                button.btn.btn-primary(type="submit" form="point-setup" disabled) Start point
+                .d-flex.flex-column
+                    #gender-warning.text-wrap.me-3.fw-bold.m-auto.invisible ⚠️ Gender ratio ⚠️
+                    #line-warning.text-wrap.me-3.fw-bold.m-auto ⚠️ Player count ⚠️
+                button#start-point.btn.btn-primary(type="submit" form="point-setup") Start point

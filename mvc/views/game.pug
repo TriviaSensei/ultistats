@@ -7,11 +7,11 @@ block styles
     //- - var color3 = colors[2];
     //- - var color4 = colors[3];
     style.
-        .light-jersey {
+        .light, input.light-jersey[type="radio"]:checked + label {
             background-color: #{colors[0]};
             color: #{colors[1]};
         }
-        .dark-jersey {
+        .dark, input.dark-jersey[type="radio"]:checked + label {
             background-color:#{colors[2]};
             color: #{colors[3]};
         }
@@ -36,7 +36,7 @@ block content
         #gender-data(data-rule=`${genderRule}` data-start=`${genderRule === 'A' ? gameData.startSettings.genderRatio : gameData.startSettings.genderRatioChoice}`)
         #our-name(data-name=`${team}`)
         #their-name(data-name=`${gameData.opponent}`)
-        #start-settings(data-offense=`${gameData.startSettings.offense}` data-gender-ratio=`${gameData.startSettings.genderRatio}` data-gender-ratio-choice=`${gameData.startSettings.genderRatioChoice}` data-direction=`${gameData.startSettings.direction}`)
+        #start-settings(data-jersey=`${gameData.startSettings.jersey}` data-offense=`${gameData.startSettings.offense}` data-gender-ratio=`${gameData.startSettings.genderRatio}` data-gender-ratio-choice=`${gameData.startSettings.genderRatioChoice}` data-direction=`${gameData.startSettings.direction}`)
         #format-settings(data-max-male=`${gameData.format.genderMax[0]}` data-max-female=`${gameData.format.genderMax[1]}` data-allow-period-end=`${gameData.format.allowPeriodEnd}` data-players=`${gameData.format.players}` data-periods=`${gameData.format.periods}`)
         #point-data 
             each point in gameData.points 
@@ -95,11 +95,12 @@ block content
                 #event-desc.px-2.f-1 Pre-game 
                 button#redo-button.btn.btn-primary.btn-sm.p-1(disabled) Redo
             .f-1.w-100.overflow-hidden
-                .w-100.h-100.overflow-auto
-                    #point-settings.d-flex.flex-column.invisible
-                        button.btn.btn-primary.mb-3(type="button" data-bs-toggle="modal" data-bs-target="#point-setup-modal") Setup Point
+                .w-100.h-100.overflow-hidden
+                    #point-settings.w-100.h-100.d-flex.flex-column.justify-content-between.overflow-hidden.invisible-div
+                        button.btn.btn-primary(type="button" data-bs-toggle="modal" data-bs-target="#point-setup-modal") Setup Point
                         button.btn.btn-secondary(type="button" data-bs-toggle="modal" data-bs-target="#start-settings-modal") Edit game start settings
-                    #action-div.invisible
+                    #action-div.d-flex.flex-column.w-100.h-100.overflow-auto.invisible-div
+                        include game/editPoint
 block scripts
     script.
         const can = document.querySelector('#field-canvas');
@@ -144,4 +145,5 @@ block scripts
         ctx.arc(b2,toNearestHalf(rect.height/2),2,0,2*Math.PI);   
         ctx.fill();
     script(src="/js/editGame.js" type="module" defer)
+    script(src="/js/point.js" type="module" defer)
             

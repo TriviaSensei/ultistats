@@ -91,9 +91,8 @@ exports.startPoint = catchAsync(async (req, res, next) => {
 			direction: req.body.direction,
 			lineup: req.body.lineup,
 			injuries: [],
-			scored: undefined,
+			scored: 0,
 			passes: [],
-			pointer: undefined,
 		});
 		res.locals.game.markModified('points');
 		const data = await res.locals.game.save();
