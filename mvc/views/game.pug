@@ -21,7 +21,7 @@ block modals
     include components/modals/game/pointSetup
 
 block content
-    #data-area.invisible-div
+    #data-area.d-none
         #game-data(data-value=`${gameData._id}` data-cap=`${gameData.cap}` data-hard-cap=`${gameData.hardCap}` data-win-by=`${gameData.winBy}` data-timeouts=`${gameData.timeouts}` data-period=`${gameData.period}`)
         #score-data(data-us=`${gameData.score}` data-them=`${gameData.oppScore}`)
         #roster-data 
@@ -41,6 +41,9 @@ block content
         #point-data 
             each point in gameData.points 
                 .point(data-score=`${point.score}` data-opp-score=`${point.oppScore}` data-end-period=`${point.endPeriod}` data-scored=`${point.scored}` data-offense=`${point.offense}`)
+                    each pass in point.passes 
+                        - if (pass.event && pass.event.name === 'timeout')
+                            .timeout(data-team=`${pass.event.timeout}`)
         - if (currentPoint)
             #current-point(data-score=`${currentPoint.score}` data-opp-score=`${currentPoint.oppScore}` data-offense=`${currentPoint.offense}` data-direction=`${currentPoint.direction}` data-scored=`${currentPoint.scored}` )
                 #lineup
@@ -96,10 +99,10 @@ block content
                 button#redo-button.btn.btn-primary.btn-sm.p-1(disabled) Redo
             .f-1.w-100.overflow-hidden
                 .w-100.h-100.overflow-hidden
-                    #point-settings.w-100.h-100.d-flex.flex-column.justify-content-between.overflow-hidden.invisible-div
+                    #point-settings.w-100.h-100.d-flex.flex-column.justify-content-between.overflow-hidden.d-none
                         button.btn.btn-primary(type="button" data-bs-toggle="modal" data-bs-target="#point-setup-modal") Setup Point
                         button.btn.btn-secondary(type="button" data-bs-toggle="modal" data-bs-target="#start-settings-modal") Edit game start settings
-                    #action-div.d-flex.flex-column.w-100.h-100.overflow-auto.invisible-div
+                    #action-div.d-flex.flex-column.w-100.h-100.overflow-auto.d-none
                         include game/editPoint
 block scripts
     script.

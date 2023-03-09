@@ -72,7 +72,7 @@
                         .input-group
                             input#number.form-control(type="text" placeholder="##" size="2" pattern="[0-9]{1,2}" maxlength="2")
                 .input-group-h.w-100.mb-3
-                    #gender-match.input-group-f.input-group-1.invisible-div
+                    #gender-match.input-group-f.input-group-1.d-none
                         label.form-label Gender match:
                         .input-group
                             input#gen-m.me-2(type="radio" name="gender-match" value="M" checked) 
@@ -112,7 +112,7 @@
                     tbody#main-roster-list.roster-list
                         tr.filler-row
                             td(colspan="7") Add players to your roster above.
-    #manager-item.accordion-item.invisible-div
+    #manager-item.accordion-item.d-none
         h2.accordion-header#manager-area-header
             button.accordion-button.collapsed(type="button" data-bs-toggle="collapse" data-bs-target="#manager-area" aria-expanded="false" aria-controls="manager-area") Managers
         #manager-area.accordion-collapse.collapse(aria-labelled-by="manager-area-header" data-bs-parent="#team-accordion")
@@ -132,7 +132,7 @@
                         input#new-manager-email.form-control(type="email" placeholder="E-mail")
                 .d-grid.gap-2.mb-3 
                     button#add-manager.btn.btn-primary(type="button" disabled) Request Add Manager
-    #subscription-item.accordion-item.invisible-div
+    #subscription-item.accordion-item.d-none
         h2.accordion-header#subscription-header
             button.accordion-button(type="button" data-bs-toggle="collapse" data-bs-target="#subscription-info" aria-expanded="false" aria-controls="subscription-info") Subscription
         #subscription-info.accordion-collapse.collapse(aria-labelled-by="subscription-header" data-bs-parent="#team-accordion")
@@ -140,7 +140,7 @@
                 .input-group-h.w-100.mb-2
                     .input-group-f.input-group-1
                         .form-label Current membership: 
-                        div(style="text-align:left") #[span#current-membership Free] #[a#cancel-membership-link.invisible-div (Modify)]
+                        div(style="text-align:left") #[span#current-membership Free] #[a#cancel-membership-link.d-none (Modify)]
                     .input-group-f.input-group-1
                         #mem-end.form-label Renews: 
                         div(style="text-align:left") #[span#current-membership-expires Never]

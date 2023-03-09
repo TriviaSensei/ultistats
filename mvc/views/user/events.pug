@@ -65,7 +65,7 @@
                             label(for="gender-b" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="<strong>WFDF Rule B - end-zone decides</strong><br>Perform an additional flip, with the winner selecting which end zone is 'Endzone A', with the other becoming 'Endzone B'. In the first half, the team starting the point at Endzone A decides the gender ratio. In the second half, the team starting the point at Endzone B decides the ratio. ") B 
                             input#gender-x(form="tournament-form" type="radio" value="X" name="gender-rule" data-field="genderRule")
                             label(for="gender-x" data-bs-toggle="tooltip" data-bs-title="The app will not remind you of any gender-ratios.") N/A
-        .accordion-item#roster-item.invisible-div
+        .accordion-item#roster-item.d-none
             h2.accordion-header#tournament-roster-header
                 button#roster-button.accordion-button.collapsed(type="button" data-bs-toggle="collapse" data-bs-target="#tournament-roster" aria-expanded="false" aria-controls="tournament-roster" ) Roster/Lines
             #tournament-roster.accordion-collapse.collapse(aria-labelled-by="tournament-roster-header" data-bs-parent="#tournament-accordion")
@@ -89,7 +89,7 @@
                         tbody#tournament-roster-body.roster-list
                             tr.filler-row
                                 td(colspan="7") Add players to your roster above.
-        .accordion-item#games-item.invisible-div
+        .accordion-item#games-item.d-none
             h2.accordion-header#tournament-games-header
                 button#games-button.accordion-button.collapsed(type="button" data-bs-toggle="collapse" data-bs-target="#tournament-games" aria-expanded="false" aria-controls="tournament-games" ) Games
             #tournament-games.accordion-collapse.collapse(aria-labelled-by="tournament-games-header" data-bs-parent="#tournament-accordion")

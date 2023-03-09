@@ -16,7 +16,7 @@ html
     body(data-alert=`${alert ? alert.message : ''}` data-status=`${alert ? alert.status : ''}` data-duration=`${alert ? alert.duration : ''}`)
         block modals
         .container-all
-            .message.invisible-div
+            .message.d-none
             - if (user)
                 input#my-id(type="hidden" value=`${user._id}`)
             block content

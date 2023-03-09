@@ -133,3 +133,20 @@ input[name='jersey']:checked + label {
 	display: flex;
 	margin-left: 1rem;
 }
+
+.button-row {
+	width: 100%;
+	display: flex;
+	justify-content: space-around;
+	margin-bottom: 1rem;
+}
+
+.button-row > div {
+	min-width: 24%;
+}
+
+hr {
+	width: 50%;
+	border-bottom: 3px solid var(--color-2);
+	margin: 1rem auto;
+}

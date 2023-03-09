@@ -129,6 +129,14 @@ a {
 	-webkit-transition: opacity 0.25s ease-in-out;
 }
 
+.jersey-name {
+	font-size: 1rem;
+}
+
+.jersey-number {
+	font-size: 2rem;
+}
+
 th.sort-header {
 	cursor: pointer;
 }
@@ -253,10 +261,6 @@ button > a > div {
 
 .accordion-button:focus {
 	border-color: var(--color-2);
-}
-
-.invisible-div {
-	display: none !important;
 }
 
 .desktop-only {

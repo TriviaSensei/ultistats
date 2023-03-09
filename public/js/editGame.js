@@ -58,6 +58,7 @@ let gameData = {
 	score: 0,
 	oppScore: 0,
 	points: [],
+	timeoutsLeft: [0, 0],
 	currentPoint: {
 		score: undefined,
 		oppScore: undefined,
@@ -167,7 +168,7 @@ const handleSaveSettings = (e) => {
 	const handler = (res) => {
 		if (res.status === 'success') {
 			startModal.hide();
-			actionArea.classList.remove('invisible');
+			actionArea.classList.remove('d-none');
 			showMessage(`info`, 'Settings saved.');
 			gameData.startSettings = settings;
 			//no point has been played
@@ -251,9 +252,9 @@ const showDiv = (node) => {
 	while (sibling) {
 		if (sibling.nodeType === 1) {
 			if (sibling !== node) {
-				sibling.classList.add('invisible-div');
+				sibling.classList.add('d-none');
 			} else {
-				sibling.classList.remove('invisible-div');
+				sibling.classList.remove('d-none');
 			}
 		}
 		sibling = sibling.nextSibling;
@@ -324,8 +325,8 @@ const updateCounts = () => {
 	if (fCount) fCount.innerHTML = fc;
 	if (lineCount) lineCount.innerHTML = lc;
 
-	if (lc !== gameData.players) lineWarning.classList.remove('invisible');
-	else lineWarning.classList.add('invisible');
+	if (lc !== gameData.players) lineWarning.classList.remove('d-none');
+	else lineWarning.classList.add('d-none');
 
 	if (lc <= gameData.players) startPoint.disabled = false;
 	else startPoint.disabled = true;
@@ -333,7 +334,7 @@ const updateCounts = () => {
 	//make sure the gender ratio isn't violated - if it is, the line can still be played, but a warning will be displayed next to the start point button.
 	const maxes = genderRatioIndicator.dataset;
 	if (gameData.genderRule !== 'A') {
-		genderWarning.classList.add('invisible');
+		genderWarning.classList.add('d-none');
 		return;
 	} else if (
 		lineContainer.querySelectorAll('.roster-option[data-gender="M"]').length >
@@ -341,8 +342,8 @@ const updateCounts = () => {
 		lineContainer.querySelectorAll('.roster-option[data-gender="F"]').length >
 			parseInt(maxes.f)
 	)
-		genderWarning.classList.remove('invisible');
-	else genderWarning.classList.add('invisible');
+		genderWarning.classList.remove('d-none');
+	else genderWarning.classList.add('d-none');
 };
 
 const handleMoveOptions = (e) => {
@@ -520,6 +521,9 @@ document.addEventListener('DOMContentLoaded', () => {
 		.querySelector('#their-name')
 		.getAttribute('data-name');
 	gameData.id = document.querySelector('#game-data').getAttribute('data-value');
+	gameData.timeouts = parseInt(
+		document.querySelector('#game-data').getAttribute('data-timeouts')
+	);
 
 	if (!gameData.id) {
 		showMessage(`error`, `Game Id not valid`);
@@ -577,20 +581,76 @@ document.addEventListener('DOMContentLoaded', () => {
 			offense: currentPoint.offense === 'true',
 			scored: parseInt(currentPoint.scored),
 		};
+
+		//the game has already started. set the scoreboard
+		const ourScore = document.querySelector('#us > .team-score');
+		if (ourScore) ourScore.innerHTML = gameData.currentPoint.score;
+		const theirScore = document.querySelector('#them > .team-score');
+		if (theirScore) theirScore.innerHTML = gameData.currentPoint.oppScore;
+
+		//set the timeout situation
+		const tol = Math.floor((gameData.timeouts + 1) / 2);
+		gameData.timeoutsLeft = [tol, tol];
+		gameData.period = 1;
 	}
 
 	//points played
 	const pts = getElementArray(document, `#point-data > .point`);
 	pts.forEach((p) => {
+		const q = p.dataset;
 		gameData.points.push({
-			score: parseInt(p.score),
-			oppScore: parseInt(p.oppScore),
-			endPeriod: p.endPeriod === 'true',
-			scored: parseInt(p.scored),
-			offense: p.offense === 'true',
+			score: parseInt(q.score),
+			oppScore: parseInt(q.oppScore),
+			endPeriod: q.endPeriod === 'true',
+			scored: parseInt(q.scored),
+			offense: q.offense === 'true',
 		});
+		const tos = getElementArray(p, '.timeout');
+		tos.forEach((to) => {
+			if (to.getAttribute('data-team') === '1')
+				gameData.timeoutsLeft[0] = Math.max(0, gameData.timeoutsLeft[0] - 1);
+			else if (to.getAttribute('data-team') === '-1')
+				gameData.timeoutsLeft[1] = Math.max(0, gameData.timeoutsLeft[1] - 1);
+		});
+		if (p.endPeriod === 'true') {
+			gameData.period++;
+			let ht = Math.floor(gameData.periods / 2);
+			if (gameData.period === ht + 1) {
+				gameData.timeoutsLeft = gameData.timeoutsLeft.map((t) => {
+					if (gameData.timeouts === 4) return 2;
+					else if (gameData.timeouts === 3) return Math.min(2, t + 1);
+					else if (gameData.timeouts === 2) return 1;
+					else if (gameData.timeouts === 1) return Math.min(1, t + 1);
+					else if (gameData.timeouts === 0) return 0;
+				});
+			}
+		}
 	});
 
+	for (var i = 0; i < 2; i++) {
+		if (i < gameData.timeoutsLeft[0]) {
+			const t = document.querySelector(
+				'#us .timeout-marker:not(.used-timeout)'
+			);
+			if (t) t.classList.add('used-timeout');
+		}
+		if (i < gameData.timeoutsLeft[1]) {
+			const t = document.querySelector(
+				'#them .timeout-marker:not(.used-timeout)'
+			);
+			if (t) t.classList.add('used-timeout');
+		}
+	}
+
+	const pd = document.querySelector('.game-period');
+	if (pd) {
+		if (gameData.period === 1) pd.innerHTML = '1st';
+		else if (gameData.period === 2) pd.innerHTML = '2nd';
+		else if (gameData.period === 3) pd.innerHTML = '3rd';
+		else if (gameData.period === 4) pd.innerHTML = '4th';
+	}
+
+	console.log(gameData);
 	//remove the temporary data area
 	// dataArea.remove();
 	showMessage(

@@ -59,13 +59,13 @@ export const showMessage = (type, msg, ...time) => {
 	const msgDiv = document.querySelector('.message');
 	msgDiv.innerHTML = msg;
 	msgDiv.style = `color:${color};background-color:${bgcolor};opacity:1;`;
-	msgDiv.classList.remove('invisible-div');
+	msgDiv.classList.remove('d-none');
 	msgTimeout.value = setTimeout(hideMessage, duration);
 };
 
 export const hideMessage = () => {
 	const msgDiv = document.querySelector('.message');
-	msgDiv.classList.add('invisible-div');
+	msgDiv.classList.add('d-none');
 	// msgTimeout = setTimeout(() => {
 	//   msgDiv.style = 'display:none;';
 	// }, 250);

@@ -152,7 +152,7 @@ const getTeam = (e) => {
 		infoButton.disabled = true;
 		rulesButton.disabled = true;
 		[rosterItem, gamesItem].forEach((item) => {
-			item.classList.add('invisible-div');
+			item.classList.add('d-none');
 		});
 		tournamentInfo.hide();
 		tournamentRules.hide();
@@ -181,13 +181,13 @@ const getTeam = (e) => {
 						if (res2.data.division.toLowerCase() === 'mixed') {
 							rosterTable.classList.add('mixed');
 							lineContainer.classList.add('mixed');
-							mixedCount.classList.remove('invisible-div');
-							genderArea.classList.remove('invisible-div');
+							mixedCount.classList.remove('d-none');
+							genderArea.classList.remove('d-none');
 						} else {
 							rosterTable.classList.remove('mixed');
 							lineContainer.classList.remove('mixed');
-							mixedCount.classList.add('invisible-div');
-							genderArea.classList.add('invisible-div');
+							mixedCount.classList.add('d-none');
+							genderArea.classList.add('d-none');
 						}
 
 						//clear the roster table
@@ -273,8 +273,8 @@ const getTournament = (e) => {
 		});
 		timeouts.selectedIndex = tourney.timeouts;
 
-		rosterItem.classList.remove('invisible-div');
-		gamesItem.classList.remove('invisible-div');
+		rosterItem.classList.remove('d-none');
+		gamesItem.classList.remove('d-none');
 
 		roster = roster.sort((a, b) => {
 			const a1 = `${a.lastName}, ${a.firstName}`;
@@ -324,8 +324,8 @@ const getTournament = (e) => {
 	} else {
 		clearForm();
 		clearTourneyRosterTable();
-		rosterItem.classList.add('invisible-div');
-		gamesItem.classList.add('invisible-div');
+		rosterItem.classList.add('d-none');
+		gamesItem.classList.add('d-none');
 		tournamentInfo.hide();
 		tournamentRules.hide();
 		tourneyRoster = [];
@@ -446,8 +446,8 @@ const handleSaveTournament = (e) => {
 				}
 			}
 
-			rosterItem.classList.remove('invisible-div');
-			gamesItem.classList.remove('invisible-div');
+			rosterItem.classList.remove('d-none');
+			gamesItem.classList.remove('d-none');
 
 			showMessage('info', 'Successfully saved tournament.');
 		} else {

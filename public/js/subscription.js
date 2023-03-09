@@ -66,9 +66,9 @@ const handleSubscriptionArea = (e) => {
 
 	console.log(e.detail.isMe, currentMembership);
 	if (!e.detail.isMe && currentMembership) {
-		memArea.classList.add('invisible-div');
+		memArea.classList.add('d-none');
 	} else {
-		memArea.classList.remove('invisible-div');
+		memArea.classList.remove('d-none');
 	}
 
 	handlePrices(null);
@@ -83,7 +83,7 @@ const handleFeatureToggle = (e) => {
 const handlePrices = (e) => {
 	const selected = getElementArray(
 		checkoutForm,
-		`.selection-container:not(.invisible-div) input[type="radio"]:checked`
+		`.selection-container:not(.d-none) input[type="radio"]:checked`
 	);
 
 	//membership, and upgrade current if applicable

@@ -96,6 +96,15 @@ exports.startPoint = catchAsync(async (req, res, next) => {
 		});
 		res.locals.game.markModified('points');
 		const data = await res.locals.game.save();
+		await data.populate([
+			{
+				path: 'format',
+			},
+			{
+				path: 'tournament',
+				select: 'roster',
+			},
+		]);
 
 		return res.status(200).json({
 			status: 'success',

@@ -130,14 +130,6 @@ body {
 	flex-direction: column;
 }
 
-.jersey-name {
-	font-size: 1rem;
-}
-
-.jersey-number {
-	font-size: 2rem;
-}
-
 .form-label {
 	text-align: left;
 	font-weight: bold;

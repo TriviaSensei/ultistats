@@ -507,8 +507,8 @@ const getTeam = (e) => {
 
 	//if "create new team" is selected
 	if (!teamSelect.value) {
-		managerItem.classList.add('invisible-div');
-		subItem.classList.add('invisible-div');
+		managerItem.classList.add('d-none');
+		subItem.classList.add('d-none');
 		addManagerButton.disabled = true;
 		rosterSize.innerHTML = 0;
 		//reset the color values
@@ -549,8 +549,8 @@ const getTeam = (e) => {
 		if (res.status === 'success') {
 			populateForm(teamForm, res.data);
 			handleColorChange({ target: color1 });
-			managerItem.classList.remove('invisible-div');
-			subItem.classList.remove('invisible-div');
+			managerItem.classList.remove('d-none');
+			subItem.classList.remove('d-none');
 
 			addManagerButton.disabled = false;
 			getElementArray(division, 'option').some((op, i) => {
@@ -710,12 +710,12 @@ const handleDivisionChange = (e) => {
 	const gm = document.querySelector('#gender-match');
 	const egm = document.querySelector('#edit-gender-match');
 	if (division.value === 'Mixed') {
-		gm.classList.remove('invisible-div');
-		egm.classList.remove('invisible-div');
+		gm.classList.remove('d-none');
+		egm.classList.remove('d-none');
 		rosterTable.classList.add('mixed');
 	} else {
-		gm.classList.add('invisible-div');
-		egm.classList.add('invisible-div');
+		gm.classList.add('d-none');
+		egm.classList.add('d-none');
 		rosterTable.classList.remove('mixed');
 		const r = getElementArray(
 			document,
