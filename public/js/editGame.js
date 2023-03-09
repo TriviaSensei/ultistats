@@ -628,13 +628,13 @@ document.addEventListener('DOMContentLoaded', () => {
 	});
 
 	for (var i = 0; i < 2; i++) {
-		if (i < gameData.timeoutsLeft[0]) {
+		if (i >= gameData.timeoutsLeft[0]) {
 			const t = document.querySelector(
 				'#us .timeout-marker:not(.used-timeout)'
 			);
 			if (t) t.classList.add('used-timeout');
 		}
-		if (i < gameData.timeoutsLeft[1]) {
+		if (i >= gameData.timeoutsLeft[1]) {
 			const t = document.querySelector(
 				'#them .timeout-marker:not(.used-timeout)'
 			);
