@@ -2,8 +2,18 @@
 	--field-color: #005c0c;
 }
 
+html,
+body {
+	-webkit-touch-callout: none; /* iOS Safari */
+	-webkit-user-select: none; /* Safari */
+	-khtml-user-select: none; /* Konqueror HTML */
+	-moz-user-select: none; /* Old versions of Firefox */
+	-ms-user-select: none; /* Internet Explorer/Edge */
+	user-select: none;
+}
+
 .profile-body {
-	width: min(100%, 450px);
+	width: min(100%, 400px);
 }
 
 #score-bug {
@@ -92,7 +102,7 @@ input[name='jersey']:checked + label {
 
 .field-container {
 	background-color: var(--field-color);
-	width: min(100%, 450px);
+	width: min(100%, 400px);
 }
 
 .field {
@@ -106,17 +116,33 @@ input[name='jersey']:checked + label {
 .disc {
 	position: absolute;
 	background-color: var(--white);
-	width: 12px;
-	height: 12px;
+	width: 10px;
+	height: 10px;
 	border: 1px solid black;
 	border-radius: 50%;
 	top: 50%;
 	left: 50%;
 	transform: translate(-50%, -50%);
+	z-index: 3;
+}
+
+.disc-line {
+	position: absolute;
+	background-color: yellow;
+	border: 1px solid yellow;
+	height: 1px;
+	z-index: 2;
+	transform-origin: 0 50%;
 }
 
 #event-container {
-	width: min(450px, 100%);
+	width: min(400px, 100%);
+}
+
+#event-desc {
+	font-size: 0.75rem;
+	height: 2rem;
+	font-weight: bold;
 }
 
 .settings-row > .setting-label {
@@ -137,16 +163,44 @@ input[name='jersey']:checked + label {
 .button-row {
 	width: 100%;
 	display: flex;
-	justify-content: space-around;
-	margin-bottom: 1rem;
+	justify-content: center;
+	align-items: center;
+	margin-bottom: 0.5rem;
 }
 
 .button-row > div {
 	min-width: 24%;
 }
 
-hr {
+.player-button {
+	min-width: 3rem;
+	border: 3px solid var(--light-gray);
+	margin: auto 1rem;
+	font-weight: bold;
+}
+
+.action-container button {
+	border: 3px solid transparent;
+}
+
+button[selected],
+button[selected]:hover {
+	border: 3px solid var(--black);
+}
+
+.jersey-number {
+	font-size: 1.2rem;
+}
+.jersey-name {
+	font-size: 0.8rem;
+}
+
+hr.separator {
 	width: 50%;
 	border-bottom: 3px solid var(--color-2);
-	margin: 1rem auto;
+	margin: 0.5rem auto;
+}
+
+.dropdown-item {
+	font-size: 0.875rem;
 }

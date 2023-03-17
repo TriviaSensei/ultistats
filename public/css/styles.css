@@ -3,7 +3,7 @@
 	--black: #222222;
 	--gray: #777777;
 	--med-gray: #aaaaaa;
-	--light-gray: #cccccc;
+	--light-gray: #dddddd;
 	--pink: #ff8f8f;
 	--blue: #a3c9ff;
 	--blurred: rgba(0, 0, 0, 0.3);
@@ -30,7 +30,7 @@ body {
 	box-sizing: border-box;
 }
 
-hr {
+hr.separator {
 	width: 50%;
 	margin: 1rem auto;
 	border-top: 2px solid var(--black);

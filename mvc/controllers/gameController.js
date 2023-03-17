@@ -84,14 +84,13 @@ exports.startPoint = catchAsync(async (req, res, next) => {
 		res.locals.game.points.push({
 			score: 0,
 			oppScore: 0,
-			half: 1,
-			timeouts,
-			oppTimeouts: timeouts,
+			period: 1,
 			offense: req.body.offense,
 			direction: req.body.direction,
 			lineup: req.body.lineup,
 			injuries: [],
 			scored: 0,
+			endPeriod: false,
 			passes: [],
 		});
 		res.locals.game.markModified('points');
@@ -126,29 +125,25 @@ exports.startPoint = catchAsync(async (req, res, next) => {
 	 * scores
 	 * period - if we specify that we're starting the second half, or if we're already in the second half, or if either score is at or above halftime, we're in half 2
 	 * offense/direction - specified in body
+	 * lineup - players starting this point
+	 * injuries - any players subbed off during the point (for any reason, injury or otherwise)
+	 * 		- if this occurs, that player will be removed from "lineup". When the point ends, lineup will be whoever ended the point on the field. It is possible to re-enter
+	 * 			after subbing off.
 	 * scored - no one has scored this point, so we don't initialize it
+	 * endPeriod - if this is the last point of the half/quarter. Always starts as false (even if the score is 7-7 and the half will end one way or another). Set to true if the half ends after the point.
 	 * passes: empty array - no passes yet
-	 * endPeriod: (boolean) this point ends the period. Automatically set at halftime (if score reaches halftime and we haven't manually ended the half due to a cap yet).
 	 */
 	res.locals.game.points.push({
 		score,
 		oppScore,
-		half:
-			lastPoint.half === 2 ||
-			score >= res.locals.game.cap / 2 ||
-			oppScore >= res.locals.game.cap / 2 ||
-			req.body.half === 2
-				? 2
-				: 1,
-		timeouts: lastPoint.timeouts,
-		oppTimeouts: lastPoint.oppTimeouts,
+		period: lastPoint.period + (lastPoint.endPeriod ? 1 : 0),
 		offense: req.body.offense,
 		direction: req.body.direction,
 		lineup: req.body.lineup,
 		injuries: [],
 		scored: undefined,
+		endPeriod: false,
 		passes: [],
-		pointer: undefined,
 	});
 	res.locals.game.markModified('points');
 	const data = await res.locals.game.save();

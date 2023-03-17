@@ -1,13 +1,37 @@
-.button-row-container.d-flex.flex-column.w-100 
-.action-container.d-flex.justify-content-around.w-100 
-    button#drop.btn.btn-primary(type="button") Drop 
-    button#throwaway.btn.btn-secondary(type="button") Throwaway 
-    button#goal.btn.btn-success(type="button") Goal 
-hr
-.action-container.d-flex.justify-content-around.w-100 
-    button#sub.btn.btn-info(type="button") Sub 
-    button#timeout.btn.btn-warning(type="button") Timeout 
-    button#opp-goal.btn.btn-danger(type="button") Opp Goal
-hr
+#button-row-container.d-flex.flex-column.w-100 
+hr.separator
+.action-container.d-flex.align-items-center.justify-content-center.w-100
+    button#stall.btn.btn-sm.btn-light.mx-1(type="button") Stall 
+    button#drop.btn.btn-sm.btn-primary.mx-1(type="button") Drop 
+    button#throwaway.btn.btn-sm.btn-secondary.mx-1(type="button") Throwaway 
+    button#goal.btn.btn-sm.btn-success.mx-1(type="button") Goal 
+hr.separator
+.action-container.d-flex.align-items-center.justify-content-center.w-100
+    .dropdown.dropup.mx-2
+        a.btn.btn-sm.btn-warning.dropdown-toggle(role="button" data-bs-toggle="dropdown" aria-expanded="false") Events 
+        ul.dropdown-menu 
+            - if (gameData.format.allowPeriodEnd)
+                li 
+                    a#end-period.dropdown-item(role="button") End period
+            li 
+                a#sub.dropdown-item(role="button") Sub 
+            li
+                a#timeout.dropdown-item(role="button") Timeout 
+    .dropdown.dropup.mx-2
+        a.btn.btn-sm.btn-danger.dropdown-toggle(role="button" data-bs-toggle="dropdown" aria-expanded="false") Positioning 
+        ul.dropdown-menu
+            li
+                a#brick.dropdown-item(role="button" data-x=`${gameData.format.brick + gameData.format.endzone}` data-y=`${gameData.format.width/2}`) Brick 
+            li
+                a#reverse-brick.dropdown-item(role="button" data-x=`${gameData.format.brick/2}` data-y=`${gameData.format.width/2}`) Rev. brick 
+            li
+                a#own-goal.dropdown-item(role="button" data-x=`${gameData.format.endzone}`) Own GL 
+            li 
+                a#attack-goal.dropdown-item(role="button" data-x=`${gameData.format.length + gameData.format.endzone}`) Attack GL
+            li
+                a#center.dropdown-item(role="button" data-y=`${gameData.format.width/2}`) Center width
+            li
+                a#midfield.dropdown-item(role="button" data-x=`${gameData.format.endzone + gameData.format.length/2}` data-y=`${gameData.format.width/2}`) Midfield
+hr.separator
 .d-flex.w-100
-    button.m-auto(type="button") End Game
+    button.btn.btn-sm.btn-dark.m-auto(type="button") End Game

@@ -91,6 +91,10 @@ function toNearestHalf(n) {
 	return parseFloat((Math.round(n + 0.5) - 0.5).toFixed(1));
 }
 
+const getIds = (o) => {
+	return o.getAttribute('data-id');
+};
+
 const setGenderRatio = (m, f) => {
 	if (gameData.genderRule !== 'A') return;
 
@@ -453,15 +457,13 @@ const handleStartPoint = (e) => {
 				'input[type="radio"][name="attack-direction"]:checked'
 			)?.value
 		),
-		lineup: getElementArray(lineContainer, `.roster-option`).map((o) => {
-			return o.getAttribute('data-id');
-		}),
+		lineup: getElementArray(lineContainer, `.roster-option`).map(getIds),
 	};
 
 	const handler = (res) => {
 		if (res.status === 'success') {
 			pointModal.hide();
-			const evt = new CustomEvent('new-point', {
+			const evt = new CustomEvent('load-point', {
 				detail: res.data,
 			});
 			document.dispatchEvent(evt);
@@ -470,8 +472,6 @@ const handleStartPoint = (e) => {
 	};
 
 	handleRequest(str, 'PATCH', body, handler);
-
-	console.log(body);
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -488,16 +488,12 @@ document.addEventListener('DOMContentLoaded', () => {
 		.map((l) => {
 			return {
 				...l.dataset,
-				players: getElementArray(l, '.player').map((p) => {
-					return p.getAttribute('data-id');
-				}),
+				players: getElementArray(l, '.player').map(getIds),
 			};
 		})
 		.sort((a, b) => {
 			return a.name.localeCompare(b.name);
 		});
-
-	console.log(lines);
 
 	roster.forEach((p) => {
 		const op = createRosterOption(p, handleArrows);
@@ -513,6 +509,8 @@ document.addEventListener('DOMContentLoaded', () => {
 	});
 
 	//get the gender rule, team names, and game ID for calling the API
+	const gd = document.querySelector('#game-data');
+
 	gameData.genderRule = document
 		.querySelector('#gender-data')
 		.getAttribute('data-rule');
@@ -520,10 +518,12 @@ document.addEventListener('DOMContentLoaded', () => {
 	gameData.opponent = document
 		.querySelector('#their-name')
 		.getAttribute('data-name');
-	gameData.id = document.querySelector('#game-data').getAttribute('data-value');
-	gameData.timeouts = parseInt(
-		document.querySelector('#game-data').getAttribute('data-timeouts')
-	);
+	gameData.id = gd.getAttribute('data-value');
+	gameData.period = parseInt(gd.getAttribute('data-period'));
+	gameData.timeouts = parseInt(gd.getAttribute('data-timeouts'));
+	gameData.cap = parseInt(gd.getAttribute('data-cap'));
+	gameData.hardCap = parseInt(gd.getAttribute('data-hard-cap'));
+	gameData.winBy = parseInt(gd.getAttribute('data-win-by'));
 
 	if (!gameData.id) {
 		showMessage(`error`, `Game Id not valid`);
@@ -549,7 +549,6 @@ document.addEventListener('DOMContentLoaded', () => {
 				? false
 				: undefined,
 	};
-	console.log(gameData.startSettings);
 	//game format settings
 	const formatSettings = document.querySelector('#format-settings')?.dataset;
 	if (formatSettings) {
@@ -560,6 +559,10 @@ document.addEventListener('DOMContentLoaded', () => {
 		gameData.allowPeriodEnd = formatSettings.allowPeriodEnd === 'true';
 		gameData.players = parseInt(formatSettings.players);
 		gameData.periods = parseInt(formatSettings.periods);
+		gameData.length = parseInt(formatSettings.length);
+		gameData.width = parseInt(formatSettings.width);
+		gameData.endzone = parseInt(formatSettings.endzone);
+		gameData.brick = parseInt(formatSettings.brick);
 	}
 
 	//division - only really important if mixed
@@ -571,15 +574,45 @@ document.addEventListener('DOMContentLoaded', () => {
 	//validate the start settings and enable the save button if valid
 	validateSettings();
 
-	const currentPoint = document.querySelector('#current-point')?.dataset;
+	const cp = document.querySelector('#current-point');
+	const currentPoint = cp?.dataset;
+
 	if (currentPoint) {
+		const lc = cp.querySelector('#lineup');
+		const ic = cp.querySelector('#injuries');
+		const pc = cp.querySelector('#passes');
+		const passes = pc
+			? getElementArray(pc, '.pass').map((p) => {
+					const ds = p.dataset;
+					return {
+						...ds,
+						x0: parseFloat(ds.x0),
+						y0: parseFloat(ds.y0),
+						x1: parseFloat(ds.x1),
+						y1: parseFloat(ds.y1),
+						goal: parseInt(ds.goal),
+					};
+			  })
+			: [];
+		const currentPass =
+			passes.length > 0 ? passes[passes.length - 1] : undefined;
 		gameData.currentPoint = {
 			...gameData.currentPoint,
 			score: parseInt(currentPoint.score),
 			oppScore: parseInt(currentPoint.oppScore),
 			direction: parseInt(currentPoint.direction),
 			offense: currentPoint.offense === 'true',
+			period: gameData.period,
+			endPeriod: gameData.endPeriod === 'true',
 			scored: parseInt(currentPoint.scored),
+			lineup: lc ? getElementArray(lc, `.player`).map(getIds) : [],
+			injuries: ic ? getElementArray(ic, `.player`).map(getIds) : [],
+			passes,
+			possession:
+				passes.length === 0
+					? currentPoint.offense === 'true'
+					: ['stall', 'drop', 'throwaway'].includes(currentPass.result) ||
+					  (currentPass.receiver && !currentPass.result),
 		};
 
 		//the game has already started. set the scoreboard
@@ -650,7 +683,16 @@ document.addEventListener('DOMContentLoaded', () => {
 		else if (gameData.period === 4) pd.innerHTML = '4th';
 	}
 
-	console.log(gameData);
+	const evt = new CustomEvent('load-point', {
+		detail: {
+			...gameData,
+			tournament: {
+				roster,
+			},
+		},
+	});
+	document.dispatchEvent(evt);
+	showDiv(actionArea);
 	//remove the temporary data area
 	// dataArea.remove();
 	showMessage(
