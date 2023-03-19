@@ -119,6 +119,7 @@ const handleEvent = (e) => {
 		case 'throwaway':
 			updater.turnover = true;
 		case 'goal':
+			if (!discIn) return showMessage('error', 'The disc is not live.');
 			const sel = e.target.parentElement.querySelector('button[selected]');
 			if (sel) sel.removeAttribute('selected');
 			if (sel === e.target) {
@@ -192,17 +193,22 @@ const undoPass = (e) => {
 	if (currentPoint.passes.length === 0) return;
 
 	const lastPass = currentPoint.passes.pop();
-	poppedPasses.push(lastPass);
 	redo.disabled = false;
 
 	if (lastPass.turnover || lastPass.goal !== 0) changePossession();
+	const evt = new CustomEvent('return-to-point');
 	if (lastPass.goal === -1) {
 		gameData.oppScore--;
 		theirScore.innerHTML = gameData.oppScore;
+		document.dispatchEvent(evt);
 	} else if (lastPass.goal === 1) {
 		gameData.score--;
 		ourScore.innerHTML = gameData.score;
+		document.dispatchEvent(evt);
 	}
+	lastPass.goal = 0;
+	poppedPasses.push(lastPass);
+
 	if (currentPoint.passes.length > 0) {
 		const newCurrentPass = currentPoint.passes[currentPoint.passes.length - 1];
 		drawPass(newCurrentPass);
@@ -380,11 +386,38 @@ const updateCurrentPass = (data) => {
 					updateLastPass({
 						goal: 1,
 					});
+					currentPoint.scored = 1;
 					discIn = false;
 					gameData.score++;
 					ourScore.innerHTML = gameData.score;
 
 					changePossession();
+					getElementArray(
+						document,
+						'.direction-span.left, .direction-span.right'
+					).forEach((el) => {
+						el.classList.remove('left');
+						el.classList.remove('right');
+					});
+					console.log(gameData);
+
+					const evt = new CustomEvent('point-ended', {
+						detail: {
+							gameData: {
+								...gameData,
+								points: gameData.points.map((p, i) => {
+									if (i !== gameData.points.length - 1) return p;
+									else {
+										return {
+											...p,
+											scored: currentPoint.scored,
+										};
+									}
+								}),
+							},
+						},
+					});
+					document.dispatchEvent(evt);
 				} else {
 					showMessage(
 						'error',
@@ -423,6 +456,7 @@ const updateCurrentPass = (data) => {
 				updateCurrentPass({
 					goal: -1,
 				});
+				currentPoint.scored = -1;
 				addPass();
 				discIn = false;
 
@@ -432,6 +466,31 @@ const updateCurrentPass = (data) => {
 				console.log(currentPoint.passes);
 
 				changePossession();
+				getElementArray(
+					document,
+					'.direction-span.left, .direction-span.right'
+				).forEach((el) => {
+					el.classList.remove('left');
+					el.classList.remove('right');
+				});
+
+				const evt = new CustomEvent('point-ended', {
+					detail: {
+						gameData: {
+							...gameData,
+							points: gameData.points.map((p, i) => {
+								if (i !== gameData.points.length - 1) return p;
+								else {
+									return {
+										...p,
+										scored: currentPoint.scored,
+									};
+								}
+							}),
+						},
+					},
+				});
+				document.dispatchEvent(evt);
 			}
 			deselectAll();
 		}
@@ -443,7 +502,6 @@ const updateCurrentPass = (data) => {
 		changePossession();
 		resetCurrentPass();
 	}
-	console.log(currentPass);
 
 	if (event) showEvent(event);
 };

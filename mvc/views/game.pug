@@ -102,7 +102,13 @@ block content
                 .w-100.h-100.overflow-hidden
                     #point-settings.w-100.h-100.d-flex.flex-column.justify-content-between.overflow-hidden.d-none
                         button.btn.btn-primary(type="button" data-bs-toggle="modal" data-bs-target="#point-setup-modal") Setup Point
-                        button.btn.btn-secondary(type="button" data-bs-toggle="modal" data-bs-target="#start-settings-modal") Edit game start settings
+                        .d-flex.w-100.align-items-center.justify-content-center
+                            button#timeout-us.f-1.btn.btn-warning.me-1 Our timeout 
+                            button#timeout-them.f-1.btn.btn-warning.ms-1 Their timeout  
+                        .d-flex.flex-column.w-100
+                            button.btn.btn-secondary.mb-1(type="button" data-bs-toggle="modal" data-bs-target="#start-settings-modal") Edit game start settings
+                            button#end-period-1.btn.btn-dark.mb-1(type="button") End period
+                            button#end-game-1.btn.btn-dark(type="button") End game
                     #action-div.d-flex.flex-column.w-100.h-100.overflow-auto.d-none
                         include game/editPoint
 block scripts
