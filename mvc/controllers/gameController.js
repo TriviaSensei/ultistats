@@ -15,14 +15,12 @@ exports.verifyOwnership = catchAsync(async (req, res, next) => {
 
 	res.locals.game = await Game.findById(req.params.id);
 	if (!res.locals.game) return next(new AppError('Game ID not found', 404));
-
 	const t = await Tournament.findById(res.locals.game.tournament.toString());
 	if (!t) return next(new AppError('Tournament ID not found', 404));
 	res.locals.tournament = t;
 	const fmt = await Format.findById(t.format.toString());
 	if (!fmt) return next(new AppError('Invalid format', 400));
 	res.locals.format = fmt;
-
 	const tm = await Team.findById(t.team.toString());
 	if (!tm) return next(new AppError('Team ID not found', 404));
 	res.locals.team = tm;
@@ -31,6 +29,19 @@ exports.verifyOwnership = catchAsync(async (req, res, next) => {
 		return next(new AppError('You are not a manager of this team.', 403));
 
 	next();
+});
+
+exports.clearPoints = catchAsync(async (req, res, next) => {
+	console.log(req.params.id);
+	const game = await Game.findById(req.params.id);
+	game.points = [];
+	game.score = 0;
+	game.oppScore = 0;
+	game.markModified('points');
+	await game.save();
+	return res.status(200).json({
+		status: 'success',
+	});
 });
 
 exports.startPoint = catchAsync(async (req, res, next) => {
@@ -93,6 +104,8 @@ exports.startPoint = catchAsync(async (req, res, next) => {
 			endPeriod: false,
 			passes: [],
 		});
+		res.locals.game.period = 1;
+		res.locals.game.markModified('period');
 		res.locals.game.markModified('points');
 		const data = await res.locals.game.save();
 		await data.populate([
@@ -113,6 +126,9 @@ exports.startPoint = catchAsync(async (req, res, next) => {
 
 	//if not the first point, look at the last point to initialize the information.
 	const lastPoint = points[points.length - 1];
+
+	console.log(lastPoint);
+
 	//must have finished the last point
 	if (lastPoint.scored !== -1 && lastPoint.scored !== 1)
 		return next(new AppError('You have not finished the last point', 400));
@@ -133,18 +149,21 @@ exports.startPoint = catchAsync(async (req, res, next) => {
 	 * endPeriod - if this is the last point of the half/quarter. Always starts as false (even if the score is 7-7 and the half will end one way or another). Set to true if the half ends after the point.
 	 * passes: empty array - no passes yet
 	 */
+	const newPeriod = lastPoint.period + (lastPoint.endPeriod ? 1 : 0);
 	res.locals.game.points.push({
 		score,
 		oppScore,
-		period: lastPoint.period + (lastPoint.endPeriod ? 1 : 0),
+		period: newPeriod,
 		offense: req.body.offense,
 		direction: req.body.direction,
 		lineup: req.body.lineup,
 		injuries: [],
-		scored: undefined,
+		scored: 0,
 		endPeriod: false,
 		passes: [],
 	});
+	res.locals.game.period = newPeriod;
+	res.locals.game.markModified('period');
 	res.locals.game.markModified('points');
 	const data = await res.locals.game.save();
 
@@ -170,12 +189,43 @@ exports.startPoint = catchAsync(async (req, res, next) => {
  *  	timeout: +/- 1 (us/them)
  *
  */
+
+exports.setPasses = catchAsync(async (req, res, next) => {
+	if (res.locals.game.result !== '')
+		return next(new AppError('This game has ended.', 400));
+
+	console.log(req.body);
+	if (!req.body.passes)
+		return next(new AppError('Invalid input specified.', 400));
+
+	if (res.locals.game.points.length === 0)
+		return next(new AppError('This game has not started.', 400));
+
+	res.locals.game.points[res.locals.game.points.length - 1] = req.body;
+	res.locals.game.markModified('points');
+
+	if (req.body.scored === 1) {
+		res.locals.game.score++;
+		res.locals.game.markModified('score');
+	} else if (req.body.scored === -1) {
+		res.locals.game.oppScore++;
+		res.locals.game.markModified('oppScore');
+	}
+
+	await res.locals.game.save();
+
+	res.status(200).json({
+		status: 'success',
+		data: req.body,
+	});
+});
+
 exports.addPass = catchAsync(async (req, res, next) => {
 	if (res.locals.game.result !== '')
 		return next(new AppError('This game has ended.', 400));
 
 	console.log(req.body);
-	if (!req.body.pass)
+	if (!req.body.passes)
 		return next(new AppError('Invalid input specified.', 400));
 
 	if (res.locals.game.points.length === 0)

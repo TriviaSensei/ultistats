@@ -2,6 +2,7 @@ import { showMessage } from './utils/messages.js';
 import { handleRequest } from './utils/requestHandler.js';
 import { createElement } from './utils/createElementFromSelector.js';
 import { getElementArray } from './utils/getElementArray.js';
+import { showDiv } from './utils/showDiv.js';
 
 let isMobile = false;
 
@@ -23,6 +24,8 @@ const undo = document.querySelector('#undo-button');
 const redo = document.querySelector('#redo-button');
 const lastEvent = document.querySelector('#event-desc');
 const buttonRowContainer = document.querySelector('#button-row-container');
+
+const actionArea = document.querySelector('#action-div');
 
 //positioning buttons
 const brick = document.querySelector('#brick');
@@ -61,6 +64,24 @@ const deselectAll = () => {
 	getElementArray(document, 'button[selected]').forEach((b) => {
 		b.removeAttribute('selected');
 	});
+};
+
+const updatePasses = () => {
+	const str = `/api/v1/games/addPass/${gameData._id}`;
+	const body = currentPoint;
+	const handler = (res) => {
+		if (res.status !== 'success') {
+			showMessage(
+				'error',
+				`Error updating passes in database - ${res.message}`
+			);
+		} else {
+			gameData.currentPoint = res.data;
+			currentPoint = gameData.currentPoint;
+			console.log(`Successfully updated passes`);
+		}
+	};
+	handleRequest(str, 'PATCH', body, handler);
 };
 
 const getFieldCoordinates = (x, y) => {
@@ -172,8 +193,18 @@ const addPass = () => {
 	undo.disabled = false;
 	redo.disabled = true;
 	poppedPasses = [];
+
+	localStorage.setItem('passes', JSON.stringify(currentPoint.passes));
+	if (
+		currentPoint.passes.length % 3 === 0 ||
+		currentPass.goal !== 0 ||
+		currentPass.event
+	)
+		updatePasses();
+
 	resetCurrentPass();
 	updateCurrentPass(d);
+	localStorage.setItem('currentPass', JSON.stringify(currentPass));
 };
 
 const drawPass = (p) => {
@@ -197,13 +228,14 @@ const undoPass = (e) => {
 
 	if (lastPass.turnover || lastPass.goal !== 0) changePossession();
 	const evt = new CustomEvent('return-to-point');
-	if (lastPass.goal === -1) {
-		gameData.oppScore--;
-		theirScore.innerHTML = gameData.oppScore;
-		document.dispatchEvent(evt);
-	} else if (lastPass.goal === 1) {
-		gameData.score--;
-		ourScore.innerHTML = gameData.score;
+	if (lastPass.goal !== 0) {
+		if (lastPass.goal === -1) {
+			gameData.oppScore--;
+			theirScore.innerHTML = gameData.oppScore;
+		} else if (lastPass.goal === 1) {
+			gameData.score--;
+			ourScore.innerHTML = gameData.score;
+		}
 		document.dispatchEvent(evt);
 	}
 	lastPass.goal = 0;
@@ -235,6 +267,9 @@ const undoPass = (e) => {
 	}
 
 	discIn = true;
+
+	localStorage.setItem('passes', JSON.stringify(currentPoint.passes));
+	localStorage.setItem('currentPass', JSON.stringify(currentPass));
 };
 
 const redoPass = (e) => {
@@ -274,12 +309,25 @@ const updateLastPass = (data) => {
 		...data,
 	};
 
+	localStorage.setItem('passes', JSON.stringify(currentPoint.passes));
+
 	return currentPoint.passes[currentPoint.passes.length - 1];
 };
 
 const updateCurrentPass = (data) => {
+	//if we're updating a location, make sure we're not throwing it from the end zone,
+	//and set the last pass ending spot to the goal line, at maximum)
 	if (data.x1) {
-		data.x1 = Math.min(data.x1, gameData.length + gameData.endzone);
+		// data.x1 = Math.min(data.x1, gameData.length + gameData.endzone);
+		if (currentPass.x0) {
+			currentPass.x0 = Math.min(
+				currentPass.x0,
+				gameData.length + gameData.endzone
+			);
+			updateLastPass({
+				x1: currentPass.x0,
+			});
+		}
 	}
 
 	currentPass = {
@@ -390,7 +438,7 @@ const updateCurrentPass = (data) => {
 					discIn = false;
 					gameData.score++;
 					ourScore.innerHTML = gameData.score;
-
+					updatePasses();
 					changePossession();
 					getElementArray(
 						document,
@@ -399,7 +447,6 @@ const updateCurrentPass = (data) => {
 						el.classList.remove('left');
 						el.classList.remove('right');
 					});
-					console.log(gameData);
 
 					const evt = new CustomEvent('point-ended', {
 						detail: {
@@ -410,7 +457,7 @@ const updateCurrentPass = (data) => {
 									else {
 										return {
 											...p,
-											scored: currentPoint.scored,
+											scored: currentPoint.scored || 0,
 										};
 									}
 								}),
@@ -453,9 +500,7 @@ const updateCurrentPass = (data) => {
 				changePossession();
 			} else if (data.result === 'goal') {
 				event = `${gameData.opponent} scored!`;
-				updateCurrentPass({
-					goal: -1,
-				});
+				currentPass.goal = -1;
 				currentPoint.scored = -1;
 				addPass();
 				discIn = false;
@@ -483,7 +528,7 @@ const updateCurrentPass = (data) => {
 								else {
 									return {
 										...p,
-										scored: currentPoint.scored,
+										scored: currentPoint.scored || 0,
 									};
 								}
 							}),
@@ -643,6 +688,12 @@ const setDiscPosition = (e) => {
 	}
 };
 
+const removePlayerButtons = () => {
+	getElementArray(document, '.player-button').forEach((b) => {
+		b.remove();
+	});
+};
+
 const addPlayerButton = (p, color) => {
 	if (!buttonRowContainer) return;
 	let lastRow = buttonRowContainer.querySelector('.button-row:last-child');
@@ -665,8 +716,10 @@ const addPlayerButton = (p, color) => {
 
 	b.appendChild(nm);
 	b.appendChild(num);
-	b.setAttribute('data-id', p.id);
-	b.setAttribute('data-name', p.firstName);
+	if (p) {
+		b.setAttribute('data-id', p.id);
+		b.setAttribute('data-name', p.firstName);
+	}
 	b.addEventListener('click', setPlayer);
 	lastRow.appendChild(b);
 };
@@ -689,93 +742,136 @@ const positionSort = (a, b) => {
 };
 
 const handleLoadPoint = (e) => {
-	gameData = e.detail;
+	console.log(e.detail);
+	if (!gameData) {
+		gameData = { ...e.detail };
+	} else
+		gameData = {
+			...gameData,
+			...e.detail,
+		};
+	currentPoint = gameData.currentPoint;
+
 	if (gameData.tournament && gameData.tournament.roster)
 		roster = gameData.tournament.roster;
 
-	//load player buttons
-	let count = 0;
+	if (currentPoint) {
+		//load player buttons
+		let count = 0;
 
-	const players = gameData.currentPoint.lineup
-		.map((p) => {
-			const r = roster.find((pl) => {
-				if (pl.id === p) {
-					count++;
-					return true;
+		const players = gameData.currentPoint.lineup
+			.map((p) => {
+				const r = roster.find((pl) => {
+					if (pl.id === p) {
+						count++;
+						return true;
+					}
+				});
+				return {
+					...r,
+					initials: `${r.firstName.charAt(0)}${r.lastName.charAt(
+						0
+					)}`.toUpperCase(),
+				};
+			})
+			.sort(positionSort);
+
+		let cycles = 0;
+		while (
+			cycles < 3 &&
+			players.some((p, i) => {
+				return players.some((p2, j) => {
+					if (p2.initials === p.initials && i !== j) {
+						p2.initials = `${propCase(
+							p2.firstName.substring(0, cycles + 1)
+						)}${propCase(p2.lastName.substring(0, cycles + 1))}`;
+						p.initials = `${propCase(
+							p.firstName.substring(0, cycles + 1)
+						)}${propCase(p.lastName.substring(0, cycles + 1))}`;
+						return true;
+					}
+				});
+			})
+		) {
+			cycles++;
+		}
+
+		removePlayerButtons();
+		players.forEach((p) => {
+			if (p) addPlayerButton(p, gameData.startSettings.jersey);
+		});
+		if (count < gameData.players)
+			addPlayerButton(null, gameData.startSettings.jersey);
+
+		currentPoint.period = gameData.period;
+
+		if (currentPoint.passes.length === 0) {
+			//figure out who's pulling, and in what direction.
+			let pt, rt, sp, cl;
+			if (currentPoint.offense) {
+				//they're pulling
+				pt = gameData.opponent;
+				rt = gameData.team;
+				currentPoint.possession = true;
+				sp = document.querySelector('#team-direction');
+				if (currentPoint.direction === 1) {
+					//we go right
+					cl = 'right';
+				} else {
+					cl = 'left';
 				}
-			});
-			return {
-				...r,
-				initials: `${r.firstName.charAt(0)}${r.lastName.charAt(
-					0
-				)}`.toUpperCase(),
-			};
-		})
-		.sort(positionSort);
-
-	let cycles = 0;
-	while (
-		cycles < 3 &&
-		players.some((p, i) => {
-			return players.some((p2, j) => {
-				if (p2.initials === p.initials && i !== j) {
-					p2.initials = `${propCase(
-						p2.firstName.substring(0, cycles + 1)
-					)}${propCase(p2.lastName.substring(0, cycles + 1))}`;
-					p.initials = `${propCase(
-						p.firstName.substring(0, cycles + 1)
-					)}${propCase(p.lastName.substring(0, cycles + 1))}`;
-					return true;
-				}
-			});
-		})
-	) {
-		cycles++;
-	}
-
-	players.forEach((p) => {
-		if (p) addPlayerButton(p, gameData.startSettings.jersey);
-	});
-	if (count < gameData.players)
-		addPlayerButton(null, gameData.startSettings.jersey);
-
-	currentPoint = gameData.currentPoint;
-	currentPoint.period = gameData.period;
-
-	if (currentPoint.passes.length === 0) {
-		//figure out who's pulling, and in what direction.
-		let pt, rt, sp, cl;
-		if (currentPoint.offense) {
-			//they're pulling
-			pt = gameData.opponent;
-			rt = gameData.team;
-			currentPoint.possession = true;
-			sp = document.querySelector('#team-direction');
-			if (currentPoint.direction === 1) {
-				//we go right
-				cl = 'right';
 			} else {
-				cl = 'left';
+				//we're pulling
+				rt = gameData.opponent;
+				pt = gameData.team;
+				currentPoint.possession = false;
+				sp = document.querySelector('#opp-direction');
+				if (currentPoint.direction === 1) {
+					//they go left
+					cl = 'left';
+				} else {
+					cl = 'right';
+				}
 			}
-		} else {
-			//we're pulling
-			rt = gameData.opponent;
-			pt = gameData.team;
-			currentPoint.possession = false;
-			sp = document.querySelector('#opp-direction');
-			if (currentPoint.direction === 1) {
-				//they go left
-				cl = 'left';
-			} else {
-				cl = 'right';
+			sp.classList.add(cl);
+			showEvent(`${pt} pulls to ${rt}`);
+			resetCurrentPass();
+		}
+
+		discIn = true;
+		drawLine(null);
+		const [x, y] = getFieldCoordinates(
+			gameData.length / 2 + gameData.endZone,
+			gameData.width / 2
+		);
+		drawDisc(x, y);
+
+		let lastPass;
+		for (var i = gameData.currentPoint.passes.length - 1; i >= 0; i--) {
+			if (!gameData.currentPoint.passes[i].event) {
+				lastPass = gameData.currentPoint.passes[i];
+				break;
 			}
 		}
-		sp.classList.add(cl);
-		showEvent(`${pt} pulls to ${rt}`);
-		resetCurrentPass();
-	}
+		if (lastPass && !isNaN(lastPass.x1) && !isNaN(lastPass.y1)) {
+			let [x1, y1] = getFieldCoordinates(lastPass.x1, lastPass.y1);
+			drawDisc(x1, y1);
 
-	discIn = true;
+			if (!isNaN(lastPass.x0) && !isNaN(lastPass.y0)) {
+				let [x0, y0] = getFieldCoordinates(lastPass.x0, lastPass.y0);
+				drawLine(x0, y0, x1, y1);
+			}
+		}
+
+		console.log(gameData);
+		if (
+			gameData.currentPoint.scored !== 1 &&
+			gameData.currentPoint.scored !== -1
+		) {
+			console.log('hi');
+			showDiv(actionArea);
+		}
+	}
 };
 
 const changePossession = () => {

@@ -22,6 +22,7 @@ block modals
 
 block content
     #data-area.d-none
+        #test-data(data-value=`${JSON.stringify(gameData)}`)
         #game-data(data-value=`${gameData._id}` data-cap=`${gameData.cap}` data-hard-cap=`${gameData.hardCap}` data-win-by=`${gameData.winBy}` data-timeouts=`${gameData.timeouts}` data-period=`${gameData.period}`)
         #score-data(data-us=`${gameData.score}` data-them=`${gameData.oppScore}`)
         #roster-data 
@@ -40,7 +41,7 @@ block content
         #format-settings(data-max-male=`${gameData.format.genderMax[0]}` data-max-female=`${gameData.format.genderMax[1]}` data-allow-period-end=`${gameData.format.allowPeriodEnd}` data-players=`${gameData.format.players}` data-periods=`${gameData.format.periods}` data-width=`${gameData.format.width}` data-length=`${gameData.format.length}` data-endzone=`${gameData.format.endzone}` data-brick=`${gameData.format.brick}`)
         #point-data
             each point in gameData.points 
-                .point(data-score=`${point.score}` data-opp-score=`${point.oppScore}` data-end-period=`${point.endPeriod}` data-scored=`${point.scored}` data-offense=`${point.offense}`)
+                .point(data-score=`${point.score}` data-opp-score=`${point.oppScore}` data-period=`${point.period}` data-end-period=`${point.endPeriod}` data-scored=`${point.scored}` data-offense=`${point.offense}`)
                     each pass in point.passes 
                         - if (pass.event && pass.event.name === 'timeout')
                             .timeout(data-team=`${pass.event.timeout}`)
@@ -75,7 +76,7 @@ block content
                                     .timeout-marker.w-100.f-1
                                 - else
                                     .timeout-marker.w-100.f-1.used-timeout
-                        td.game-period.ps-2(rowspan="2")= `${gameData.period === 0 ? 'Pre' : gameData.period===1 ? '1st' : gameData.period === 2 ? '2nd' : gameData.period === 3 ? '3rd' : gameData.period === 4 ? '4th':''}`
+                        td.game-period.ps-2(rowspan="2")
                     tr#them 
                         td.team-name #[span#opp-name= gameData.opponent] #[span#opp-direction.direction-span] 
                         td.team-score= gameData.oppScore
@@ -96,7 +97,7 @@ block content
                     canvas#field-canvas
             #event-container.w-100.d-flex.align-items-center.mt-2.mb-3
                 button#undo-button.btn.btn-warning.btn-sm.p-1(disabled) Undo 
-                #event-desc.px-2.f-1 Pre-game 
+                #event-desc.px-2.f-1 (No events)
                 button#redo-button.btn.btn-primary.btn-sm.p-1(disabled) Redo
             .f-1.w-100.overflow-hidden
                 .w-100.h-100.overflow-hidden

@@ -263,7 +263,6 @@ exports.getGame = catchAsync(async (req, res, next) => {
 		startSettings: game.startSettings,
 		tournament: undefined,
 	};
-	console.log(gameData);
 	res.status(200).render('game', {
 		title: 'Enter game',
 		colors: [tm.color1, tm.color2, tm.color3, tm.color4],
@@ -279,7 +278,14 @@ exports.getGame = catchAsync(async (req, res, next) => {
 		lines: game.tournament.lines,
 		division,
 		genderRule: game.tournament.genderRule,
-		gameData,
+		gameData: {
+			...gameData,
+			team: teamName,
+			division,
+			genderRule: game.tournament.genderRule,
+			...gameData.format,
+			_id: gameData._id,
+		},
 		currentPoint:
 			gameData.points.length > 0
 				? gameData.points[gameData.points.length - 1]

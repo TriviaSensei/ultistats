@@ -321,7 +321,7 @@ tbody > tr.filler-row:not(:last-child) {
 	margin-right: 0.25rem;
 	white-space: nowrap;
 	text-overflow: clip;
-	font-size: 0.8rem;
+	font-size: 0.7rem;
 }
 
 .roster-option > input[type='checkbox'] {
