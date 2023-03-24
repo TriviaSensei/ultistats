@@ -95,7 +95,7 @@ const createGameRow = (g) => {
 		res.innerHTML = `N/A (<a href="/games/${g._id}">Start</a>)`;
 	}
 	//in progress (period > 0)
-	else if (period > 0 && !g.result) {
+	else if (g.period > 0 && !g.result) {
 		res.innerHTML = `<a href="/games/${g._id}">${g.score}-${
 			g.oppScore
 		} (${toOrdinal(g.period)})</a>`;

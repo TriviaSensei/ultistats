@@ -39,6 +39,7 @@ const startPoint = document.querySelector('#start-point');
 
 const actionArea = document.querySelector('#action-div');
 
+let isMobile = false;
 //game/tournament data
 let roster = [];
 let lines = [];
@@ -571,6 +572,40 @@ const setPeriod = (p) => {
 	}
 };
 
+let tap = {
+	target: undefined,
+	timeout: undefined,
+};
+const clearTap = () => {
+	tap.target = undefined;
+	clearTimeout(tap.timeout);
+	tap.timeout = undefined;
+};
+const handleDoubleTap = (e) => {
+	if (!e.target || e.target.tagName.toLowerCase() === 'label' || !isMobile)
+		return;
+	let dblTapEvent = new CustomEvent('dbltap');
+	//if the target still exists and it's the same as the last touch, dispatch the dbltap event
+	const op = e.target.closest('.roster-option');
+	if (!op) {
+		clearTap();
+		return;
+	}
+	if (tap.target === op) {
+		op.dispatchEvent(dblTapEvent);
+		tap.target = undefined;
+		clearTimeout(tap.timeout);
+	}
+	//otherwise, set the target to the thing we just touched
+	else {
+		tap.target = op;
+		clearTimeout(tap.timeout);
+		tap.timeout = setTimeout(() => {
+			tap.target = undefined;
+		}, dblTouchTime);
+	}
+};
+
 document.addEventListener('DOMContentLoaded', () => {
 	gameData = JSON.parse(
 		document.querySelector('#test-data').getAttribute('data-value')
@@ -598,6 +633,8 @@ document.addEventListener('DOMContentLoaded', () => {
 	roster.forEach((p) => {
 		const op = createRosterOption(p, handleArrows);
 		op.addEventListener('dblclick', handleMoveOne);
+		op.addEventListener('click', handleDoubleTap);
+		op.addEventListener('dbltap', handleMoveOne);
 		insertOption(op, availableContainer);
 	});
 
@@ -825,4 +862,12 @@ document.addEventListener('DOMContentLoaded', () => {
 	document.addEventListener('return-to-point', (e) => {
 		showDiv(actionArea);
 	});
+
+	document.addEventListener(
+		'touchstart',
+		(e) => {
+			isMobile = true;
+		},
+		{ once: true }
+	);
 });
