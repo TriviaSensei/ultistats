@@ -15,6 +15,7 @@ const pointModal = new bootstrap.Modal(
 );
 
 const settingsForm = document.querySelector('#game-start-settings');
+const cancelSaveSettings = document.querySelector('#cancel-save-settings');
 const submitSettings = settingsForm?.querySelector('button[type="submit"]');
 
 const pointSetup = document.querySelector('#point-settings');
@@ -147,6 +148,12 @@ const populatePointStart = (dir, off, gen) => {
 	} else if (genderRatioIndicator) {
 		genderRatioIndicator.innerHTML = '';
 	}
+};
+
+const restoreSettings = (e) => {
+	if (e.target !== cancelSaveSettings) return;
+	e.preventDefault();
+	populateForm(settingsForm, gameData.startSettings);
 };
 
 const handleSaveSettings = (e) => {
@@ -842,6 +849,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	settingsForm.addEventListener('change', validateSettings);
 	settingsForm.addEventListener('submit', handleSaveSettings);
+	cancelSaveSettings.addEventListener('click', restoreSettings);
 
 	moveToLine.addEventListener('click', handleMoveOptions);
 	clearLine.addEventListener('click', handleClearLine);
