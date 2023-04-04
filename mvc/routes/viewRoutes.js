@@ -12,6 +12,8 @@ router.use(viewController.handleAlert);
 
 router.get('/', viewController.getHome);
 
+router.get('/test', viewController.getTest);
+
 router.get('/signup', viewController.getSignUpForm);
 router.get('/login', viewController.getLoginForm);
 

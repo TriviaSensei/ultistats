@@ -25,14 +25,6 @@ block content
         #test-data(data-value=`${JSON.stringify(gameData)}`)
         #game-data(data-value=`${gameData._id}` data-cap=`${gameData.cap}` data-hard-cap=`${gameData.hardCap}` data-win-by=`${gameData.winBy}` data-timeouts=`${gameData.timeouts}` data-period=`${gameData.period}`)
         #score-data(data-us=`${gameData.score}` data-them=`${gameData.oppScore}`)
-        #roster-data 
-            each player in roster 
-                .player(data-first-name=`${player.firstName}` data-last-name=`${player.lastName}` data-display-name=`${player.displayName}` data-number=`${player.number}` data-line=`${player.line}` data-position=`${player.position}` data-gender=`${player.gender}` data-id=`${player.id}` data-name=`${player.name}`)
-        #line-data
-            each line in lines 
-                .line(data-id=`${line.id}` data-name=`${line.name}`)
-                    each player in line.players 
-                        .player(data-id=`${player}`)
         #division(data-value=`${division}`)
         #gender-data(data-rule=`${genderRule}` data-start=`${genderRule === 'A' ? gameData.startSettings.genderRatio : gameData.startSettings.genderRatioChoice}`)
         #our-name(data-name=`${team}`)
@@ -108,8 +100,8 @@ block content
                             button#timeout-them.f-1.btn.btn-warning.ms-1(data-team="-1") Their timeout  
                         .d-flex.flex-column.w-100
                             button.btn.btn-secondary.mb-1(type="button" data-bs-toggle="modal" data-bs-target="#start-settings-modal") Edit game start settings
-                            button#end-period-1.btn.btn-dark.mb-1(type="button") End period
-                            button#end-game-1.btn.btn-dark(type="button") End game
+                            button#end-period-button.btn.btn-dark.mb-1(type="button") End period
+                            button#end-game-button.btn.btn-dark(type="button") End game
                     #action-div.d-flex.flex-column.w-100.h-100.overflow-auto.d-none
                         include game/editPoint
 block scripts

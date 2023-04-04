@@ -1,6 +1,5 @@
 import { getElementArray } from './utils/getElementArray.js';
 import { showMessage } from './utils/messages.js';
-import { StateHandler } from './utils/stateHandler.js';
 import { handleRequest } from './utils/requestHandler.js';
 import { populateForm } from './utils/populateForm.js';
 import { createRosterOption, insertOption } from './utils/rosterOption.js';
@@ -23,8 +22,10 @@ const pointSetup = document.querySelector('#point-settings');
 const pointSetupForm = document.querySelector('#point-setup');
 const lineSelect = document.querySelector('#line-select');
 const lineReset = document.querySelector('#reset-line');
-const scoreboard = document.querySelector('#score-bug');
-const setupScoreboard = document.querySelector('#setup-scoreboard');
+const ourScoreboard = document.querySelector('#us > .team-score');
+const theirScoreboard = document.querySelector('#them > .team-score');
+const ourScore = document.querySelector('#our-score-modal');
+const theirScore = document.querySelector('#their-score-modal');
 const genderRatioIndicator = document.querySelector('#prescribed-gender-ratio');
 const availableContainer = document.querySelector('#available-container');
 const moveToLine = document.querySelector('#move-to-line');
@@ -36,23 +37,63 @@ const lineCount = document.querySelector('#line-count');
 const genderWarning = document.querySelector('#gender-warning');
 const lineWarning = document.querySelector('#line-warning');
 const startPoint = document.querySelector('#start-point');
-const endPeriod = document.querySelector('#end-period-button');
-const dataArea = document.querySelector('#data-area');
-
-//controls
-const undo = document.querySelector('#undo');
-const redo = document.querySelector('#redo');
 
 const actionArea = document.querySelector('#action-div');
 
 let isMobile = false;
 //game/tournament data
-
-let gameData;
-let sh;
-const getState = () => {
-	return sh ? sh.getState() : undefined;
+let roster = [];
+let lines = [];
+//todo: handle restoring number of timeouts left
+let gameData = {
+	id: undefined,
+	cap: undefined,
+	hardCap: undefined,
+	winBy: undefined,
+	division: undefined,
+	genderRule: undefined,
+	genderMax: [],
+	allowPeriodEnd: undefined,
+	players: undefined,
+	periods: undefined,
+	timeouts: undefined,
+	period: undefined,
+	team: undefined,
+	opponent: undefined,
+	result: undefined,
+	score: 0,
+	oppScore: 0,
+	points: [],
+	timeoutsLeft: [0, 0],
+	currentPoint: {
+		score: undefined,
+		oppScore: undefined,
+		offense: undefined,
+		direction: undefined,
+		genderRatio: [0, 0],
+		genderRatioChoice: undefined,
+		scored: 0,
+		period: undefined,
+		endPeriod: undefined,
+		lineup: [],
+		injuries: [],
+		passes: [],
+	},
+	startSettings: {
+		offense: undefined,
+		jersey: undefined,
+		genderRatio: undefined,
+		direction: undefined,
+	},
 };
+
+const dataArea = document.querySelector('#data-area');
+const rosterData = document.querySelector('#roster-data');
+const lineData = document.querySelector('#line-data');
+
+//controls
+const undo = document.querySelector('#undo');
+const redo = document.querySelector('#redo');
 
 function toNearestHalf(n) {
 	return parseFloat((Math.round(n + 0.5) - 0.5).toFixed(1));
@@ -63,19 +104,14 @@ const getIds = (o) => {
 };
 
 const setGenderRatio = (m, f) => {
-	const state = getState();
-	if (!state) return;
+	if (gameData.genderRule !== 'A') return;
 
-	if (state.genderRule !== 'A') return;
 	genderRatioIndicator.innerHTML = `${m}M / ${f}F`;
 	genderRatioIndicator.setAttribute('data-m', m);
 	genderRatioIndicator.setAttribute('data-f', f);
 };
 
 const populatePointStart = (dir, off, gen) => {
-	const state = getState();
-	if (!state) return;
-
 	const r = document.querySelector(
 		`input[name="attack-direction"][value="${dir}"]`
 	);
@@ -85,25 +121,25 @@ const populatePointStart = (dir, off, gen) => {
 	if (o) o.checked = true;
 
 	//gender rule A - alternate GR every two points (1 - 23 - 45 - ...)
-	if (state.genderRule === 'A') {
+	if (gameData.genderRule === 'A') {
 		if (gen && genderRatioIndicator) {
 			if (gen === 'm')
 				setGenderRatio(
-					state.format.genderMax[0],
-					state.format.players - state.format.genderMax[0]
+					gameData.genderMax[0],
+					gameData.players - gameData.genderMax[0]
 				);
 			else if (gen === 'f')
 				setGenderRatio(
-					state.format.players - state.format.genderMax[1],
-					state.format.genderMax[1]
+					gameData.players - gameData.genderMax[1],
+					gameData.genderMax[1]
 				);
 		}
-	} else if (state.genderRule === 'B') {
+	} else if (gameData.genderRule === 'B') {
 		//gender rule B - first half is one endzone dictating, second half is other endzone dictating
 		if (gen && genderRatioIndicator) {
 			genderRatioIndicator.innerHTML = `${gen} decide`;
 		}
-	} else if (state.genderRule === 'X') {
+	} else if (gameData.genderRule === 'X') {
 		if (off) {
 			genderRatioIndicator.innerHTML = `You decide`;
 		} else {
@@ -150,13 +186,55 @@ const handleSaveSettings = (e) => {
 	const handler = (res) => {
 		if (res.status === 'success') {
 			startModal.hide();
+			actionArea.classList.remove('d-none');
 			showMessage(`info`, 'Settings saved.');
-			sh.setState((p) => {
-				return {
-					...p,
-					startSettings: settings,
-				};
-			});
+			gameData.startSettings = settings;
+			//no point has been played
+			let d, o, g;
+			if (gameData.currentPoint.direction === undefined)
+				[d, o] = [settings.direction, settings.offense];
+			else if (gameData.currentPoint.endPeriod) {
+				//the last point ended a period
+				if (gameData.currentPoint.period % 2 === 1) {
+					d = -gameData.startSettings.direction;
+					o = !gameData.startSettings.offense;
+				} else {
+					d = gameData.startSettings.direction;
+					o = gameData.startSettings.offense;
+				}
+			} else {
+				//the last point did not end the period.
+				d = -gameData.currentPoint.direction;
+				o = gameData.currentPoint.scored === -1;
+			}
+			if (gameData.division === 'Mixed') {
+				if (gameData.genderRule === 'A') {
+					if (gameData.currentPoint.score === undefined)
+						g = gameData.startSettings.genderRatio;
+					else if (
+						(gameData.currentPoint.score + gameData.currentPoint.oppScore) %
+							4 <=
+						1
+					) {
+						g = gameData.startSettings.genderRatio === 'm' ? 'f' : 'm';
+					} else {
+						g = gameData.startSettings.genderRatio;
+					}
+				} else if (gameData.genderRule === 'B') {
+					//who got the first choice? (true = us, false = them)
+					const firstChoice = gameData.startSettings.genderRatioChoice;
+					//how many points have been played this period?
+					let pp = 0;
+					for (var j = res.data.points.length - 1; j >= 0; j--) {
+						if (res.data.points[j].endPeriod) break;
+						pp++;
+					}
+					g = firstChoice && pp % 2 === 0 ? 'You' : 'They';
+				} else if (gameData.genderRule === 'X') {
+					g = o ? 'You' : 'They';
+				}
+			}
+			populatePointStart(d, o, g);
 
 			updateCounts();
 		} else {
@@ -173,12 +251,10 @@ const handleSaveSettings = (e) => {
 };
 
 const validateSettings = () => {
-	const state = getState();
-	if (!state) return;
 	if (
 		settingsForm.querySelector(`input[name="start-on"]:checked`) &&
-		(state.division !== 'Mixed' ||
-			((state.genderRule !== 'B' ||
+		(gameData.division !== 'Mixed' ||
+			((gameData.genderRule !== 'B' ||
 				settingsForm.querySelector(`input[name="gender-b-choice"]:checked`)) &&
 				settingsForm.querySelector(`input[name="start-gender"]:checked`))) &&
 		settingsForm.querySelector(`input[name="start-direction"]:checked`)
@@ -238,8 +314,6 @@ const moveOption = (op) => {
 };
 
 const updateCounts = () => {
-	const state = getState();
-	if (!state) return;
 	//line count
 	const mc = lineContainer.querySelectorAll(
 		'.roster-option[data-gender="M"]'
@@ -253,15 +327,15 @@ const updateCounts = () => {
 	if (fCount) fCount.innerHTML = fc;
 	if (lineCount) lineCount.innerHTML = lc;
 
-	if (lc !== state.format.players) lineWarning.classList.remove('d-none');
+	if (lc !== gameData.players) lineWarning.classList.remove('d-none');
 	else lineWarning.classList.add('d-none');
 
-	if (lc <= state.format.players) startPoint.disabled = false;
+	if (lc <= gameData.players) startPoint.disabled = false;
 	else startPoint.disabled = true;
 
 	//make sure the gender ratio isn't violated - if it is, the line can still be played, but a warning will be displayed next to the start point button.
 	const maxes = genderRatioIndicator.dataset;
-	if (state.genderRule !== 'A') {
+	if (gameData.genderRule !== 'A') {
 		genderWarning.classList.add('d-none');
 		return;
 	} else if (
@@ -298,8 +372,8 @@ const handleMoveOptions = (e) => {
 	const count = lineContainer.querySelectorAll('.roster-option').length;
 	if (
 		boxes[0].closest('.player-container').classList.contains('left-side') &&
-		gameData.format.players > 0 &&
-		boxes.length > gameData.format.players - count
+		gameData.players > 0 &&
+		boxes.length > gameData.players - count
 	)
 		return showMessage('error', 'You have selected too many players.');
 
@@ -311,17 +385,14 @@ const handleMoveOptions = (e) => {
 };
 
 const handleMoveOne = (e) => {
-	const state = getState();
-	if (!state) return;
-
 	const op = e.target.closest('.roster-option');
 	if (!op) return;
 
 	const count = lineContainer.querySelectorAll('.roster-option').length;
 	if (
 		e.target.closest('.player-container').classList.contains('left-side') &&
-		state.format.players > 0 &&
-		count >= state.format.players
+		gameData.players > 0 &&
+		count >= gameData.players
 	)
 		return showMessage('error', 'You have selected too many players.');
 
@@ -348,9 +419,6 @@ const handleFilters = (e) => {
 };
 
 const loadLine = (e) => {
-	const state = getState();
-	if (!state) return;
-
 	if (e.target !== lineSelect && e.target !== lineReset) return;
 
 	//if the user chooses the "manual" line, do nothing.
@@ -360,7 +428,7 @@ const loadLine = (e) => {
 	handleClearLine({ target: clearLine });
 	updateCounts();
 	//find the selected line, and if there isn't one, return.
-	const line = state.lines.find((l) => {
+	const line = lines.find((l) => {
 		return l.id === lineSelect.value;
 	});
 	if (!line) return;
@@ -377,6 +445,8 @@ const handleStartPoint = (e) => {
 	if (e.target !== pointSetupForm) return;
 	e.preventDefault();
 
+	console.log(gameData);
+
 	const str = `/api/v1/games/startPoint/${gameData._id}`;
 	const body = {
 		offense:
@@ -392,13 +462,14 @@ const handleStartPoint = (e) => {
 
 	const handler = (res) => {
 		if (res.status === 'success') {
+			console.log(res.data, gameData);
 			pointModal.hide();
 			const evt = new CustomEvent('load-point', {
 				detail: {
 					...gameData,
 					...res.data,
 					tournament: {
-						roster: gameData.roster,
+						roster,
 					},
 					currentPoint: res.data.points.slice(-1).pop(),
 				},
@@ -415,7 +486,11 @@ const handleStartPoint = (e) => {
 const handleNewPoint = (e) => {
 	showDiv(pointSetup);
 	console.log(e.detail);
-	sh.setState(e.detail.gameData);
+	gameData = e.detail.gameData;
+	ourScore.innerHTML = gameData.score;
+	theirScore.innerHTML = gameData.oppScore;
+
+	setPeriod(gameData.period);
 
 	let newDirection, newOD;
 	if (gameData.currentPoint.endPeriod) {
@@ -441,25 +516,25 @@ const handleNewPoint = (e) => {
 			if (thisPoint % 4 === 2 || thisPoint % 4 === 3) {
 				if (gameData.startSettings.genderRatio === 'f') {
 					[m, f] = [
-						gameData.format.genderMax[0],
-						gameData.format.players - gameData.format.genderMax[0],
+						gameData.genderMax[0],
+						gameData.players - gameData.genderMax[0],
 					];
 				} else {
 					[m, f] = [
-						gameData.format.players - gameData.format.genderMax[1],
-						gameData.format.genderMax[1],
+						gameData.players - gameData.genderMax[1],
+						gameData.genderMax[1],
 					];
 				}
 			} else {
 				if (gameData.startSettings.genderRatio === 'm') {
 					[m, f] = [
-						gameData.format.genderMax[0],
-						gameData.format.players - gameData.format.genderMax[0],
+						gameData.genderMax[0],
+						gameData.players - gameData.genderMax[0],
 					];
 				} else {
 					[m, f] = [
-						gameData.format.players - gameData.format.genderMax[1],
-						gameData.format.genderMax[1],
+						gameData.players - gameData.genderMax[1],
+						gameData.genderMax[1],
 					];
 				}
 			}
@@ -538,118 +613,31 @@ const handleDoubleTap = (e) => {
 	}
 };
 
-const updateStartSettings = (e) => {
-	populateForm(settingsForm, e.detail.startSettings);
-	validateSettings();
-};
-
-const updateScoreboard = (e) => {
-	const data = e.detail;
-	const us = e.target.querySelector('#us');
-	const them = e.target.querySelector('#them');
-	us.querySelector('.team-score').innerHTML = data.score;
-	them.querySelector('.team-score').innerHTML = data.oppScore;
-
-	e.target.querySelector('.game-period').innerHTML =
-		data.period === 0
-			? 'Pre'
-			: data.period === 1
-			? '1st'
-			: data.period === 2
-			? '2nd'
-			: data.period === 3
-			? '3rd'
-			: data.period === 4
-			? '4th'
-			: '';
-
-	for (var i = 0; i < 2; i++) {
-		if (i >= data.timeoutsLeft[0]) {
-			const t = us.querySelector('.timeout-marker:not(.used-timeout)');
-			if (t) t.classList.add('used-timeout');
-		}
-		if (i >= data.timeoutsLeft[1]) {
-			const t = them.querySelector('.timeout-marker:not(.used-timeout)');
-			if (t) t.classList.add('used-timeout');
-		}
-	}
-};
-
-const updateSetupScoreboard = (e) => {
-	const data = e.detail;
-	const ourScore = document.querySelector('#our-score-modal');
-	const theirScore = document.querySelector('#their-score-modal');
-	ourScore.innerHTML = data.score;
-	theirScore.innerHTML = data.oppScore;
-};
-
-const updatePointSetup = (e) => {
-	const data = e.detail;
-	const settings = data.startSettings;
-	const currentPoint =
-		data.points.length === 0 ? undefined : data.points.slice(-1).pop();
-	//no point has been played
-	let d, o, g;
-	//no point has been played
-	if (!currentPoint) [d, o] = [settings.direction, settings.offense];
-	else if (currentPoint.endPeriod && currentPoint.scored !== 0) {
-		//the last point ended a period
-		if (currentPoint.period % 2 === 1) {
-			//if we just ended an odd period, switch the settings from the start
-			d = -settings.direction;
-			o = !settings.offense;
-		} else {
-			//otherwise, use the same settings as the start
-			d = settings.direction;
-			o = settings.offense;
-		}
-	} else {
-		//the last point did not end the period.
-		d = -currentPoint.direction;
-		o = currentPoint.scored === -1;
-	}
-	if (data.division === 'Mixed') {
-		if (data.genderRule === 'A') {
-			if (!currentPoint) g = settings.genderRatio;
-			else if ((currentPoint.score + currentPoint.oppScore) % 4 <= 1) {
-				g = settings.genderRatio === 'm' ? 'f' : 'm';
-			} else {
-				g = settings.genderRatio;
-			}
-		} else if (gameData.genderRule === 'B') {
-			//who got the first choice? (true = us, false = them)
-			const firstChoice = settings.genderRatioChoice;
-			//how many points have been played this period?
-			let pp = 0;
-			for (var j = data.points.length - 1; j >= 0; j--) {
-				if (data.points[j].endPeriod) break;
-				pp++;
-			}
-			g = firstChoice && pp % 2 === 0 ? 'You' : 'They';
-		} else if (data.genderRule === 'X') {
-			g = o ? 'You' : 'They';
-		}
-	}
-	populatePointStart(d, o, g);
-};
-
-const updateEndPeriodButton = (e) => {
-	e.target.disabled =
-		e.detail.period >= e.detail.format.periods || e.detail.points.length === 0;
-};
-
 document.addEventListener('DOMContentLoaded', () => {
 	gameData = JSON.parse(
 		document.querySelector('#test-data').getAttribute('data-value')
 	);
-	if (!gameData._id) {
-		showMessage(`error`, `Game Id not valid`);
-		setTimeout(() => {
-			location.href = '/mystuff';
-		}, 1000);
-	}
+	//get the roster and lines
+	roster = getElementArray(rosterData, '.player')
+		.map((p) => {
+			return p.dataset;
+		})
+		.sort((a, b) => {
+			return parseInt(a.number) - parseInt(b.number);
+		});
 
-	gameData.roster.forEach((p) => {
+	lines = getElementArray(lineData, '.line')
+		.map((l) => {
+			return {
+				...l.dataset,
+				players: getElementArray(l, '.player').map(getIds),
+			};
+		})
+		.sort((a, b) => {
+			return a.name.localeCompare(b.name);
+		});
+
+	roster.forEach((p) => {
 		const op = createRosterOption(p, handleArrows);
 		op.addEventListener('dblclick', handleMoveOne);
 		op.addEventListener('click', handleDoubleTap);
@@ -657,34 +645,36 @@ document.addEventListener('DOMContentLoaded', () => {
 		insertOption(op, availableContainer);
 	});
 
-	gameData.lines
-		.sort((a, b) => {
-			return a.name.localeCompare(b.name);
-		})
-		.forEach((l) => {
-			const op = createElement('option');
-			op.setAttribute('value', l.id);
-			op.innerHTML = l.name;
-			lineSelect.appendChild(op);
-		});
+	lines.forEach((l) => {
+		const op = createElement('option');
+		op.setAttribute('value', l.id);
+		op.innerHTML = l.name;
+		lineSelect.appendChild(op);
+	});
 
-	lineSelect.addEventListener('change', loadLine);
-	lineReset.addEventListener('click', loadLine);
+	if (!gameData._id) {
+		showMessage(`error`, `Game Id not valid`);
+		setTimeout(() => {
+			location.href = '/mystuff';
+		}, 1000);
+	}
 
-	// populateForm(settingsForm, gameData.startSettings);
+	populateForm(settingsForm, gameData.startSettings);
+	//validate the start settings and enable the save button if valid
+	validateSettings();
 
 	gameData.currentPoint =
 		gameData.points.length === 0 ? undefined : gameData.points.slice(-1).pop();
-
-	// if (gameData.currentPoint) {
-	// 	if (ourScoreboard) ourScoreboard.innerHTML = gameData.score;
-	// 	if (theirScoreboard) theirScoreboard.innerHTML = gameData.oppScore;
-	// 	if (ourScore) ourScore.innerHTML = gameData.score;
-	// 	if (theirScore) theirScore.innerHTML = gameData.oppScore;
-	// }
+	if (gameData.currentPoint) {
+		if (ourScoreboard) ourScoreboard.innerHTML = gameData.score;
+		if (theirScoreboard) theirScoreboard.innerHTML = gameData.oppScore;
+		if (ourScore) ourScore.innerHTML = gameData.score;
+		if (theirScore) theirScore.innerHTML = gameData.oppScore;
+	}
 	//set the timeout situation
 	const tol = Math.floor((gameData.timeouts + 1) / 2);
 	gameData.timeoutsLeft = [tol, tol];
+
 	// points played
 	const pts = getElementArray(document, `#point-data > .point`);
 	pts.forEach((p) => {
@@ -700,7 +690,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		//(meaning we're at halftime in this iteration through points...reset the timeouts)
 		if (
 			q.endPeriod === 'true' &&
-			parseInt(q.period) === Math.floor(gameData.format.periods / 2)
+			parseInt(q.period) === Math.floor(gameData.periods / 2)
 		) {
 			gameData.timeoutsLeft = gameData.timeoutsLeft.map((t) => {
 				if (gameData.timeouts === 4) return 2;
@@ -713,14 +703,31 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 	});
 
+	console.log(gameData);
+
+	for (var i = 0; i < 2; i++) {
+		if (i >= gameData.timeoutsLeft[0]) {
+			const t = document.querySelector(
+				'#us .timeout-marker:not(.used-timeout)'
+			);
+			if (t) t.classList.add('used-timeout');
+		}
+		if (i >= gameData.timeoutsLeft[1]) {
+			const t = document.querySelector(
+				'#them .timeout-marker:not(.used-timeout)'
+			);
+			if (t) t.classList.add('used-timeout');
+		}
+	}
+
+	setPeriod(gameData.period);
+
 	//remove the temporary data area
 	// dataArea.remove();
 	showMessage(
 		`info`,
 		`Entering game ${gameData.team} vs. ${gameData.opponent}`
 	);
-
-	sh = new StateHandler(gameData);
 
 	/*
 	Start view 
@@ -733,29 +740,28 @@ document.addEventListener('DOMContentLoaded', () => {
 	genderRatio: [m,f] - starting gender majority. Only required if the game is a mixed division game
 	direction: [-1,1] - direction we are attacking first. 1 for moving right, -1 for moving left.
 	*/
-	const state = sh.getState();
 	if (
 		//whether we start on offense
-		!state.startSettings.offense === undefined ||
+		!gameData.startSettings.offense === undefined ||
 		//mixed division AND (no gender ratio OR starting GR choice not defined with rule B in place)
-		((!state.startSettings.genderRatio ||
-			(state.startSettings.genderRatioChoice === undefined &&
-				state.genderRule === 'B')) &&
-			state.division === 'Mixed') ||
+		((!gameData.startSettings.genderRatio ||
+			(gameData.startSettings.genderRatioChoice === undefined &&
+				gameData.genderRule === 'B')) &&
+			gameData.division === 'Mixed') ||
 		//no valid start direction defined
-		(state.startSettings.direction !== -1 &&
-			state.startSettings.direction !== 1)
+		(gameData.startSettings.direction !== -1 &&
+			gameData.startSettings.direction !== 1)
 	) {
 		startModal.show();
 	}
 
-	if (state.currentPoint && state.currentPoint.scored === 0) {
+	if (gameData.currentPoint && gameData.currentPoint.scored === 0) {
 		//there is a point still going on - load it and send the data to point.js
 		const evt = new CustomEvent('load-point', {
 			detail: {
-				...state,
+				...gameData,
 				tournament: {
-					roster: state.roster,
+					roster,
 				},
 			},
 		});
@@ -859,10 +865,12 @@ document.addEventListener('DOMContentLoaded', () => {
 		f.addEventListener('change', handleFilters);
 	});
 
+	lineSelect.addEventListener('change', loadLine);
+	lineReset.addEventListener('click', loadLine);
 	pointSetupForm.addEventListener('submit', handleStartPoint);
 
 	document.addEventListener('point-ended', handleNewPoint);
-	document.addEventListener('return-to-point', () => {
+	document.addEventListener('return-to-point', (e) => {
 		showDiv(actionArea);
 	});
 
@@ -873,13 +881,4 @@ document.addEventListener('DOMContentLoaded', () => {
 		},
 		{ once: true }
 	);
-
-	sh.addWatcher(document.body, (e) => {
-		gameData = e.detail;
-	});
-	sh.addWatcher(settingsForm, updateStartSettings);
-	sh.addWatcher(scoreboard, updateScoreboard);
-	sh.addWatcher(setupScoreboard, updateSetupScoreboard);
-	sh.addWatcher(pointSetupForm, updatePointSetup);
-	sh.addWatcher(endPeriod, updateEndPeriodButton);
 });

@@ -45,6 +45,23 @@ const formatSchema = new mongoose.Schema({
 		enum: [0, 1, 2, 3, 4],
 		default: 4,
 	},
+	//2-element array - [70,90] = offense must be ready in 70 seconds, total timeout length is 90 seconds.
+	timeoutLength: {
+		type: [Number],
+		required: [true, 'Timeout length must be specified.'],
+		validate: {
+			validator: (val) => {
+				return (
+					val.length === 2 &&
+					val.every((v) => {
+						return v === Math.floor(v);
+					}) &&
+					val[0] <= val[1]
+				);
+			},
+			message: 'Length of time out (in seconds) must be a positive integer.',
+		},
+	},
 	//AUDL allows a point to end without scoring a goal if the period expires.
 	allowPeriodEnd: { type: Boolean, default: false },
 	roundNames: {

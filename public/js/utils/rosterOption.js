@@ -44,4 +44,12 @@ export const insertOption = (op, container) => {
 		const box = op.querySelector('input[type="checkbox"]');
 		if (box) box.checked = false;
 	}
+
+	//uncheck any other box still checked
+	getElementArray(
+		document,
+		'.roster-option input[type="checkbox"]:checked'
+	).forEach((b) => {
+		b.checked = false;
+	});
 };

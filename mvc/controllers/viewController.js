@@ -272,10 +272,6 @@ exports.getGame = catchAsync(async (req, res, next) => {
 		),
 		ratio: ((100 * fmt.width) / (fmt.endzone * 2 + fmt.length)).toFixed(2),
 		team: teamName,
-		roster: game.tournament.roster.filter((p) => {
-			return p.active;
-		}),
-		lines: game.tournament.lines,
 		division,
 		genderRule: game.tournament.genderRule,
 		gameData: {
@@ -283,7 +279,13 @@ exports.getGame = catchAsync(async (req, res, next) => {
 			team: teamName,
 			division,
 			genderRule: game.tournament.genderRule,
-			...gameData.format,
+			format: {
+				...gameData.format,
+			},
+			roster: game.tournament.roster.filter((p) => {
+				return p.active;
+			}),
+			lines: game.tournament.lines,
 			_id: gameData._id,
 		},
 		currentPoint:
@@ -292,3 +294,9 @@ exports.getGame = catchAsync(async (req, res, next) => {
 				: undefined,
 	});
 });
+
+exports.getTest = (req, res, next) => {
+	res.status(200).render('test', {
+		title: 'Test',
+	});
+};

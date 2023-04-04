@@ -1,0 +1,24 @@
+.progress-bar {
+	border: 1px solid black;
+	height: 20px;
+}
+
+.pct-0 {
+	background-color: red;
+}
+
+.pct-25 {
+	background-color: orange;
+}
+
+.pct-50 {
+	background-color: yellow;
+}
+
+.pct-75 {
+	background-color: green;
+}
+
+.pct-100 {
+	background-color: black;
+}

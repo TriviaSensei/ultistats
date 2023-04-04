@@ -16,7 +16,9 @@ hr.separator
             li 
                 a#sub.dropdown-item(role="button") Sub 
             li
-                a#timeout.dropdown-item(role="button") Timeout 
+                button#point-timeout-us.dropdown-item(role="button" disabled) Our Timeout 
+            li 
+                button#point-timeout-them.dropdown-item(role="button" disabled) Their Timeout 
     .dropdown.dropup.mx-2
         a.btn.btn-sm.btn-danger.dropdown-toggle(role="button" data-bs-toggle="dropdown" aria-expanded="false") Positioning 
         ul.dropdown-menu

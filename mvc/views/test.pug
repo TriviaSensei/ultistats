@@ -1,0 +1,20 @@
+extends _base
+
+block styles 
+    link(rel="stylesheet" href="/css/test.css")
+
+block content 
+    .d-flex.my-3.mx-3
+        .f-1.progress-bar
+            #pb-inner.h-100
+    .d-flex.mx-3.mb-3 
+        .mx-1 Count: #[span#count 0]
+        .mx-1 Total: #[span#total 0]/#[span#limit 0]
+    .d-flex.mx-3
+        input#my-number.mx-1(type="number")
+        button#add-it.btn.btn-primary.mx-1(type="button") Add
+        button#reset-it.btn.btn-secondary.mx-1(type="button") Reset
+
+
+block scripts 
+    script(src="/js/test/test.js" type="module" defer)

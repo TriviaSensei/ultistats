@@ -44,6 +44,11 @@ exports.clearPoints = catchAsync(async (req, res, next) => {
 	});
 });
 
+const createNewPoint = (res) => {
+	const g = res.locals.game;
+	const lastPoint = g.points[g.points.length - 1];
+};
+
 exports.startPoint = catchAsync(async (req, res, next) => {
 	if (res.locals.game.result !== '')
 		return next(new AppError('This game has ended.', 400));
@@ -204,13 +209,15 @@ exports.setPasses = catchAsync(async (req, res, next) => {
 	res.locals.game.points[res.locals.game.points.length - 1] = req.body;
 	res.locals.game.markModified('points');
 
-	if (req.body.scored === 1) {
-		res.locals.game.score++;
-		res.locals.game.markModified('score');
-	} else if (req.body.scored === -1) {
-		res.locals.game.oppScore++;
-		res.locals.game.markModified('oppScore');
-	}
+	res.locals.game.score = 0;
+	res.locals.game.oppScore = 0;
+
+	res.locals.game.points.forEach((p) => {
+		if (p.scored === 1) res.locals.game.score++;
+		else if (p.scored === -1) res.locals.game.oppScore++;
+	});
+	res.locals.game.markModified('score');
+	res.locals.game.markModified('oppScore');
 
 	await res.locals.game.save();
 
@@ -683,6 +690,8 @@ exports.addPass = catchAsync(async (req, res, next) => {
 		});
 	}
 });
+
+exports.undoPass = catchAsync(async (req, res, next) => {});
 
 exports.endGame = catchAsync(async (req, res, next) => {
 	const game = res.locals.game;
