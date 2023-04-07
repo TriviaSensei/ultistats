@@ -415,7 +415,7 @@ const handleStartPoint = (e) => {
 const handleNewPoint = (e) => {
 	showDiv(pointSetup);
 	console.log(e.detail);
-	sh.setState(e.detail.gameData);
+	sh.setState(e.detail.state);
 
 	let newDirection, newOD;
 	if (gameData.currentPoint.endPeriod) {
@@ -862,8 +862,9 @@ document.addEventListener('DOMContentLoaded', () => {
 	pointSetupForm.addEventListener('submit', handleStartPoint);
 
 	document.addEventListener('point-ended', handleNewPoint);
-	document.addEventListener('return-to-point', () => {
+	document.addEventListener('return-to-point', (e) => {
 		showDiv(actionArea);
+		sh.setState(e.detail);
 	});
 
 	document.addEventListener(

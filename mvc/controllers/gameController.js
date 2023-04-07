@@ -194,12 +194,11 @@ exports.startPoint = catchAsync(async (req, res, next) => {
  *  	timeout: +/- 1 (us/them)
  *
  */
-
+//TODO: redo pass updating here gives error - no matching document
 exports.setPasses = catchAsync(async (req, res, next) => {
 	if (res.locals.game.result !== '')
 		return next(new AppError('This game has ended.', 400));
 
-	console.log(req.body);
 	if (!req.body.passes)
 		return next(new AppError('Invalid input specified.', 400));
 
