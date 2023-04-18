@@ -9,36 +9,25 @@ import { propCase } from './utils/propCase.js';
 let sh;
 
 const blankPass = {
-	thrower: '',
-	receiver: '',
-	defender: '',
-	x0: undefined,
-	y0: undefined,
-	x1: undefined,
-	y1: undefined,
+	offense: undefined,
+	player: '',
+	x: undefined,
+	y: undefined,
 	result: '',
 	turnover: false,
+	goal: 0,
 	event: '',
 	eventDesc: {
 		team: 0,
 		in: '',
 		out: '',
 	},
-	goal: 0,
 };
 
 let isMobile = false;
 
 const teamDirection = document.querySelector('#team-direction');
 const oppDirection = document.querySelector('#opp-direction');
-
-const us = document.querySelector('#us');
-const ourScore = us.querySelector('.team-score');
-const ourTOs = us.querySelector('.team-timeouts');
-
-const them = document.querySelector('#them');
-const theirScore = them.querySelector('.team-score');
-const theirTOs = them.querySelector('.team-timeouts');
 
 const field = document.querySelector('#field-canvas');
 const disc = document.querySelector('.disc');
@@ -51,6 +40,7 @@ const buttonRowContainer = document.querySelector('#button-row-container');
 const pointTimeout = document.querySelector('#timeout');
 const ourTimeout = document.querySelector('#point-timeout-us');
 const theirTimeout = document.querySelector('#point-timeout-them');
+const sub = document.querySelector('#sub');
 
 const actionArea = document.querySelector('#action-div');
 
@@ -68,11 +58,36 @@ const centerDisc = document.querySelector('#center');
 
 let moving = false;
 
-let state;
+let initialLength = 1;
+
+/**Testing only */
+const reset = document.querySelector('#reset');
+reset.addEventListener('click', () => {
+	if (!sh) return;
+	const id = sh.getState()._id;
+	if (!id) return;
+
+	const str = `/api/v1/games/clear/${id}`;
+	const handler = (res) => {
+		if (res.status === 'success') {
+			location.reload();
+		}
+	};
+	handleRequest(str, 'PATCH', null, handler);
+});
+
+/*****************/
+
+const sendEvent = (name, data) => {
+	const evt = new CustomEvent(name, {
+		detail: data,
+	});
+	document.dispatchEvent(evt);
+};
 
 const getYards = (pageX, pageY) => {
 	if (!sh) return [null, null];
-	state = sh.getState();
+	const state = sh.getState();
 	if (!state.currentPoint || Math.abs(state.currentPoint.direction) !== 1)
 		return [0, 0];
 
@@ -93,7 +108,7 @@ const getYards = (pageX, pageY) => {
 
 const getPageCoordinates = (x, y) => {
 	if (!sh) return [null, null];
-	state = sh.getState();
+	const state = sh.getState();
 
 	const r = field.getBoundingClientRect();
 	let pctX = x / (state.format.length + 2 * state.format.endzone);
@@ -114,7 +129,7 @@ const deselectAll = () => {
 
 const updatePasses = () => {
 	if (!sh) return;
-	state = sh.getState();
+	const state = sh.getState();
 	const str = `/api/v1/games/addPass/${state._id}`;
 	const body = state.currentPoint;
 	const handler = (res) => {
@@ -124,14 +139,69 @@ const updatePasses = () => {
 				`Error updating passes in database - ${res.message}`
 			);
 		} else {
-			console.log(`Successfully updated passes`);
-			console.log(state.currentPoint.passes);
+			initialLength = state.currentPoint.passes.length;
 		}
 	};
 	handleRequest(str, 'PATCH', body, handler);
 };
 
-const handleTimeout = (e) => {};
+//TODO: add a blank pass after tacking the timeout onto the stack
+const handleTimeout = (e) => {
+	if (!sh) return;
+	const state = sh.getState();
+	if (!state) return;
+	console.log(state);
+	if (
+		!state.timeoutsLeft ||
+		!Array.isArray(state.timeoutsLeft) ||
+		state.timeoutsLeft.length !== 2
+	)
+		return;
+
+	let team;
+	if (e.target === ourTimeout) {
+		if (!state.currentPoint.possession && state.currentPoint.passes.length > 0)
+			return showMessage(
+				'error',
+				'Your team is not in possession of the disc.'
+			);
+		let currentPlayer;
+		for (var i = state.currentPoint.passes.length - 2; i >= 0; i--) {
+			if (!state.currentPoint.passes[i].offense) break;
+			if (state.currentPoint.passes[i].player) {
+				currentPlayer = state.currentPoint.passes[i].player;
+				break;
+			}
+		}
+		if (!currentPlayer)
+			return showMessage(
+				'error',
+				'You must select a player to possess the disc.'
+			);
+		if (state.timeoutsLeft[0] <= 0)
+			return showMessage('error', 'Your team has no timeouts left.');
+		state.timeoutsLeft[0]--;
+		team = 1;
+	} else if (e.target === theirTimeout) {
+		if (state.currentPoint.possession && state.currentPoint.passes.length > 0)
+			return showMessage('error', 'Opponent is not in possession of the disc.');
+		if (state.timeoutsLeft[1] <= 0)
+			return showMessage('error', 'Opponent has no timeouts left.');
+		state.timeoutsLeft[1]--;
+		team = -1;
+	} else return;
+
+	sh.setState(state);
+	updateCurrentPass({
+		event: 'timeout',
+		eventDesc: {
+			team,
+			in: '',
+			out: '',
+		},
+	});
+	sendEvent('update-info', sh.getState());
+};
 
 const showEvent = (msg) => {
 	if (Array.isArray(msg)) {
@@ -145,211 +215,251 @@ const showEvent = (msg) => {
 		lastEvent.innerHTML = msg;
 	}
 };
+
+const getPlayer = (id) => {
+	const blank = {
+		firstName: 'Unknown',
+		lastName: 'Unknown',
+		id: undefined,
+		number: undefined,
+	};
+	if (!sh || !id) return blank;
+
+	const state = sh.getState();
+
+	const toReturn = state.roster.find((p) => {
+		return p.id === id;
+	});
+	if (!toReturn) return blank;
+	return toReturn;
+};
+
+//TODO: fix basic throwaway. test the rest of this
 const displayEventDescription = (e) => {
 	if (!e.detail) return;
-	state = e.detail;
-	//get the current point
-	const currentPoint = state.currentPoint;
-	if (!currentPoint) return showEvent('(No events)');
+	const state = e.detail;
 
-	//any passes?
-	if (currentPoint.passes.length === 0) {
+	const currentPoint = state.currentPoint;
+	const passes = state.currentPoint?.passes;
+	if (!passes || !Array.isArray(passes)) return showEvent('(No events)');
+
+	if (
+		passes.length === 0 ||
+		(passes.length === 1 &&
+			(!passes[0].player || isNaN(passes[0].x) || isNaN(passes[0].y)))
+	) {
 		if (currentPoint.offense)
 			return showEvent(`${state.opponent} pulls to ${state.team}`);
 		else return showEvent(`${state.team} pulls to ${state.opponent}`);
 	}
-	//there are some passes or events this point
+	//last thing is a goal, so indicate someone scored
+	else if (passes.slice(-1).pop().goal !== 0) {
+		const lp = passes.slice(-1).pop();
+		if (lp.goal === -1) return showEvent(`${state.opponent} scored`);
+		const p = getPlayer(lp.player);
+		return showEvent(`${p.firstName} scored`);
+	}
+	//last thing isn't a goal, so the last thing is going to be a pass with incomplete data.
+	//start at second to last, get the last thing to happen
 	else {
-		const last = currentPoint.passes.slice(-2)[0];
-		let lastPass;
-		for (var i = currentPoint.passes.length - 2; i >= 0; i--) {
-			if (currentPoint.passes[i].event === '')
-				lastPass = currentPoint.passes[i];
-			break;
+		//get the last two touches and the last event (if it happened after the first of those two touches)
+		let lastThree = [];
+		let eventFound = false;
+		const topPass = passes.slice(-1).pop();
+		const selfPassWarning = !topPass.player && isNaN(topPass.x + topPass.y);
+		for (var i = passes.length - 2; i >= 0; i--) {
+			if ((!eventFound && passes[i].event) || passes[i].result)
+				lastThree.push({
+					...passes[i],
+					id: passes[i].player,
+					player: passes[i].player
+						? getPlayer(passes[i].player).firstName
+						: 'Unknown',
+				});
+			if (passes[i].event) eventFound = true;
+			if (lastThree.length === 3 || (lastThree.length === 2 && !eventFound))
+				break;
 		}
-
-		//events to display - a pass, a goal, etc.
+		//if we only got one thing, the whole pass array must be only one element.
 		let events = [];
-
-		if (last.event === 'timeout') {
-			const toTeam = last.eventDesc.team === 1 ? state.team : state.opponent;
-			events.push(`${toTeam} took a timeout.`);
-		} else if (last.event === 'sub') {
-			if (last.eventDesc.team === -1)
-				events.push(`${state.opponent} took a sub.`);
-			else {
-				const [playerIn, playerOut] = [
-					state.roster.find((p) => {
-						return p.id === last.eventDesc.in;
-					}),
-					state.roster.find((p) => {
-						return p.id === last.eventDesc.out;
-					}),
-				];
-				events.push(
-					`${playerIn.firstName} came in for ${playerOut.firstName}.`
-				);
-			}
-		}
-
-		//no passes - only the timeout or sub
-		if (!lastPass) {
-			const [rt, pt] = currentPoint.offense
-				? [state.team, state.opponent]
-				: [state.opponent, state.team];
-			events.push(`${pt} pulls to ${rt}`);
-		}
-
-		if (events.length > 0) {
-			return showEvent(events);
+		if (lastThree.length === 1) {
+			if (lastThree[0].event) {
+				if (lastThree[0].event === 'timeout') {
+					if (lastThree[0].eventDesc.team === 1)
+						events.push(`${state.team} took a timeout`);
+					else events.push(`${state.opponent} took a timeout`);
+				} else if (lastThree[0].event === 'sub') {
+					const playerIn = getPlayer(lastThree[0].eventDesc.in);
+					const playerOut = getPlayer(lastThree[0].eventDesc.out);
+					events.push(
+						`${playerIn.firstName} came in for ${playerOut.firstName}`
+					);
+				}
+				if (currentPoint.offense)
+					events.push(`${state.opponent} pulls to ${state.team}`);
+				else events.push(`${state.team} pulls to ${state.opponent}`);
+				return showEvent(events);
+			} else if (lastThree[0].offense) {
+				if (lastThree[0].result === 'complete') {
+					const place = getPlace(lastThree[0].x);
+					return showEvent(
+						`${lastThree[0].player} picked up the pull ${place}`
+					);
+				} else if (lastThree[0].result === 'drop')
+					return showEvent(
+						`${lastThree[0].player} dropped the pull<br>${state.opponent} have the disc`
+					);
+			} else return showEvent(`${state.opponent} have the disc`);
 		} else {
-			//there's an actual pass that has happened or is being recorded
-			const passes = currentPoint.passes.filter((p) => {
-				return p.event === '';
-			});
-			/**
-			 * Events:
-			 * Pick up pull (receiver, location)
-			 * Complete pass (inc. goal) (receiver, thrower, location, result=goal/complete)
-			 * Drop (receiver, thrower, location, result=drop)
-			 * Throwaway (thrower, location, result=throwaway)
-			 * Stall (thrower, old location, result=stall)
-			 * We get a block (defender, location)
-			 * They get a block (coded as a throwaway or a drop at discretion of statkeeper)
-			 * Yardage penalty (AUDL/observed USAU games only; thrower, location)
-			 */
+			//in order, the events described by the last 3 elements: E(vent), O(ffense), D(efense)
+			let order = lastThree.reduce((p, c) => {
+				return `${c.event ? 'E' : c.offense ? 'O' : 'D'}${p}`;
+			}, '');
 
-			//TODO: finish the "display event" function, start fixing the move disc/draw pass/push data functions.
-
-			//get the thrower, receiver, or defender
-			const thrower = state.roster.find((p) => {
-				return lastPass.thrower === p.id;
-			})?.firstName;
-			const receiver = state.roster.find((p) => {
-				return lastPass.receiver === p.id;
-			})?.firstName;
-			const defender = state.roster.find((p) => {
-				return lastPass.defender === p.id;
-			})?.firstName;
-
-			if (currentPoint.scored === 1) {
-				const scoringPass = currentPoint.passes.slice(-1).pop();
-				const scorer = state.roster.find((p) => {
-					return scoringPass.receiver === p.id;
-				})?.firstName;
-				return showEvent(
-					`${scorer || 'Unknown'} scored!<br>${state.team} to pull to ${
-						state.opponent
-					}`
-				);
-			} else if (currentPoint.scored === -1)
-				return showEvent(
-					`${state.opponent} scored!<br>${state.opponent} to pull to ${state.team}`
-				);
-
-			let place;
-			if (!isNaN(lastPass.x1)) place = getPlace(lastPass.x1);
-
-			//if the last pass has a defender, then we just got a block
-			if (lastPass.defender) {
-				//check if it was a callahan
-				if (lastPass.goal === 0) {
+			/*
+			Possible orders:
+			?OO
+			?DO
+			??D
+			??E
+			?EO
+			*/
+			switch (true) {
+				//last two things were both offense
+				case order.substring(order.length - 2, order.length) === 'OO':
+					switch (lastThree[0].result) {
+						case 'complete':
+							const dx = Math.round(lastThree[0].x - lastThree[1].x);
+							if (
+								selfPassWarning &&
+								lastThree[0].id &&
+								lastThree[0].id === lastThree[1].id
+							)
+								showMessage('warning', 'Warning - self-pass detected');
+							return showEvent(
+								`${lastThree[1].player} → ${lastThree[0].player} (${
+									dx >= 0 ? '+' : ''
+								}${dx})`
+							);
+						case 'drop':
+							return showEvent(
+								`${lastThree[0].player} dropped the disc<br>${state.opponent} have the disc`
+							);
+						case 'throwaway':
+							return showEvent(
+								`${lastThree[1].player} threw the disc away<br>${state.opponent} have the disc`
+							);
+						case 'stall':
+							return showEvent(
+								`${lastThree[1].player} got stalled out<br>${state.opponent} have the disc`
+							);
+						default:
+							showMessage('error', 'Invalid data');
+							return console.log(lastThree);
+					}
+				//they turned it, we picked it up
+				case order.substring(order.length - 2, order.length) === 'DO':
+					const place = getPlace(lastThree[0].x);
 					return showEvent(
-						`${defender || 'Unknown'} got a block${
-							` ${place || ''}.` || '.'
-						}<br>${state.team} to pick up the disc.`
+						`${lastThree[0].player} picked up the disc ${place}`
 					);
-				} else if (lastPass.goal === 1)
-					return showEvent(`${defender || 'Unknown'} got a Callahan!`);
-			}
-			//first event of the point
-			else if (passes.length === 2) {
-				//first play of the point and it wasn't a D - it's someone catching/picking up/dropping the pull.
-				if (currentPoint.offense) {
-					if (lastPass.result === 'drop')
-						return showEvent(
-							`${receiver || 'Unknown'} dropped the pull.<br>${
-								state.opponent
-							} has the disc.`
+				//last thing is defense - they turned it (we got a block or they dropped/threw it away)
+				case order.charAt(order.length - 1) === 'D':
+					switch (lastThree[0].result) {
+						case 'drop':
+							return showEvent(
+								`${state.opponent} dropped the disc<br>${state.team} to pick up`
+							);
+						case 'throwaway':
+							return showEvent(
+								`${state.opponent} threw the disc away<br>${state.team} to pick up`
+							);
+						case 'block':
+							return showEvent(
+								`${lastThree[0].player} got a block<br>${state.team} to pick up`
+							);
+						case 'stall':
+							return showEvent(
+								`${state.opponent} got stalled out<br>${state.team} have the disc`
+							);
+						default:
+							showMessage('error', 'Invalid data');
+							return console.log(lastThree);
+					}
+				//timeout or sub was the last thing
+				case order.charAt(order.length - 1) === 'E':
+					if (lastThree[0].event === 'timeout') {
+						if (lastThree[0].eventDesc.team === 1) {
+							events.push(`${state.team} took a timeout`);
+							events.push(`${lastThree[1].player} has the disc`);
+							return showEvent(events);
+						} else events.push(`${state.opponent} took a timeout`);
+					} else if (lastThree[0].event === 'sub') {
+						const playerIn = getPlayer(lastThree[0].eventDesc.in);
+						const playerOut = getPlayer(lastThree[0].eventDesc.out);
+						events.push(
+							`${playerIn.firstName} came in for ${playerOut.firstName}`
 						);
-					//picking up the pull
-					return showEvent(
-						`${receiver || 'Unknown'} picked up the pull ${place}.`
-					);
-				} else {
-					if (lastPass.result === 'drop')
+						if (order.charAt(0) === 'O') {
+							events.push(`${lastThree[1].player} has the disc`);
+						} else {
+							events.push(`${state.opponent} have the disc`);
+						}
+					}
+					break;
+				//event then offense
+				case order.substring(order.length - 2, order.length) === 'EO':
+					//this should only happen when picking up the pull after a timeout or an immediate sub before the point happens
+					if (order.length === 2) {
+						const place = getPlace(lastThree[0].x);
 						return showEvent(
-							`${state.opponent} dropped the pull.<br>${state.team} to pick up the disc.`
-						);
-					else if (lastPass.result === 'throwaway')
-						return showEvent(
-							`${state.opponent} threw the disc away.<br>${state.team} to pick up the disc.`
-						);
-					else if (lastPass.result === 'stall')
-						return showEvent(
-							`${state.opponent} got stalled out.<br>${state.team} to pick up the disc.`
-						);
-				}
-			}
-			//this isn't the first pass (this is only to differentiate picking up the pull vs. picking up the disc after getting it on a turn)
-			else {
-				//thrower and receiver, so there was a pass.
-				if (lastPass.thrower && lastPass.receiver) {
-					//complete pass
-					if (lastPass.result === 'complete' && lastPass.goal === 1) {
-						return showEvent(`${receiver || 'Unknown'} scored!`);
-					} else if (lastPass.result === 'complete') {
-						const dx = Math.round(lastPass.x1 - lastPass.x0);
-						if (isNaN(dx)) return;
-						return showEvent(
-							`${thrower || 'Unknown'} → ${receiver || 'Unknown'} (${
-								dx < 0 ? '-' : '+'
-							}${dx})`
+							`${lastThree[0].player} picked up the pull ${place}`
 						);
 					}
-					//dropped pass
-					else if (lastPass.result === 'drop') {
-						return showEvent(
-							`${receiver || 'Unknown'} dropped the disc.<br>${
-								state.opponent
-							} has the disc.`
-						);
+					//OEO - just a complete pass with a timeout or sub that happened while the disc was in the thrower's hands
+					else if (order === 'OEO') {
+						switch (lastThree[0].result) {
+							case 'complete':
+								const dx = Math.round(lastThree[0].x - lastThree[1].x);
+								return showEvent(
+									`${lastThree[1].player} → ${lastThree[0].player} (${
+										dx >= 0 ? '+' : ''
+									}${dx})`
+								);
+							case 'drop':
+								return showEvent(
+									`${lastThree[0].player} dropped the disc<br>${state.opponent} have the disc`
+								);
+							case 'throwaway':
+								return showEvent(
+									`${lastThree[0].player} threw the disc away<br>${state.opponent} have the disc`
+								);
+							default:
+								showMessage('error', 'Invalid data');
+								return console.log(lastThree);
+						}
 					}
-				}
-				//receiver only - picking up the disc
-				else if (lastPass.receiver) {
-					const place = getPlace(last.x1);
-					return showEvent(
-						`${receiver || 'Unknown'} picked up the disc ${place}`
-					);
-				}
-				//thrower only - could be a stall, a throwaway, or a penalty of some sort (AUDL/observed USAU game)
-				else if (lastPass.thrower) {
-					if (lastPass.result === 'throwaway') {
+					//DEO - this could happen if we force a turn, there's a sub, and then we pick up the disc
+					else if (order === 'DEO') {
+						const place = getPlace(lastThree[0].x);
 						return showEvent(
-							`${thrower || 'Unknown'} threw the disc away.<br>${
-								state.opponent
-							} has the disc.`
+							`${lastThree[0].player} picked up the disc ${place}`
 						);
-					} else if (lastPass.result === 'stall') {
-						return showEvent(
-							`${thrower || 'Unknown'} got stalled out.<br>${
-								state.opponent
-							} has the disc.`
-						);
-					} else if (lastPass.event === 'penalty') {
-						return showEvent(
-							`Yardage penalty.<br>${thrower || 'Unknown'} has the disc.`
-						);
+					} else {
+						showMessage('error', 'Invalid data');
+						return console.log(lastThree);
 					}
-				}
+				default:
+					showMessage('error', 'Invalid data');
+					return console.log(lastThree);
 			}
 		}
+		return showEvent(events);
 	}
 };
 const handleEvent = (e) => {
 	if (!sh) return;
-	state = sh.getState();
+	const state = sh.getState();
 
 	const currentPoint = state.currentPoint;
 	const currentPass = currentPoint.passes.slice(-1).pop();
@@ -395,7 +505,7 @@ const handleEvent = (e) => {
 };
 const getPlace = (yds) => {
 	if (!sh) return null;
-	state = sh.getState();
+	const state = sh.getState();
 	yds = Math.round(yds - state.format.endzone);
 	switch (true) {
 		case yds <= -2:
@@ -417,141 +527,122 @@ const getPlace = (yds) => {
 	}
 };
 
-const drawPass = (p) => {
-	if (!p) return;
-	if (!sh) return;
-	state = sh.getState();
-
-	const [x0, y0] =
-		!isNaN(p.x0) && !isNaN(p.y0)
-			? getPageCoordinates(p.x0, p.y0)
-			: [null, null];
-	const [x1, y1] =
-		!isNaN(p.x1) && !isNaN(p.y1)
-			? getPageCoordinates(p.x1, p.y1)
-			: [null, null];
-	if ((x1 !== null) & (y1 !== null)) drawDisc(x1, y1);
-	else
-		drawDisc(
+const drawLastPass = (state) => {
+	if (!state || !state.currentPoint) return;
+	const passes = state.currentPoint.passes;
+	//if we are at the start of a point, just draw the disc in the middle of the field
+	if (passes.length === 0) {
+		const [pageX, pageY] = getPageCoordinates(
 			state.format.length / 2 + state.format.endzone,
 			state.format.width / 2
 		);
+		drawLine(null);
+		return drawDisc(pageX, pageY);
+	} else if (passes.length < 2) return drawLine(null);
 
-	if (!isNaN(p.x1) && !isNaN(p.y1) && !isNaN(p.x0) && !isNaN(p.y0))
-		drawLine(x0, y0, x1, y1);
-	else drawLine(null);
+	let lastPassStart, lastPassEnd;
+	for (var i = passes.length - 1; i >= 0; i--) {
+		if (!passes[i].offense) break;
+		if (!lastPassEnd && !isNaN(passes[i].x + passes[i].y)) {
+			lastPassEnd = passes[i];
+		} else if (lastPassEnd && !isNaN(passes[i].x + passes[i].y)) {
+			lastPassStart = passes[i];
+			break;
+		}
+	}
+
+	if (!lastPassEnd) return drawLine(null);
+	const [pageX, pageY] = getPageCoordinates(lastPassEnd.x, lastPassEnd.y);
+	drawDisc(pageX, pageY);
+
+	if (!lastPassStart) return drawLine(null);
+
+	const [x0, y0] = getPageCoordinates(lastPassStart.x, lastPassStart.y);
+	drawLine(x0, y0, pageX, pageY);
 };
 
+/*TODO: undoing the pass after a timeout will draw the disc in the upper left corner. 
+
+This is because lastPass is that pass, and previous pass (the actual timeout call) doesn't have
+coordinates
+
+*/
+
 const undoPass = (e) => {
-	state = sh.getState();
-
-	if (e.target !== undo) return;
-	const passes = state?.currentPoint?.passes;
-	if (!passes || !Array.isArray(passes) || passes.length < 2) return;
-
+	const state = sh.getState();
+	//get rid of the blank pass at the end first
 	const currentPass = state.currentPoint.passes.pop();
-	const lastPass = state.currentPoint.passes.pop();
-	const previousPass =
-		state.currentPoint.passes.length > 0
-			? state.currentPoint.passes.slice(-1).pop()
-			: undefined;
-	redo.disabled = false;
 
-	//we are not undoing a scoring pass
-	if (currentPass.goal === 0) {
-		if (lastPass.turnover)
-			state.currentPoint.possession = !state.currentPoint.possession;
-		state.poppedPasses.push(lastPass);
-		if (previousPass?.turnover) {
-			state.currentPoint.passes.push({ ...blankPass });
-		} else if (previousPass) {
-			state.currentPoint.passes.push({
-				...blankPass,
-				thrower: previousPass.receiver,
-				x0: previousPass.x1,
-				y0: previousPass.y1,
-			});
-			drawPass(previousPass);
-		} else {
-			state.currentPoint.passes.push({
-				...blankPass,
-				x1: lastPass.x1,
-				y1: lastPass.y1,
-			});
-		}
-		deselectAll();
-		return sh.setState(state);
-	}
-	//we are undoing a scoring pass
-	else {
-		state.currentPoint.passes.push(lastPass);
-		if (state.currentPoint.possession) {
-			state.currentPoint.passes.push({
-				...blankPass,
-				thrower: currentPass.thrower,
-				x0: currentPass.x1,
-				y0: currentPass.y1,
-			});
-		}
-		state.currentPoint = {
-			...state.currentPoint,
-			endPeriod: false,
-			scored: 0,
-		};
-		if (currentPass.goal === 1) state.score--;
-		else if (currentPass.goal === -1) state.oppScore--;
-
-		state.discIn = true;
-
-		drawPass(lastPass);
-
-		sh.setState(state);
-		const evt = new CustomEvent('return-to-point', {
-			detail: state,
+	if (currentPass.goal !== 0) {
+		state.poppedPasses.push(currentPass);
+		state.currentPoint.passes.push({
+			...blankPass,
+			offense: currentPass.offense,
 		});
-		document.dispatchEvent(evt);
+		sh.setState(state);
+		return sendEvent('return-to-point', state);
 	}
+
+	const lastPass = state.currentPoint.passes.pop();
+	if (!lastPass) return;
+
+	state.poppedPasses.push(lastPass);
+	if (state.currentPoint.passes.length > 0)
+		state.currentPoint.passes.push({
+			...blankPass,
+			offense: lastPass.offense,
+		});
+	sh.setState(state);
 };
 
 const redoPass = (e) => {
 	if (e.target !== redo) return;
-	state = sh?.getState();
+	const state = sh?.getState();
 	if (!state || !state.poppedPasses || state.poppedPasses.length === 0) return;
 	const toRedo = state.poppedPasses.pop();
 	if (!toRedo) return;
-	updateCurrentPass(toRedo, { redo: true });
-	drawPass(toRedo);
+	if (toRedo.event) {
+		updateCurrentPass(
+			{
+				event: toRedo.event,
+				eventDesc: toRedo.eventDesc,
+			},
+			{ redo: true }
+		);
+	} else {
+		updateCurrentPass(toRedo, { redo: true });
+	}
 };
 
-//TODO: handle events (drop, goal, etc.)
+//TODO: handle events (sub, timeout.)
 const updateCurrentPass = (data, ...opts) => {
 	if (!sh) return;
-	state = sh.getState();
+	let state = sh.getState();
 
 	let clearPoppedPasses = true;
 	if (opts.length > 0) {
 		if (opts[0].redo) clearPoppedPasses = false;
 	}
 
-	const passes = state.currentPoint?.passes;
-	if (!passes) return;
-	if (passes.length === 0) {
-		passes.push({
-			...blankPass,
-		});
-	}
+	const p = state.currentPoint?.passes;
+	const passes =
+		p.length === 0
+			? [{ ...blankPass, offense: state.currentPoint.offense }]
+			: [...p];
+
 	let currentPass = passes[passes.length - 1];
-	let currentPoint = state.currentPoint;
+	let currentPoint = { ...state.currentPoint };
+
 	//if we're updating a location, make sure we're not throwing it from the end zone,
 	//and set the last pass ending spot to the goal line, at maximum)
-	if (data.x1) {
+	if (data.x) {
 		if (
-			currentPass.x0 &&
-			currentPass.x0 > state.format.length + state.format.endzone
+			currentPass.x &&
+			currentPass.x > state.format.length + state.format.endzone
 		) {
-			currentPass.x0 = state.format.length + state.format.endzone;
+			currentPass.x = state.format.length + state.format.endzone;
 			if (passes.length >= 2 && passes[passes.length - 2].result === 'complete')
-				passes[passes.length - 2].x1 = currentPass.x0;
+				passes[passes.length - 2].x = currentPass.x;
 		}
 	}
 
@@ -561,69 +652,88 @@ const updateCurrentPass = (data, ...opts) => {
 	};
 	currentPass = passes[passes.length - 1];
 
-	//there is a receiver and location - pass was completed.
+	//there is a player and location - pass was completed.
 	if (
-		currentPass.receiver &&
-		currentPass.x1 !== undefined &&
-		currentPass.y1 !== undefined
+		currentPass.player &&
+		currentPass.x !== undefined &&
+		currentPass.y !== undefined
 	) {
-		if (!currentPoint.possession) {
-			showMessage('error', 'Invalid pass data - see log for details');
-			return console.log(`Invalid pass: `, currentPass);
-		}
-
-		//set the result of this pass
-		passes[passes.length - 1].result = 'complete';
-		//add a new pass with the receiver as the thrower and the origin as the current location
+		//if we were on offense, this is a complete pass (drops are recorded on the next action)
+		//if we were on defense, this was a block recorded by the player indicated
+		passes[passes.length - 1].result = currentPass.offense
+			? 'complete'
+			: 'block';
+		//either way, push a new pass into the stack
+		//if this was a d, we can set the location
+		//if we were on offense, force the user to specify a new location for the next pass
 		passes.push({
 			...blankPass,
-			thrower: currentPass.receiver,
-			x0: currentPass.x1,
-			y0: currentPass.y1,
+			x: currentPass.offense ? undefined : currentPass.x,
+			y: currentPass.offense ? undefined : currentPass.y,
+			offense: true,
 		});
+		//anytime we push something, we need to clear the popped passes (you can't redo after overwriting something)
 		if (clearPoppedPasses) state.poppedPasses = [];
 	} else if (currentPass.result) {
 		//we got here by clicking a result button - stall, drop, throwaway, goal. Handle those things here.
-		if (currentPoint.possession) {
-			if (data.result === 'stall' && currentPass.thrower) {
-				passes[passes.length - 1].turnover = true;
-				passes.push({ ...blankPass, x1: currentPass.x0, y1: currentPass.y0 });
-				drawLine(null);
-			} else if (data.result === 'drop' && currentPass.thrower) {
-				passes.pop();
-				passes[passes.length - 1].result = 'drop';
-				passes[passes.length - 1].turnover = true;
-				passes.push({ ...blankPass, x1: currentPass.x1, y1: currentPass.y1 });
-				drawLine(null);
-			} else if (
-				currentPass.result === 'throwaway' &&
-				currentPass.x1 !== undefined &&
-				currentPass.y1 !== undefined
-			) {
-				passes[passes.length - 1].turnover = true;
-				passes.push({ ...blankPass, x1: currentPass.x1, y1: currentPass.y1 });
-				drawLine(null);
+		if (currentPass.offense) {
+			if (data.result === 'stall') passes[passes.length - 1].turnover = true;
+			else if (data.result === 'drop') {
+				if (passes[passes.length - 2].result === 'complete') {
+					passes.pop();
+					passes[passes.length - 1].result = 'drop';
+					passes[passes.length - 1].turnover = true;
+				} else {
+					console.log(passes.slice(-2));
+					return showMessage(
+						'error',
+						'Invalid data for dropped pass - see log for details'
+					);
+				}
+			} else if (data.result === 'throwaway') {
+				if (currentPass.x !== undefined && currentPass.y !== undefined) {
+					passes[passes.length - 1].turnover = true;
+				} else
+					return showMessage(
+						'error',
+						'You must specify a location for a throwaway'
+					);
 			} else if (data.result === 'goal') {
-				if (currentPass.x0 >= state.format.length + state.format.endzone) {
+				if (
+					passes[passes.length - 2].x >=
+					state.format.length + state.format.endzone
+				) {
 					passes.pop();
 					passes[passes.length - 1].goal = 1;
 					currentPoint.scored = 1;
 					state.discIn = false;
 					state.score++;
-					const evt = new CustomEvent('point-ended', {
-						detail: {
-							state,
+					state = {
+						...state,
+						discIn: false,
+						currentPoint: {
+							...currentPoint,
+							passes,
 						},
-					});
-					document.dispatchEvent(evt);
+					};
+					console.log(state);
+					sendEvent('point-ended', state);
+					return sh.setState(state);
 				} else {
-					showMessage(
+					return showMessage(
 						'error',
 						'The last pass was not into the endzone. Undo it and place it in the endzone.'
 					);
 				}
-			}
+			} else return showMessage('error', `Invalid action - ${data.result}.`);
+
 			deselectAll();
+			passes.push({
+				...blankPass,
+				x: currentPass.x,
+				y: currentPass.y,
+				offense: false,
+			});
 		} else {
 			if (currentPass.result === 'goal') {
 				passes.pop();
@@ -631,47 +741,38 @@ const updateCurrentPass = (data, ...opts) => {
 				currentPoint.scored = -1;
 				state.discIn = false;
 				state.oppScore++;
-				const evt = new CustomEvent('point-ended', {
-					detail: {
-						state,
-					},
-				});
-				document.dispatchEvent(evt);
+				sendEvent('point-ended', state);
 			}
-			//opponent got stalled out.
-			else if (currentPass.result === 'stall') {
-				passes.push({ ...blankPass });
-			} else if (
-				currentPass.result === 'drop' ||
-				currentPass.result === 'throwaway'
-			) {
-				passes[passes.length - 1].result = currentPass.result;
-				passes.push({ ...blankPass });
+			//opponent committed a turn.
+			else {
+				currentPass.turnover = true;
+				passes.push({
+					...blankPass,
+					offense: true,
+					x: currentPass.x,
+					y: currentPass.y,
+				});
 			}
 			deselectAll();
 		}
 		if (clearPoppedPasses) state.poppedPasses = [];
-	} else if (currentPass.defender) {
-		//we are on D...possession SHOULD be false here
-		if (currentPoint.possession) return;
-
-		passes[passes.length - 1].turnover = true;
-		passes.push({ ...blankPass, x1: currentPass.x1, y1: currentPass.y1 });
-		state.currentPoint.possession = true;
-		deselectAll();
-		if (clearPoppedPasses) state.poppedPasses = [];
+	} else if (currentPass.event) {
+		passes.push({
+			...blankPass,
+			offense: currentPass.offense,
+		});
 	}
 
-	if (data.turnover) state.currentPoint.possession = !currentPoint.possession;
-	sh.setState({
+	state = {
 		...state,
 		currentPoint: {
-			...state.currentPoint,
+			...currentPoint,
 			passes,
 		},
-	});
+	};
+	sh.setState(state);
 	if (
-		(passes.length % 3 === 1 && passes.length > 1) ||
+		(passes.length % 3 === 1 && passes.length > initialLength) ||
 		currentPass.result === 'goal'
 	) {
 		updatePasses();
@@ -680,32 +781,33 @@ const updateCurrentPass = (data, ...opts) => {
 
 const setPlayer = (e) => {
 	if (!sh) return;
-	const possession = sh.getState()?.currentPoint?.possession;
+	const state = sh.getState();
+	if (!state) return;
+	const passes = state.currentPoint?.passes;
+	if (!passes) return;
+
+	const possession =
+		passes.length === 0
+			? state.currentPoint.offense
+			: passes.slice(-1).pop().offense;
 	if (possession === null || possession === undefined) return;
+	//get the current selected player button
 	const sel = document.querySelector('.player-button[selected]');
-	if (sel) sel.removeAttribute('selected');
+
 	if (!e || !e.target) return;
 
 	const b = e.target.closest('.player-button');
 	if (b && b !== sel) {
-		b.setAttribute('selected', '');
-		if (possession)
-			updateCurrentPass({
-				receiver: b.getAttribute('data-id') || 'unknown',
-			});
-		else
-			updateCurrentPass({
-				defender: b.getAttribute('data-id') || 'unknown',
-			});
+		//deselect the current button
+		if (sel) sel.removeAttribute('selected');
+		if (possession) {
+			b.setAttribute('selected', 'a');
+		}
+		updateCurrentPass({
+			player: b.getAttribute('data-id') || 'unknown',
+		});
 	} else if (b === sel) {
-		if (possession)
-			updateCurrentPass({
-				receiver: '',
-			});
-		else
-			updateCurrentPass({
-				defender: '',
-			});
+		b.removeAttribute('selected');
 	}
 };
 
@@ -715,6 +817,29 @@ const drawDisc = (pageX, pageY) => {
 	const [fTop, fLeft] = [r.top, r.left];
 	const newX = Math.min(Math.max(0, pageX - fLeft), r.width);
 	const newY = Math.min(Math.max(0, pageY - fTop), r.height);
+	if (!isNaN(newX)) disc.style.left = `${newX}px`;
+	if (!isNaN(newY)) disc.style.top = `${newY}px`;
+};
+
+//moves the disc in response to a state update.
+const moveDisc = (e) => {
+	const r = field.getBoundingClientRect();
+	const [fHeight, fWidth] = [r.height, r.width];
+	const currentPass = e.detail?.currentPoint?.passes?.slice(-1).pop();
+	if (!currentPass) return;
+	let x, y;
+	({ x, y } = currentPass);
+
+	const format = e.detail.format;
+	const pctX = Math.max(
+		0,
+		Math.min(1, x / (format.length + 2 * format.endzone))
+	);
+	const pctY = Math.max(0, Math.min(1, y / format.width));
+
+	const newX = pctX * fWidth;
+	const newY = pctY * fHeight;
+
 	if (!isNaN(newX)) disc.style.left = `${newX}px`;
 	if (!isNaN(newY)) disc.style.top = `${newY}px`;
 };
@@ -744,7 +869,6 @@ const drawLine = (x0, y0, x1, y1) => {
 		Math.pow(y1 - y0, 2) + Math.pow(x1 - x0, 2)
 	)}px`;
 	discLine.style.transform = `translate(0,-50%) rotate(${angle}rad)`;
-	const st = window.getComputedStyle(disc);
 	discLine.style.left = `${x0 - r.left}px`;
 	discLine.style.top = `${y0 - r.top}px`;
 	discLine.classList.remove('invisible');
@@ -752,11 +876,20 @@ const drawLine = (x0, y0, x1, y1) => {
 
 //event fires when we move the disc around. On touchend or mouseup, we update the data.
 const setDiscPosition = (e) => {
-	state = sh.getState();
+	const state = sh.getState();
 	if (!state) return;
 
 	//don't do anything if the disc isn't movable
 	if (!disc || !state.discIn) return;
+
+	//if we're not already moving, and we didn't click the field or disc or a position button, don't do anything.
+	if (
+		!moving &&
+		e.target !== disc &&
+		e.target !== field &&
+		e.target.getAttribute('role') !== 'button'
+	)
+		return;
 
 	//if we start moving the disc, set the flag "moving" to be true
 	if (
@@ -764,33 +897,59 @@ const setDiscPosition = (e) => {
 		(e.target === disc || e.target === field)
 	)
 		moving = true;
-	//if we're not moving, and we didn't get here by a button, also get out.
+	//if we're not moving, and we didn't get here by a button, get out.
 	else if (!moving && e.target.getAttribute('role') !== 'button') return;
 
 	let pageX, pageY;
-	//figure out where the disc is
-	if (isMobile && (e.target === disc || e.target === field)) {
-		//if we are on mobile and it's a touchend event, the location is the changed touch
-		if (e.type === 'touchend') {
-			({ pageX, pageY } = e.changedTouches[0]);
-		} else {
-			//if we're on mobile and it's a touchmove or touchstart event, it's the first target touch
-			({ pageX, pageY } = e.targetTouches[0]);
-		}
-	} else if (e.target === disc || e.target === field) {
-		//if not mobile, it's just the pageX and pageY from the mouse event
-		({ pageX, pageY } = e);
-	} else if (
+	//figure out where on the page the click/move/touch is happening (or would've happened)
+	if (
 		(e.target.getAttribute('data-x') || e.target.getAttribute('data-y')) &&
 		e.type === 'click'
 	) {
 		//we got here by clicking a positioning button - get the X and Y from the button attributes
-		let [x1, y1] = [
+		let [x, y] = [
 			parseFloat(e.target.getAttribute('data-x')),
 			parseFloat(e.target.getAttribute('data-y')),
 		];
-
-		[pageX, pageY] = getPageCoordinates(x1, y1);
+		let cp = {
+			x: undefined,
+			y: undefined,
+		};
+		if (isNaN(x) || isNaN(y)) {
+			for (var i = state.currentPoint.passes.length - 1; i >= 0; i--) {
+				const p = state.currentPoint.passes[i];
+				if (!isNaN(p.x) && !isNaN(p.y)) {
+					cp = p;
+					break;
+				}
+			}
+		}
+		[pageX, pageY] = getPageCoordinates(
+			isNaN(x) ? cp.x : x,
+			isNaN(y) ? cp.y : y
+		);
+		console.log(cp, x, y);
+	} else if (isMobile) {
+		//if we are on mobile and it's a touchend event, the location is the changed touch
+		if (e.type === 'touchend') {
+			({ pageX, pageY } = e.changedTouches[0]);
+		} else if (e.type === 'touchmove') {
+			//if we're on mobile and it's a touchmove or touchstart event, it's the first target touch
+			({ pageX, pageY } = e.targetTouches[0]);
+		} else if (
+			e.type === 'touchstart' &&
+			(e.target === disc || e.target === field)
+		) {
+			({ pageX, pageY } = e.targetTouches[0]);
+		}
+	} else if (
+		e.type === 'mousedown' &&
+		(e.target === disc || e.target === field)
+	) {
+		//if not mobile, it's just the pageX and pageY from the mouse event
+		({ pageX, pageY } = e);
+	} else if (e.type === 'mousemove' || e.type === 'mouseup') {
+		({ pageX, pageY } = e);
 	}
 	//don't do anything if we do a touchend or mouseup.
 	else if (e.type !== 'touchend' && e.type !== 'mouseup') return;
@@ -799,24 +958,32 @@ const setDiscPosition = (e) => {
 	if (
 		moving ||
 		(e.target.classList.contains('dropdown-item') &&
-			e.target.getAttribute('role') === 'button')
+			e.target.getAttribute('role') === 'button' &&
+			e.type === 'click')
 	) {
 		drawDisc(pageX, pageY);
-		const thisPass =
-			state.currentPoint.passes.length > 0
-				? state.currentPoint.passes.slice(-1).pop()
-				: undefined;
-		if (thisPass) {
-			let [x0, y0] = getPageCoordinates(
-				Math.min(thisPass.x0, state.format.endzone + state.format.length),
-				thisPass.y0
-			);
-			//and the line if we have two coordinates
-			drawLine(x0, y0, pageX, pageY);
+		//if we have possession...
+		if (state.currentPoint.possession) {
+			//and the last touch is also us on offense
+			let lastTouch;
+			for (var i = state.currentPoint.passes.length - 1; i >= 0; i--) {
+				const p = state.currentPoint.passes[i];
+				if (!p.offense) break;
+				if (p.player && !isNaN(p.x) && !isNaN(p.y) && p.result === 'complete') {
+					lastTouch = p;
+					break;
+				}
+			}
+			if (lastTouch) {
+				//draw the line showing the pass
+				let [x0, y0] = getPageCoordinates(
+					Math.min(lastTouch.x, state.format.endzone + state.format.length),
+					lastTouch.y
+				);
+				drawLine(x0, y0, pageX, pageY);
+			}
 		}
-	}
-
-	const [x1, y1] = getYards(pageX, pageY);
+	} else return;
 
 	if (
 		e.type === 'touchend' ||
@@ -824,11 +991,13 @@ const setDiscPosition = (e) => {
 		(e.target.classList.contains('dropdown-item') &&
 			e.target.getAttribute('role') === 'button')
 	) {
-		if (state.currentPoint.lineup.length > 0) updateCurrentPass({ x1, y1 });
-		else updateCurrentPass({ x1, y1, receiver: 'Unknown' });
+		const [x, y] = getYards(pageX, pageY);
+		updateCurrentPass({ x, y });
 		moving = false;
 	}
 };
+//TODO: change updatecurrentpass to handle only one player/set of coordinates per item in the array
+//That should make undo/redo a lot easier.
 
 const addPlayerButton = (p, color) => {
 	if (!buttonRowContainer) return;
@@ -837,7 +1006,9 @@ const addPlayerButton = (p, color) => {
 	const b = createElement(
 		`button.player-button.${color}.d-flex.flex-column.align-items-center[data-id="${
 			p ? p.id : 'Unknown'
-		}"][data-name="${p ? p.firstName : 'Unknown'}"]`
+		}"][data-name="${p ? p.firstName : 'Unknown'}"][title="${
+			p ? p.id : 'Unknown'
+		}"]`
 	);
 	const nm = createElement('.jersey-name');
 	nm.innerHTML = p ? p.initials : '??';
@@ -885,43 +1056,21 @@ const positionSort = (a, b) => {
 const handleLoadPoint = (e) => {
 	if (!sh) sh = new StateHandler({ ...e.detail, poppedPasses: [] });
 	else sh.setState({ ...e.detail, poppedPasses: [] });
-	state = sh.getState();
-
+	const state = sh.getState();
+	console.log(state);
 	if (state.currentPoint) {
 		if (!state.discIn) state.discIn = true;
 
 		state.currentPoint.possession = state.currentPoint.offense;
+		initialLength = state.currentPoint.passes.length;
 		state.currentPoint.passes.forEach((p) => {
 			if (p.turnover)
 				state.currentPoint.possession = !state.currentPoint.possession;
+			p.x0 = isNaN(p.x0) ? undefined : parseFloat(p.x0);
+			p.x1 = isNaN(p.x1) ? undefined : parseFloat(p.x1);
+			p.y0 = isNaN(p.y0) ? undefined : parseFloat(p.y0);
+			p.y1 = isNaN(p.y1) ? undefined : parseFloat(p.y1);
 		});
-
-		drawLine(null);
-		const [x, y] = getPageCoordinates(
-			state.format.length / 2 + state.format.endZone,
-			state.format.width / 2
-		);
-		drawDisc(x, y);
-
-		let lastPass, currentPass;
-		for (var i = state.currentPoint.passes.length - 1; i >= 0; i--) {
-			if (!state.currentPoint.passes[i].event) {
-				if (!currentPass) currentPass = state.currentPoint.passes[i];
-				else {
-					lastPass = state.currentPoint.passes[i];
-					break;
-				}
-			}
-		}
-		if (lastPass && !isNaN(lastPass.x1) && !isNaN(lastPass.y1)) {
-			let [x1, y1] = getPageCoordinates(lastPass.x1, lastPass.y1);
-			drawDisc(x1, y1);
-
-			if (!isNaN(lastPass.x0) && !isNaN(lastPass.y0)) {
-				let [x0, y0] = getPageCoordinates(lastPass.x0, lastPass.y0);
-				drawLine(x0, y0, x1, y1);
-			}
-		}
 
 		sh.setState(state);
 		if (state.currentPoint.scored !== 1 && state.currentPoint.scored !== -1) {
@@ -932,12 +1081,13 @@ const handleLoadPoint = (e) => {
 
 const displayPossession = (state) => {
 	if (!state || !state.currentPoint) return;
-
+	const passes = state.currentPoint.passes;
+	if (!passes) return;
 	//display the arrow
 	teamDirection.classList.remove('left', 'right');
 	oppDirection.classList.remove('left', 'right');
 	//no passes - set possession based on who is receiving the pull
-	if (state.currentPoint.passes.length === 0) {
+	if (passes.length === 0) {
 		if (state.currentPoint.offense) {
 			if (state.currentPoint.direction === 1)
 				teamDirection.classList.add('right');
@@ -951,7 +1101,7 @@ const displayPossession = (state) => {
 	//someone has scored - don't display anything
 	else if (state.currentPoint.scored !== 0) return;
 	//we have possession
-	else if (state.currentPoint.possession) {
+	else if (passes.slice(-1).pop().offense) {
 		if (state.currentPoint.direction === 1)
 			teamDirection.classList.add('right');
 		else teamDirection.classList.add('left');
@@ -1010,45 +1160,56 @@ const handlePlayerButtons = (e) => {
 		});
 	}
 	//if no one was added or removed, we don't do anything further.
-	if (!playerRemoved && !playerAdded) return;
+	if (playerRemoved || playerAdded) {
+		//create the initials for each player
+		let cycles = 0;
+		while (
+			cycles < 3 &&
+			players.some((p, i) => {
+				return players.some((p2, j) => {
+					if (p2.initials === p.initials && i !== j) {
+						p2.initials = `${propCase(
+							p2.firstName.substring(0, cycles + 1)
+						)}${propCase(p2.lastName.substring(0, cycles + 1))}`;
+						p.initials = `${propCase(
+							p.firstName.substring(0, cycles + 1)
+						)}${propCase(p.lastName.substring(0, cycles + 1))}`;
+						return true;
+					}
+				});
+			})
+		) {
+			cycles++;
+		}
 
-	//create the initials for each player
-	let cycles = 0;
-	while (
-		cycles < 3 &&
-		players.some((p, i) => {
-			return players.some((p2, j) => {
-				if (p2.initials === p.initials && i !== j) {
-					p2.initials = `${propCase(
-						p2.firstName.substring(0, cycles + 1)
-					)}${propCase(p2.lastName.substring(0, cycles + 1))}`;
-					p.initials = `${propCase(
-						p.firstName.substring(0, cycles + 1)
-					)}${propCase(p.lastName.substring(0, cycles + 1))}`;
-					return true;
-				}
-			});
-		})
-	) {
-		cycles++;
+		getElementArray(document, '.player-button').forEach((b) => {
+			b.remove();
+		});
+
+		players.forEach((p) => {
+			if (p) addPlayerButton(p, e.detail.startSettings.jersey);
+		});
+		if (count < e.detail.format.players)
+			addPlayerButton(null, e.detail.startSettings.jersey);
 	}
 
-	getElementArray(document, '.player-button').forEach((b) => {
-		b.remove();
+	deselectAll();
+
+	let passes = e.detail.currentPoint?.passes;
+	if (!passes || !Array.isArray(passes) || passes.length < 2) return;
+	passes = passes.filter((p) => {
+		return p.event === '';
 	});
 
-	players.forEach((p) => {
-		if (p) addPlayerButton(p, e.detail.startSettings.jersey);
-	});
-	if (count < e.detail.format.players)
-		addPlayerButton(null, e.detail.startSettings.jersey);
+	if (passes.length < 2) return;
+	passes = passes.slice(-2);
 
-	if (e.detail.currentPoint.passes && e.detail.currentPoint.passes.length > 0) {
-		const thisPass = e.detail.currentPoint.passes.slice(-1).pop();
-		const b = e.target.querySelector(
-			`.player-button[data-id="${thisPass.thrower}"]`
-		);
-		if (b) b.setAttribute('selected', '');
+	if (passes[0].result === 'complete' && passes[1].offense) {
+		getElementArray(document, '.player-button').forEach((b) => {
+			if (passes[0].player === b.getAttribute('data-id'))
+				b.setAttribute('selected', '');
+			else b.removeAttribute('selected');
+		});
 	}
 };
 
@@ -1081,7 +1242,7 @@ const handleResultButtons = (state) => {
 	const passes = state.currentPoint.passes.slice(-2);
 
 	//if we're on defense, all 3 events are possible for the other team
-	if (!state.currentPoint.possession) {
+	if (!passes[1].offense) {
 		drop.disabled = false;
 		throwaway.disabled = false;
 		goal.disabled = false;
@@ -1093,20 +1254,37 @@ const handleResultButtons = (state) => {
 		//drop button - we need a "completed" pass to mark as actually a drop
 		drop.disabled = false;
 		//goal button - we need a "completed" pass in the end zone.
-		if (passes[0].x1 >= state.format.endzone + state.format.length)
+		if (passes[0].x >= state.format.endzone + state.format.length)
+			goal.disabled = false;
+	}
+	//we just got a D in the attacking endzone - enable the possibility of a callahan
+	else if (passes[0].result === 'block' && !passes[0].offense) {
+		if (passes[0].x >= state.format.endzone + state.format.length)
 			goal.disabled = false;
 	}
 
-	//throwaway button - we need a thrower, no receiver, and a location
-	if (
-		passes[1].thrower &&
-		!passes[1].receiver &&
-		!isNaN(passes[1].x1) &&
-		!isNaN(passes[1].x0) &&
-		!isNaN(passes[1].y1) &&
-		!isNaN(passes[1].y0)
-	)
+	//throwaway button - we need a player on the previous pass, and a location
+	if (passes[0].player && !isNaN(passes[1].x) && !isNaN(passes[1].y))
 		throwaway.disabled = false;
+};
+
+//TODO: handle subs
+const handleEventMenu = (state) => {
+	ourTimeout.disabled = true;
+	theirTimeout.disabled = true;
+	sub.disabled = true;
+
+	const passes = state?.currentPoint?.passes;
+	if (Array.isArray(passes)) {
+		if (passes.length === 0) {
+			ourTimeout.disabled = false;
+			theirTimeout.disabled = false;
+		} else if (passes.slice(-1).pop().offense) ourTimeout.disabled = false;
+		else theirTimeout.disabled = false;
+	}
+
+	// if (state && state.currentPoint && state.currentPoint.scored === 0)
+	// 	sub.disabled = false;
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1172,14 +1350,14 @@ document.addEventListener('DOMContentLoaded', () => {
 	undo.addEventListener('click', undoPass);
 	redo.addEventListener('click', redoPass);
 
-	ourTimeout.addEventListener('click', handleTimeout);
-	theirTimeout.addEventListener('click', handleTimeout);
-
 	sh.addWatcher(buttonRowContainer, handlePlayerButtons);
 	sh.addWatcher(null, displayPossession);
 	sh.addWatcher(lastEvent, displayEventDescription);
 	sh.addWatcher(null, handleUndoRedoButtons);
 	sh.addWatcher(null, handleResultButtons);
+	sh.addWatcher(null, handleEventMenu);
+	sh.addWatcher(disc, moveDisc);
+	sh.addWatcher(null, drawLastPass);
 	window.addEventListener('beforeunload', (e) => {
 		e.preventDefault();
 		// updatePasses();

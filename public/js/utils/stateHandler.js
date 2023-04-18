@@ -1,5 +1,8 @@
 export class StateHandler {
 	constructor(initialState, ...validator) {
+		if ((typeof initialState).toLowerCase() === 'function')
+			throw new Error('State cannot be set to a function');
+
 		this.state = initialState;
 
 		if (validator) {
@@ -69,12 +72,17 @@ export class StateHandler {
 				if (!document.body.contains(o.node)) return this.removeWatcher(o);
 				else o.node.dispatchEvent(evt);
 			} else {
-				o.updater(this.state);
+				o.updater(this.getState());
 			}
 		});
 	}
 
 	getState() {
+		if ((typeof this.state).toLowerCase() === 'object') {
+			return {
+				...this.state,
+			};
+		}
 		return this.state;
 	}
 

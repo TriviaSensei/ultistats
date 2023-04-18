@@ -48,7 +48,6 @@ const actionArea = document.querySelector('#action-div');
 let isMobile = false;
 //game/tournament data
 
-let gameData;
 let sh;
 const getState = () => {
 	return sh ? sh.getState() : undefined;
@@ -73,7 +72,7 @@ const setGenderRatio = (m, f) => {
 };
 
 const populatePointStart = (dir, off, gen) => {
-	const state = getState();
+	const state = sh.getState();
 	if (!state) return;
 
 	const r = document.querySelector(
@@ -117,12 +116,16 @@ const populatePointStart = (dir, off, gen) => {
 const restoreSettings = (e) => {
 	if (e.target !== cancelSaveSettings) return;
 	e.preventDefault();
-	populateForm(settingsForm, gameData.startSettings);
+	const startSettings = sh?.getState()?.startSettings;
+	if (startSettings) populateForm(settingsForm, startSettings);
 };
 
 const handleSaveSettings = (e) => {
-	if (e.target !== settingsForm) return;
 	e.preventDefault();
+
+	if (e.target !== settingsForm) return;
+	const state = sh.getState();
+	if (!state) return;
 
 	const settings = {
 		jersey: document.querySelector(`input[type="radio"][name="jersey"]:checked`)
@@ -134,7 +137,7 @@ const handleSaveSettings = (e) => {
 			`input[type="radio"][name="start-gender"]:checked`
 		)?.value,
 		genderRatioChoice:
-			gameData.genderRule === 'B'
+			state.genderRule === 'B'
 				? document.querySelector(
 						`input[type="radio"][name="gender-b-choice"]:checked`
 				  )?.value === 'true'
@@ -146,7 +149,7 @@ const handleSaveSettings = (e) => {
 		),
 	};
 
-	const str = `/api/v1/games/${gameData._id}`;
+	const str = `/api/v1/games/${state._id}`;
 	const handler = (res) => {
 		if (res.status === 'success') {
 			startModal.hide();
@@ -275,6 +278,7 @@ const updateCounts = () => {
 };
 
 const handleMoveOptions = (e) => {
+	const state = sh?.getState();
 	const boxes = getElementArray(
 		document,
 		'#line-selector input[type="checkbox"]:checked'
@@ -298,8 +302,8 @@ const handleMoveOptions = (e) => {
 	const count = lineContainer.querySelectorAll('.roster-option').length;
 	if (
 		boxes[0].closest('.player-container').classList.contains('left-side') &&
-		gameData.format.players > 0 &&
-		boxes.length > gameData.format.players - count
+		state.format.players > 0 &&
+		boxes.length > state.format.players - count
 	)
 		return showMessage('error', 'You have selected too many players.');
 
@@ -377,7 +381,10 @@ const handleStartPoint = (e) => {
 	if (e.target !== pointSetupForm) return;
 	e.preventDefault();
 
-	const str = `/api/v1/games/startPoint/${gameData._id}`;
+	const state = sh?.getState();
+	if (!state) return;
+
+	const str = `/api/v1/games/startPoint/${state._id}`;
 	const body = {
 		offense:
 			document.querySelector('input[type="radio"][name="od"]:checked')
@@ -395,10 +402,10 @@ const handleStartPoint = (e) => {
 			pointModal.hide();
 			const evt = new CustomEvent('load-point', {
 				detail: {
-					...gameData,
+					...state,
 					...res.data,
 					tournament: {
-						roster: gameData.roster,
+						roster: state.roster,
 					},
 					currentPoint: res.data.points.slice(-1).pop(),
 				},
@@ -415,72 +422,74 @@ const handleStartPoint = (e) => {
 const handleNewPoint = (e) => {
 	showDiv(pointSetup);
 	console.log(e.detail);
-	sh.setState(e.detail.state);
+	sh.setState(e.detail);
+	const state = sh.getState();
+	if (!state) return;
 
 	let newDirection, newOD;
-	if (gameData.currentPoint.endPeriod) {
-		if (gameData.currentPoint.period % 2 === 1) {
-			newDirection = gameData.startSettings.direction;
-			newOD = gameData.startSettings.offense;
+	if (state.currentPoint.endPeriod) {
+		if (state.currentPoint.period % 2 === 1) {
+			newDirection = state.startSettings.direction;
+			newOD = state.startSettings.offense;
 		} else {
-			newDirection = -gameData.startSettings.direction;
+			newDirection = -state.startSettings.direction;
 
-			newOD = !gameData.startSettings.offense;
+			newOD = !state.startSettings.offense;
 		}
 	} else {
-		newDirection = -gameData.currentPoint.direction;
-		newOD = gameData.currentPoint.scored === -1;
+		newDirection = -state.currentPoint.direction;
+		newOD = state.currentPoint.scored === -1;
 	}
 
-	const thisPoint = gameData.score + gameData.oppScore + 1;
+	const thisPoint = state.score + state.oppScore + 1;
 
 	let genderRatio = '';
-	if (gameData.division === 'Mixed') {
-		if (gameData.genderRule === 'A') {
+	if (state.division === 'Mixed') {
+		if (state.genderRule === 'A') {
 			let m, f;
 			if (thisPoint % 4 === 2 || thisPoint % 4 === 3) {
-				if (gameData.startSettings.genderRatio === 'f') {
+				if (state.startSettings.genderRatio === 'f') {
 					[m, f] = [
-						gameData.format.genderMax[0],
-						gameData.format.players - gameData.format.genderMax[0],
+						state.format.genderMax[0],
+						state.format.players - state.format.genderMax[0],
 					];
 				} else {
 					[m, f] = [
-						gameData.format.players - gameData.format.genderMax[1],
-						gameData.format.genderMax[1],
+						state.format.players - state.format.genderMax[1],
+						state.format.genderMax[1],
 					];
 				}
 			} else {
-				if (gameData.startSettings.genderRatio === 'm') {
+				if (state.startSettings.genderRatio === 'm') {
 					[m, f] = [
-						gameData.format.genderMax[0],
-						gameData.format.players - gameData.format.genderMax[0],
+						state.format.genderMax[0],
+						state.format.players - state.format.genderMax[0],
 					];
 				} else {
 					[m, f] = [
-						gameData.format.players - gameData.format.genderMax[1],
-						gameData.format.genderMax[1],
+						state.format.players - state.format.genderMax[1],
+						state.format.genderMax[1],
 					];
 				}
 			}
 			console.log(m, f);
 			setGenderRatio(m, f);
-		} else if (gameData.genderRule === 'B') {
+		} else if (state.genderRule === 'B') {
 			let pointsSincePeriodEnd = 0;
-			for (var i = gameData.points.length - 1; i >= 0; i--) {
-				if (gameData.points[i].endPeriod) break;
+			for (var i = state.points.length - 1; i >= 0; i--) {
+				if (state.points[i].endPeriod) break;
 				pointsSincePeriodEnd++;
 			}
 			if (pointsSincePeriodEnd % 2 === 0)
 				genderRatio = `${
-					gameData.startSettings.genderRatioChoice ? 'You' : 'They'
+					state.startSettings.genderRatioChoice ? 'You' : 'They'
 				} choose`;
 			else
 				genderRatio = `${
-					gameData.startSettings.genderRatioChoice ? 'They' : 'You'
+					state.startSettings.genderRatioChoice ? 'They' : 'You'
 				} choose`;
 			genderRatioIndicator.innerHTML = genderRatio;
-		} else if (gameData.genderRule === 'X') {
+		} else if (state.genderRule === 'X') {
 			genderRatio = `${newOD ? 'You' : 'They'} choose`;
 			genderRatioIndicator.innerHTML = genderRatio;
 		}
@@ -490,7 +499,6 @@ const handleNewPoint = (e) => {
 		offense: newOD,
 		direction: newDirection,
 	});
-	console.log(gameData);
 };
 
 const setPeriod = (p) => {
@@ -539,12 +547,14 @@ const handleDoubleTap = (e) => {
 };
 
 const updateStartSettings = (e) => {
+	if (!e.detail || !e.detail.startSettings) return;
 	populateForm(settingsForm, e.detail.startSettings);
 	validateSettings();
 };
 
 const updateScoreboard = (e) => {
 	const data = e.detail;
+	if (!data) return;
 	const us = e.target.querySelector('#us');
 	const them = e.target.querySelector('#them');
 	us.querySelector('.team-score').innerHTML = data.score;
@@ -563,6 +573,10 @@ const updateScoreboard = (e) => {
 			? '4th'
 			: '';
 
+	getElementArray(document, '.used-timeout').forEach((el) => {
+		el.classList.remove('used-timeout');
+	});
+
 	for (var i = 0; i < 2; i++) {
 		if (i >= data.timeoutsLeft[0]) {
 			const t = us.querySelector('.timeout-marker:not(.used-timeout)');
@@ -577,6 +591,7 @@ const updateScoreboard = (e) => {
 
 const updateSetupScoreboard = (e) => {
 	const data = e.detail;
+	if (!data) return;
 	const ourScore = document.querySelector('#our-score-modal');
 	const theirScore = document.querySelector('#their-score-modal');
 	ourScore.innerHTML = data.score;
@@ -585,6 +600,7 @@ const updateSetupScoreboard = (e) => {
 
 const updatePointSetup = (e) => {
 	const data = e.detail;
+	if (!data) return;
 	const settings = data.startSettings;
 	const currentPoint =
 		data.points.length === 0 ? undefined : data.points.slice(-1).pop();
@@ -616,7 +632,7 @@ const updatePointSetup = (e) => {
 			} else {
 				g = settings.genderRatio;
 			}
-		} else if (gameData.genderRule === 'B') {
+		} else if (data.genderRule === 'B') {
 			//who got the first choice? (true = us, false = them)
 			const firstChoice = settings.genderRatioChoice;
 			//how many points have been played this period?
@@ -634,22 +650,23 @@ const updatePointSetup = (e) => {
 };
 
 const updateEndPeriodButton = (e) => {
+	if (!e.detail) return;
 	e.target.disabled =
 		e.detail.period >= e.detail.format.periods || e.detail.points.length === 0;
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-	gameData = JSON.parse(
+	let state = JSON.parse(
 		document.querySelector('#test-data').getAttribute('data-value')
 	);
-	if (!gameData._id) {
+	if (!state._id) {
 		showMessage(`error`, `Game Id not valid`);
 		setTimeout(() => {
 			location.href = '/mystuff';
 		}, 1000);
 	}
 
-	gameData.roster.forEach((p) => {
+	state.roster.forEach((p) => {
 		const op = createRosterOption(p, handleArrows);
 		op.addEventListener('dblclick', handleMoveOne);
 		op.addEventListener('click', handleDoubleTap);
@@ -657,7 +674,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		insertOption(op, availableContainer);
 	});
 
-	gameData.lines
+	state.lines
 		.sort((a, b) => {
 			return a.name.localeCompare(b.name);
 		})
@@ -671,20 +688,12 @@ document.addEventListener('DOMContentLoaded', () => {
 	lineSelect.addEventListener('change', loadLine);
 	lineReset.addEventListener('click', loadLine);
 
-	// populateForm(settingsForm, gameData.startSettings);
+	state.currentPoint =
+		state.points.length === 0 ? undefined : state.points.slice(-1).pop();
 
-	gameData.currentPoint =
-		gameData.points.length === 0 ? undefined : gameData.points.slice(-1).pop();
-
-	// if (gameData.currentPoint) {
-	// 	if (ourScoreboard) ourScoreboard.innerHTML = gameData.score;
-	// 	if (theirScoreboard) theirScoreboard.innerHTML = gameData.oppScore;
-	// 	if (ourScore) ourScore.innerHTML = gameData.score;
-	// 	if (theirScore) theirScore.innerHTML = gameData.oppScore;
-	// }
 	//set the timeout situation
-	const tol = Math.floor((gameData.timeouts + 1) / 2);
-	gameData.timeoutsLeft = [tol, tol];
+	const tol = Math.floor((state.timeouts + 1) / 2);
+	state.timeoutsLeft = [tol, tol];
 	// points played
 	const pts = getElementArray(document, `#point-data > .point`);
 	pts.forEach((p) => {
@@ -692,35 +701,31 @@ document.addEventListener('DOMContentLoaded', () => {
 		const tos = getElementArray(p, '.timeout');
 		tos.forEach((to) => {
 			if (to.getAttribute('data-team') === '1')
-				gameData.timeoutsLeft[0] = Math.max(0, gameData.timeoutsLeft[0] - 1);
+				state.timeoutsLeft[0] = Math.max(0, state.timeoutsLeft[0] - 1);
 			else if (to.getAttribute('data-team') === '-1')
-				gameData.timeoutsLeft[1] = Math.max(0, gameData.timeoutsLeft[1] - 1);
+				state.timeoutsLeft[1] = Math.max(0, state.timeoutsLeft[1] - 1);
 		});
 		//end of the period and the period is the one right before halftime
 		//(meaning we're at halftime in this iteration through points...reset the timeouts)
 		if (
 			q.endPeriod === 'true' &&
-			parseInt(q.period) === Math.floor(gameData.format.periods / 2)
+			parseInt(q.period) === Math.floor(state.format.periods / 2)
 		) {
-			gameData.timeoutsLeft = gameData.timeoutsLeft.map((t) => {
-				if (gameData.timeouts === 4) return 2;
-				else if (gameData.timeouts === 3)
-					return Math.max(0, Math.min(2, t + 1));
-				else if (gameData.timeouts === 2) return 1;
-				else if (gameData.timeouts === 1) return Math.max(0, Math.min(1, t));
-				else if (gameData.timeouts === 0) return 0;
+			state.timeoutsLeft = state.timeoutsLeft.map((t) => {
+				if (state.timeouts === 4) return 2;
+				else if (state.timeouts === 3) return Math.max(0, Math.min(2, t + 1));
+				else if (state.timeouts === 2) return 1;
+				else if (state.timeouts === 1) return Math.max(0, Math.min(1, t));
+				else if (state.timeouts === 0) return 0;
 			});
 		}
 	});
 
 	//remove the temporary data area
 	// dataArea.remove();
-	showMessage(
-		`info`,
-		`Entering game ${gameData.team} vs. ${gameData.opponent}`
-	);
+	showMessage(`info`, `Entering game ${state.team} vs. ${state.opponent}`);
 
-	sh = new StateHandler(gameData);
+	sh = new StateHandler(state);
 
 	/*
 	Start view 
@@ -733,7 +738,8 @@ document.addEventListener('DOMContentLoaded', () => {
 	genderRatio: [m,f] - starting gender majority. Only required if the game is a mixed division game
 	direction: [-1,1] - direction we are attacking first. 1 for moving right, -1 for moving left.
 	*/
-	const state = sh.getState();
+	state = sh.getState();
+
 	if (
 		//whether we start on offense
 		!state.startSettings.offense === undefined ||
@@ -763,76 +769,72 @@ document.addEventListener('DOMContentLoaded', () => {
 		showDiv(actionArea);
 	}
 	//there is not a point going on - we at the start of the game.
-	else if (
-		!gameData.currentPoint &&
-		gameData.score === 0 &&
-		gameData.oppScore === 0
-	) {
+	else if (!state.currentPoint && state.score === 0 && state.oppScore === 0) {
 		//no point has been played - use the start settings and show the point setup div
 		populatePointStart(
-			gameData.startSettings.direction,
-			gameData.startSettings.offense,
-			gameData.startSettings.genderRatio
+			state.startSettings.direction,
+			state.startSettings.offense,
+			state.startSettings.genderRatio
 		);
 		showDiv(pointSetup);
 	} else {
 		//at least one point has been played, but we are betweeen points - populate the point start, and show the point setup div
-		//		currentPoint exists, but gameData.currentPoint.scored !== 0 (else we would've hit the first block)
+		//		currentPoint exists, but state.currentPoint.scored !== 0 (else we would've hit the first block)
 
 		let dir, off, gen;
 		//which direction are we going in?
-		dir = gameData.currentPoint.endPeriod
+		dir = state.currentPoint.endPeriod
 			? //if we just ended a period, see if the new period is odd or even
 			  //odd - same as starting direction
 			  //even - opposite as starting direction
-			  (gameData.currentPoint.period + 1) % 2 === 1
-				? gameData.startSettings.direction
-				: -gameData.startSettings.direction
+			  (state.currentPoint.period + 1) % 2 === 1
+				? state.startSettings.direction
+				: -state.startSettings.direction
 			: //we didn't just end the period - we're reversing from the last point
-			  -gameData.currentPoint.direction;
+			  -state.currentPoint.direction;
 
 		//are we on offense or defense?
-		off = gameData.currentPoint.endPeriod
+		off = state.currentPoint.endPeriod
 			? //if we just ended a period, see if the new period is odd or even
 			  //odd - same as how we started
 			  //even - opposite how we started
-			  (gameData.currentPoint.period + 1) % 2 === 1
-				? gameData.startSettings.offense
-				: !gameData.startSettings.offense
+			  (state.currentPoint.period + 1) % 2 === 1
+				? state.startSettings.offense
+				: !state.startSettings.offense
 			: //didn't just end the period - if we got scored on, then we're back on offense.
-			  gameData.currentPoint.scored === -1;
+			  state.currentPoint.scored === -1;
 
 		//what's the gender ratio? (only set it if we're mixed division, otherwise, it doesn't matter)
-		if (gameData.division === 'Mixed') {
+		if (state.division === 'Mixed') {
 			//gender rule A - suppose the coming point is the Nth point of the game. If N (mod 4) === 0 or 1, use the same ratio as starting
 			//if N(mod 4) === 2 or 3, use the opposite
-			if (gameData.genderRule === 'A') {
-				switch (gameData.score + gameData.oppScore + 1) {
+			if (state.genderRule === 'A') {
+				switch (state.score + state.oppScore + 1) {
 					case 0:
 					case 1:
-						gen = gameData.startSettings.genderRatio;
+						gen = state.startSettings.genderRatio;
 						break;
 					default:
-						gen = gameData.startSettings.genderRatio === 'm' ? 'f' : 'm';
+						gen = state.startSettings.genderRatio === 'm' ? 'f' : 'm';
 				}
 			}
 			//gender rule B - the team in the designated endzone chooses.
 			//We can't base it on direction alone because the statkeeper might be moving around the field
 			//Thus, we have to see how many points have been played in this period. The same team dictates to start each period.
-			else if (gameData.genderRule === 'B') {
+			else if (state.genderRule === 'B') {
 				//who got the first choice? (true = us, false = them)
-				const firstChoice = gameData.startSettings.genderRatioChoice;
+				const firstChoice = state.startSettings.genderRatioChoice;
 				//how many points have been played this period?
 				let pp = 0;
-				for (var j = gameData.points.length - 1; j >= 0; j--) {
-					if (gameData.points[j].endPeriod) break;
+				for (var j = state.points.length - 1; j >= 0; j--) {
+					if (state.points[j].endPeriod) break;
 					pp++;
 				}
 				gen =
 					(firstChoice && pp % 2 === 0) || (!firstChoice && pp % 2 === 1)
 						? 'You'
 						: 'They';
-			} else if (gameData.genderRule === 'X') {
+			} else if (state.genderRule === 'X') {
 				gen = off ? 'You' : 'They';
 			}
 		}
@@ -861,6 +863,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	pointSetupForm.addEventListener('submit', handleStartPoint);
 
+	document.addEventListener('update-info', (e) => {
+		if (sh) sh.setState(e.detail);
+	});
 	document.addEventListener('point-ended', handleNewPoint);
 	document.addEventListener('return-to-point', (e) => {
 		showDiv(actionArea);
@@ -875,9 +880,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ once: true }
 	);
 
-	sh.addWatcher(document.body, (e) => {
-		gameData = e.detail;
-	});
 	sh.addWatcher(settingsForm, updateStartSettings);
 	sh.addWatcher(scoreboard, updateScoreboard);
 	sh.addWatcher(setupScoreboard, updateSetupScoreboard);

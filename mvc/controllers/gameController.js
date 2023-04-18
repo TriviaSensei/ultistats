@@ -7,7 +7,7 @@ const Team = require('../models/teamModel');
 const Format = require('../models/formatModel');
 const catchAsync = require('../../utils/catchAsync');
 const AppError = require('../../utils/appError');
-
+const round = require('../../utils/round');
 //verify that the logged in user is able to modify this game - they must be a manager of the team playing in the tournament that contains this game.
 exports.verifyOwnership = catchAsync(async (req, res, next) => {
 	if (!res.locals.user)
@@ -32,9 +32,12 @@ exports.verifyOwnership = catchAsync(async (req, res, next) => {
 });
 
 exports.clearPoints = catchAsync(async (req, res, next) => {
-	console.log(req.params.id);
 	const game = await Game.findById(req.params.id);
-	game.points = [];
+	game.points = game.points.length === 0 ? [] : [game.points[0]];
+	if (game.points.length > 0) {
+		game.points[0].passes = [];
+		game.points[0].scored = 0;
+	}
 	game.score = 0;
 	game.oppScore = 0;
 	game.markModified('points');
@@ -43,11 +46,6 @@ exports.clearPoints = catchAsync(async (req, res, next) => {
 		status: 'success',
 	});
 });
-
-const createNewPoint = (res) => {
-	const g = res.locals.game;
-	const lastPoint = g.points[g.points.length - 1];
-};
 
 exports.startPoint = catchAsync(async (req, res, next) => {
 	if (res.locals.game.result !== '')
@@ -132,8 +130,6 @@ exports.startPoint = catchAsync(async (req, res, next) => {
 	//if not the first point, look at the last point to initialize the information.
 	const lastPoint = points[points.length - 1];
 
-	console.log(lastPoint);
-
 	//must have finished the last point
 	if (lastPoint.scored !== -1 && lastPoint.scored !== 1)
 		return next(new AppError('You have not finished the last point', 400));
@@ -195,6 +191,7 @@ exports.startPoint = catchAsync(async (req, res, next) => {
  *
  */
 //TODO: redo pass updating here gives error - no matching document
+
 exports.setPasses = catchAsync(async (req, res, next) => {
 	if (res.locals.game.result !== '')
 		return next(new AppError('This game has ended.', 400));
@@ -206,6 +203,18 @@ exports.setPasses = catchAsync(async (req, res, next) => {
 		return next(new AppError('This game has not started.', 400));
 
 	res.locals.game.points[res.locals.game.points.length - 1] = req.body;
+	res.locals.game.points[res.locals.game.points.length - 1].passes =
+		res.locals.game.points[res.locals.game.points.length - 1].passes.map(
+			(p) => {
+				return {
+					...p,
+					x0: round(p.x0, 2),
+					y0: round(p.y0, 2),
+					x1: round(p.x1, 2),
+					y1: round(p.y1, 2),
+				};
+			}
+		);
 	res.locals.game.markModified('points');
 
 	res.locals.game.score = 0;
