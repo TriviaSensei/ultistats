@@ -15,6 +15,7 @@ router.patch('/startPoint/:id', gameController.startPoint);
 router.patch('/addPass/:id', gameController.setPasses);
 router.patch('/endGame/:id', gameController.endGame);
 router.patch('/clear/:id', gameController.clearPoints);
+router.patch('/resetPoint/:id', gameController.resetPoint);
 
 router.use('/:id', gameController.verifyOwnership);
 router

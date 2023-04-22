@@ -47,6 +47,28 @@ exports.clearPoints = catchAsync(async (req, res, next) => {
 	});
 });
 
+exports.resetPoint = catchAsync(async (req, res, next) => {
+	const game = await Game.findById(req.params.id);
+
+	if (game.points.length === 0)
+		return res.status(200).json({
+			status: 'success',
+		});
+
+	game.points[game.points.length - 1] = {
+		...game.points[game.points.length - 1],
+		scored: 0,
+		passes: [],
+		injuries: [],
+		possession: game.points[game.points.length - 1].offense,
+	};
+	game.markModified('points');
+	await game.save();
+	return res.status(200).json({
+		status: 'success',
+	});
+});
+
 exports.startPoint = catchAsync(async (req, res, next) => {
 	if (res.locals.game.result !== '')
 		return next(new AppError('This game has ended.', 400));
@@ -167,7 +189,15 @@ exports.startPoint = catchAsync(async (req, res, next) => {
 	res.locals.game.markModified('period');
 	res.locals.game.markModified('points');
 	const data = await res.locals.game.save();
-
+	await data.populate([
+		{
+			path: 'format',
+		},
+		{
+			path: 'tournament',
+			select: 'roster',
+		},
+	]);
 	return res.status(200).json({
 		status: 'success',
 		data,
@@ -202,19 +232,9 @@ exports.setPasses = catchAsync(async (req, res, next) => {
 	if (res.locals.game.points.length === 0)
 		return next(new AppError('This game has not started.', 400));
 
+	console.log(req.body);
+
 	res.locals.game.points[res.locals.game.points.length - 1] = req.body;
-	res.locals.game.points[res.locals.game.points.length - 1].passes =
-		res.locals.game.points[res.locals.game.points.length - 1].passes.map(
-			(p) => {
-				return {
-					...p,
-					x0: round(p.x0, 2),
-					y0: round(p.y0, 2),
-					x1: round(p.x1, 2),
-					y1: round(p.y1, 2),
-				};
-			}
-		);
 	res.locals.game.markModified('points');
 
 	res.locals.game.score = 0;

@@ -421,7 +421,6 @@ const handleStartPoint = (e) => {
 
 const handleNewPoint = (e) => {
 	showDiv(pointSetup);
-	console.log(e.detail);
 	sh.setState(e.detail);
 	const state = sh.getState();
 	if (!state) return;
@@ -472,7 +471,7 @@ const handleNewPoint = (e) => {
 					];
 				}
 			}
-			console.log(m, f);
+			// console.log(m, f);
 			setGenderRatio(m, f);
 		} else if (state.genderRule === 'B') {
 			let pointsSincePeriodEnd = 0;
@@ -659,6 +658,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	let state = JSON.parse(
 		document.querySelector('#test-data').getAttribute('data-value')
 	);
+	console.log(state.format);
 	if (!state._id) {
 		showMessage(`error`, `Game Id not valid`);
 		setTimeout(() => {
