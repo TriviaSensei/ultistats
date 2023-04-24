@@ -253,7 +253,6 @@ exports.getGame = catchAsync(async (req, res, next) => {
 			populate: 'allowPeriodEnd players periods genderMax',
 		},
 	]);
-	console.log(game.format);
 
 	const division = game?.tournament?.team?.division;
 	const teamName = game?.tournament?.team?.name;

@@ -102,7 +102,6 @@ const sendEvent = (name, data) => {
 
 const getYards = (pageX, pageY) => {
 	if (!sh) return [null, null];
-	console.log(pageX, pageY);
 	const state = sh.getState();
 	if (!state.currentPoint || Math.abs(state.currentPoint.direction) !== 1)
 		return [0, 0];
@@ -115,8 +114,6 @@ const getYards = (pageX, pageY) => {
 		pctX = 1 - pctX;
 		pctY = 1 - pctY;
 	}
-
-	console.log(pctX, pctY, state.format);
 
 	return [
 		pctX * (state.format.length + 2 * state.format.endzone),
@@ -167,7 +164,6 @@ const handleTimeout = (e) => {
 	if (!sh) return;
 	const state = sh.getState();
 	if (!state) return;
-	console.log(state);
 	if (
 		!state.timeoutsLeft ||
 		!Array.isArray(state.timeoutsLeft) ||
@@ -176,12 +172,52 @@ const handleTimeout = (e) => {
 		return;
 
 	let team;
+	const onlyPasses = state.currentPoint.passes.filter((p) => {
+		return p.event === '';
+	});
 	if (e.target === ourTimeout) {
-		if (!state.currentPoint.possession && state.currentPoint.passes.length > 0)
-			return showMessage(
-				'error',
-				'Your team is not in possession of the disc.'
-			);
+		if (!state.currentPoint.possession && onlyPasses.length > 0) {
+			//if we don't have possession, we can't call a timeout, except at point start
+			if (onlyPasses.length > 1)
+				return showMessage(
+					'error',
+					'Your team is not in possession of the disc.'
+				);
+			//if there's already been a timeout call, there will be a blank pass, so account for that.
+			//if it's no longer a blank pass, then we can't call a timeout
+			else if (
+				onlyPasses[0].player &&
+				!isNaN(onlyPasses[0].x) &&
+				onlyPasses[0].x !== null &&
+				!isNaN(onlyPasses[0].y) &&
+				onlyPasses[0].y !== null
+			)
+				return showMessage(
+					'error',
+					'Your team is not in possession of the disc.'
+				);
+
+			if (state.timeoutsLeft[0] <= 0)
+				return showMessage('error', 'Your team has no timeouts left.');
+			else {
+				state.timeoutsLeft[0]--;
+				sh.setState(state);
+				updateCurrentPass(
+					{
+						event: 'timeout',
+						eventDesc: {
+							team: 1,
+							in: '',
+							out: '',
+						},
+					},
+					{
+						redo: e.redo,
+					}
+				);
+				return sendEvent('update-info', sh.getState());
+			}
+		}
 		let currentPlayer;
 		for (var i = state.currentPoint.passes.length - 2; i >= 0; i--) {
 			if (!state.currentPoint.passes[i].offense) break;
@@ -190,7 +226,7 @@ const handleTimeout = (e) => {
 				break;
 			}
 		}
-		if (!currentPlayer)
+		if (!currentPlayer && state.currentPoint.passes.length > 0)
 			return showMessage(
 				'error',
 				'You must select a player to possess the disc.'
@@ -200,8 +236,25 @@ const handleTimeout = (e) => {
 		state.timeoutsLeft[0]--;
 		team = 1;
 	} else if (e.target === theirTimeout) {
-		if (state.currentPoint.possession && state.currentPoint.passes.length > 0)
-			return showMessage('error', 'Opponent is not in possession of the disc.');
+		if (state.currentPoint.possession && state.currentPoint.passes.length > 0) {
+			if (onlyPasses.length > 1)
+				return showMessage(
+					'error',
+					'Opponent is not in possession of the disc.'
+				);
+			else if (
+				onlyPasses[0].player &&
+				!isNaN(onlyPasses[0].x) &&
+				onlyPasses[0].x !== null &&
+				!isNaN(onlyPasses[0].y) &&
+				onlyPasses[0].y !== null
+			)
+				return showMessage(
+					'error',
+					'Opponent is not in possession of the disc.'
+				);
+		}
+
 		if (state.timeoutsLeft[1] <= 0)
 			return showMessage('error', 'Opponent has no timeouts left.');
 		state.timeoutsLeft[1]--;
@@ -209,14 +262,19 @@ const handleTimeout = (e) => {
 	} else return;
 
 	sh.setState(state);
-	updateCurrentPass({
-		event: 'timeout',
-		eventDesc: {
-			team,
-			in: '',
-			out: '',
+	updateCurrentPass(
+		{
+			event: 'timeout',
+			eventDesc: {
+				team,
+				in: '',
+				out: '',
+			},
 		},
-	});
+		{
+			redo: e.redo,
+		}
+	);
 	sendEvent('update-info', sh.getState());
 };
 
@@ -258,6 +316,8 @@ const displayEventDescription = (e) => {
 	const currentPoint = state.currentPoint;
 	const passes = state.currentPoint?.passes;
 	if (!passes || !Array.isArray(passes)) return showEvent('(No events)');
+
+	console.log(passes);
 
 	if (
 		passes.length === 0 ||
@@ -319,9 +379,13 @@ const displayEventDescription = (e) => {
 						`${playerIn.firstName} came in for ${playerOut.firstName}`
 					);
 				}
-				if (currentPoint.offense)
+				if (currentPoint.offense) {
 					events.push(`${state.opponent} pulls to ${state.team}`);
-				else events.push(`${state.team} pulls to ${state.opponent}`);
+				} else {
+					if (isNaN(parseFloat(lastThree[0].x + lastThree[0].y)))
+						events.push(`${state.team} pulls to ${state.opponent}`);
+					else events.push(`${state.opponent} has the disc`);
+				}
 				return showEvent(events);
 			} else if (lastThree[0].offense) {
 				if (lastThree[0].result === 'complete') {
@@ -662,7 +726,6 @@ const getPlace = (yds) => {
 const drawLastPass = (state) => {
 	if (!state || !state.currentPoint) return;
 	const passes = state.currentPoint.passes;
-	console.log(passes);
 	//if we are at the start of a point, just draw the disc in the middle of the field
 	if (passes.length === 0) {
 		const [pageX, pageY] = getPageCoordinates(
@@ -709,6 +772,8 @@ const undoPass = (e) => {
 	//get rid of the blank pass at the end first
 	const currentPass = state.currentPoint.passes.pop();
 
+	console.log(currentPass);
+
 	if (currentPass.goal !== 0) {
 		state.poppedPasses.push(currentPass);
 		state.currentPoint.passes.push({
@@ -728,6 +793,15 @@ const undoPass = (e) => {
 			...blankPass,
 			offense: lastPass.offense,
 		});
+
+	if (lastPass.event === 'timeout') {
+		if (lastPass.eventDesc.team === 1) {
+			state.timeoutsLeft[0]++;
+		} else if (lastPass.eventDesc.team === -1) {
+			state.timeoutsLeft[1]++;
+		}
+		sendEvent('update-info', state);
+	}
 	sh.setState(state);
 };
 
@@ -738,13 +812,15 @@ const redoPass = (e) => {
 	const toRedo = state.poppedPasses.pop();
 	if (!toRedo) return;
 	if (toRedo.event) {
-		updateCurrentPass(
-			{
-				event: toRedo.event,
-				eventDesc: toRedo.eventDesc,
-			},
-			{ redo: true }
-		);
+		console.log(toRedo);
+		if (toRedo.event === 'timeout') {
+			if (Math.abs(toRedo.eventDesc?.team) !== 1)
+				return showMessage('error', 'Invalid event');
+			handleTimeout({
+				target: toRedo.eventDesc.team === 1 ? ourTimeout : theirTimeout,
+				redo: true,
+			});
+		}
 	} else {
 		updateCurrentPass(toRedo, { redo: true });
 	}
@@ -752,7 +828,6 @@ const redoPass = (e) => {
 
 //TODO: handle events (sub, timeout.)
 const updateCurrentPass = (data, ...opts) => {
-	console.log(data);
 	if (!sh) return;
 	let state = sh.getState();
 
@@ -788,6 +863,8 @@ const updateCurrentPass = (data, ...opts) => {
 		...data,
 	};
 	currentPass = passes[passes.length - 1];
+
+	console.log(passes);
 
 	//there is a player and location - pass was completed.
 	if (
@@ -1153,7 +1230,6 @@ const setDiscPosition = (e) => {
 			e.target.getAttribute('role') === 'button')
 	) {
 		const [x, y] = getYards(pageX, pageY);
-		console.log(pageX, pageY, x, y);
 		updateCurrentPass({ x, y });
 		moving = false;
 	}
@@ -1442,10 +1518,19 @@ const handleEventMenu = (state) => {
 
 	const passes = state?.currentPoint?.passes;
 	if (Array.isArray(passes)) {
-		if (passes.length === 0) {
-			ourTimeout.disabled = false;
-			theirTimeout.disabled = false;
-		} else if (passes.slice(-1).pop().offense) ourTimeout.disabled = false;
+		const onlyPasses = passes.filter((p) => {
+			return p.event === '';
+		});
+		console.log(onlyPasses);
+		if (
+			onlyPasses.length === 0 ||
+			(onlyPasses.length === 1 &&
+				(!onlyPasses[0].player ||
+					isNaN(parseFloat(onlyPasses[0].x + onlyPasses[0].y))))
+		) {
+			ourTimeout.disabled = state.timeoutsLeft[0] === 0;
+			theirTimeout.disabled = state.timeoutsLeft[1] === 0;
+		} else if (onlyPasses.slice(-1).pop().offense) ourTimeout.disabled = false;
 		else theirTimeout.disabled = false;
 	}
 
