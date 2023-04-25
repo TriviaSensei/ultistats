@@ -12,11 +12,11 @@ router.post('/', gameController.createGame);
 router.use('/*/:id', gameController.verifyOwnership);
 
 router.patch('/startPoint/:id', gameController.startPoint);
-router.patch('/addPass/:id', gameController.setPasses);
+router.patch('/setPasses/:id', gameController.setPasses);
 router.patch('/endGame/:id', gameController.endGame);
 router.patch('/clear/:id', gameController.clearPoints);
 router.patch('/resetPoint/:id', gameController.resetPoint);
-
+router.patch('/setLineup/:id', gameController.setLineup);
 router.use('/:id', gameController.verifyOwnership);
 router
 	.route('/:id')

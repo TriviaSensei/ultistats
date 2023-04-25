@@ -4,14 +4,14 @@
             .modal-header
                 h5.modal-title#point-setup-label New Point Setup
                 button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
-            .modal-body.overflow-auto
-                .w-100.h-100
-                    form#point-setup.w-100.h-100
+            .modal-body.d-flex.flex-column.overflow-hidden
+                .w-100.h-100.f-1.d-flex.flex-column.overflow-hidden
+                    form#point-setup.w-100.h-100.f-1.d-flex.flex-column.overflow-hidden
                         #setup-scoreboard.settings-row.d-flex.w-100.mb-2.fw-bold.border-bottom.border-3.border-dark
                             #our-name-modal.f-5.text-end= team
                             .f-2.text-center #[span#our-score-modal 0]-#[span#their-score-modal 0] 
                             #their-name-modal.f-5.text-start= gameData.opponent
-                        .settings-row.d-flex.w-100.mb-2
+                        .settings-row.d-flex.w-100.mb-1
                             .setting-label.form-label.my-auto We are on
                             .setting-container.hidden-radios
                                 .radio-container.d-flex 
@@ -19,7 +19,7 @@
                                     label(for="od-offense") Offense 
                                     input#od-defense(type="radio" value="false" name="od" data-field="offense")
                                     label(for="od-defense") Defense
-                        .settings-row.d-flex.w-100.mb-2
+                        .settings-row.d-flex.w-100.mb-1
                             .setting-label.form-label.my-auto Going
                             .setting-container.hidden-radios
                                 .radio-container.d-flex 
@@ -28,16 +28,16 @@
                                     input#direction-right(type="radio" value="1" name="attack-direction" data-field="direction")
                                     label(for="direction-right") ⇨
                         - if (division === 'Mixed')
-                            .settings-row.d-flex.w-100.mb-2
+                            .settings-row.d-flex.w-100.mb-1
                                 .setting-label.form-label.my-auto Gender ratio
                                 #prescribed-gender-ratio.setting-container 4M / 3F
-                        .settings-row.d-flex.w-100.mb-2 
+                        .settings-row.d-flex.w-100.mb-1 
                             .setting-label.form-label.my-auto Preset line
                             .setting-container 
                                 select#line-select
                                     option(value="") (Manual)
                                 button#reset-line.btn.btn-primary.btn-sm.mx-2(type="button") Reset
-                        .settings-row.d-flex.w-100.mb-2
+                        .settings-row.d-flex.f-1.w-100.mb-1.overflow-hidden
                             .w-100.d-flex.flex-column
                                 #line-filter-panel.filter-panel.d-flex.w-100.ms-2
                                     - if (division === 'Mixed')
@@ -68,7 +68,7 @@
                                     .d-flex.flex-column.f-1.px-1.h-100.overflow-hidden
                                         .form-label Available 
                                         .h-100.w-100.d-flex.f-1.overflow-hidden
-                                            #available-container.player-container.w-100.left-side.overflow-auto.male.female.defense.offense.handler.cutter.hybrid
+                                            #available-container.player-container.h-100.w-100.left-side.overflow-auto.male.female.defense.offense.handler.cutter.hybrid
                                     .px-1.m-auto
                                         .input-group-f.w-100
                                             .my-1.w-100
@@ -81,7 +81,7 @@
                                         - else
                                             .form-label Selected (#[span#line-count 0])
                                         .h-100.w-100.d-flex.f-1.overflow-hidden
-                                            #line-container.player-container.w-100.right-side.overflow-auto.male.female.defense.offense.handler.cutter.hybrid   
+                                            #line-container.player-container.h-100.w-100.right-side.overflow-auto.male.female.defense.offense.handler.cutter.hybrid   
             .modal-footer
                 .d-flex.flex-column
                     #gender-warning.text-wrap.me-3.fw-bold.m-auto.d-none ⚠️ Gender ratio ⚠️

@@ -35,8 +35,8 @@ block content
             each point in gameData.points 
                 .point(data-score=`${point.score}` data-opp-score=`${point.oppScore}` data-period=`${point.period}` data-end-period=`${point.endPeriod}` data-scored=`${point.scored}` data-offense=`${point.offense}`)
                     each pass in point.passes 
-                        - if (pass.event && pass.event.name === 'timeout')
-                            .timeout(data-team=`${pass.event.timeout}`)
+                        - if (pass.event === 'timeout')
+                            .timeout(data-team=`${pass.eventDesc.team}`)
         - if (currentPoint)
             #current-point(data-score=`${currentPoint.score}` data-opp-score=`${currentPoint.oppScore}` data-period=`${currentPoint.period}` data-end-period=`${currentPoint.endPeriod}` data-offense=`${currentPoint.offense}` data-direction=`${currentPoint.direction}` data-scored=`${currentPoint.scored}`)
                 #lineup

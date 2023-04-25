@@ -5,7 +5,7 @@ import { getElementArray } from './utils/getElementArray.js';
 import { showDiv } from './utils/showDiv.js';
 import { StateHandler } from './utils/stateHandler.js';
 import { propCase } from './utils/propCase.js';
-
+import { showEvent } from './utils/showEvent.js';
 let sh;
 
 const blankPass = {
@@ -37,7 +37,6 @@ const redo = document.querySelector('#redo-button');
 const lastEvent = document.querySelector('#event-desc');
 const buttonRowContainer = document.querySelector('#button-row-container');
 
-const pointTimeout = document.querySelector('#timeout');
 const ourTimeout = document.querySelector('#point-timeout-us');
 const theirTimeout = document.querySelector('#point-timeout-them');
 const sub = document.querySelector('#sub');
@@ -90,7 +89,6 @@ resetPoint.addEventListener('click', () => {
 	};
 	handleRequest(str, 'PATCH', null, handler);
 });
-
 /*****************/
 
 const sendEvent = (name, data) => {
@@ -145,7 +143,7 @@ const deselectAll = () => {
 const updatePasses = () => {
 	if (!sh) return;
 	const state = sh.getState();
-	const str = `/api/v1/games/addPass/${state._id}`;
+	const str = `/api/v1/games/setPasses/${state._id}`;
 	const body = state.currentPoint;
 	const handler = (res) => {
 		if (res.status !== 'success') {
@@ -169,6 +167,11 @@ const handleTimeout = (e) => {
 		!Array.isArray(state.timeoutsLeft) ||
 		state.timeoutsLeft.length !== 2
 	)
+		return;
+
+	console.log(e.target);
+	console.log(state);
+	if (e.target === ourTimeoutBetween || e.target === theirTimeoutBetween)
 		return;
 
 	let team;
@@ -278,18 +281,18 @@ const handleTimeout = (e) => {
 	sendEvent('update-info', sh.getState());
 };
 
-const showEvent = (msg) => {
-	if (Array.isArray(msg)) {
-		let str = '';
-		msg.forEach((m, i) => {
-			if (i !== 0) str = `${str}<br>`;
-			str = `${str}${m}`;
-		});
-		lastEvent.innerHTML = str;
-	} else if ((typeof msg).toLowerCase() === 'string') {
-		lastEvent.innerHTML = msg;
-	}
-};
+// const showEvent = (msg) => {
+// 	if (Array.isArray(msg)) {
+// 		let str = '';
+// 		msg.forEach((m, i) => {
+// 			if (i !== 0) str = `${str}<br>`;
+// 			str = `${str}${m}`;
+// 		});
+// 		lastEvent.innerHTML = str;
+// 	} else if ((typeof msg).toLowerCase() === 'string') {
+// 		lastEvent.innerHTML = msg;
+// 	}
+// };
 
 const getPlayer = (id) => {
 	const blank = {

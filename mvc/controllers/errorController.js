@@ -11,9 +11,14 @@ const sendErrorDev = (err, req, res) => {
 			stack: err.stack,
 		});
 	}
-	return res
-		.status(err.statusCode)
-		.render('error', { title: 'Something went wrong.', msg: err.message });
+	return res.status(err.statusCode).render('home', {
+		title: 'Home',
+		alert: {
+			message: `Could not find ${req.originalUrl}`,
+			status: 'error',
+			duration: 1000,
+		},
+	});
 };
 
 const sendErrorProd = (err, req, res) => {

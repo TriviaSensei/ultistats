@@ -6,7 +6,25 @@ import { populateForm } from './utils/populateForm.js';
 import { createRosterOption, insertOption } from './utils/rosterOption.js';
 import { createElement } from './utils/createElementFromSelector.js';
 import { showDiv } from './utils/showDiv.js';
+import { showEvent } from './utils/showEvent.js';
+
 const dblTouchTime = 500;
+
+const blankPass = {
+	offense: undefined,
+	player: '',
+	x: undefined,
+	y: undefined,
+	result: '',
+	turnover: false,
+	goal: 0,
+	event: '',
+	eventDesc: {
+		team: 0,
+		in: '',
+		out: '',
+	},
+};
 
 const startModal = new bootstrap.Modal(
 	document.querySelector('#start-settings-modal')
@@ -18,6 +36,7 @@ const pointModal = new bootstrap.Modal(
 const settingsForm = document.querySelector('#game-start-settings');
 const cancelSaveSettings = document.querySelector('#cancel-save-settings');
 const submitSettings = settingsForm?.querySelector('button[type="submit"]');
+const lastEvent = document.querySelector('#event-desc');
 
 const pointSetup = document.querySelector('#point-settings');
 const pointSetupForm = document.querySelector('#point-setup');
@@ -38,6 +57,10 @@ const lineWarning = document.querySelector('#line-warning');
 const startPoint = document.querySelector('#start-point');
 const endPeriod = document.querySelector('#end-period-button');
 const dataArea = document.querySelector('#data-area');
+
+//between point timeouts
+const ourTimeout = document.querySelector('#timeout-us');
+const theirTimeout = document.querySelector('#timeout-them');
 
 //controls
 const undo = document.querySelector('#undo');
@@ -377,42 +400,160 @@ const loadLine = (e) => {
 	});
 };
 
-const handleStartPoint = (e) => {
-	if (e.target !== pointSetupForm) return;
+const handleTimeout = (e) => {
+	const state = sh?.getState();
+	if (!state) return;
+
+	if (e.target === ourTimeout) {
+		if (state.timeoutsLeft[0] <= 0)
+			return showMessage('error', 'Your team has no timeouts left.');
+		state.timeoutsLeft[0]--;
+		sh.setState(state);
+	} else if (e.target === theirTimeout) {
+		if (state.timeoutsLeft[1] <= 0)
+			return showMessage('error', 'Opponent has no timeouts left.');
+		state.timeoutsLeft[1]--;
+		sh.setState(state);
+	}
+
+	//if there is no current point or if the current point was already scored, start a new point and
+	//add a timeout to it
+	if (!state.currentPoint || state.currentPoint.scored !== 0) {
+		const body = {
+			offense:
+				document.querySelector('input[type="radio"][name="od"]:checked')
+					?.value === 'true',
+			direction: parseInt(
+				document.querySelector(
+					'input[type="radio"][name="attack-direction"]:checked'
+				)?.value
+			),
+			lineup: [],
+			passes: [
+				{
+					...blankPass,
+					event: 'timeout',
+					eventDesc: {
+						team: e.target === ourTimeout ? 1 : -1,
+						in: '',
+						out: '',
+					},
+				},
+			],
+		};
+		handleStartPoint(body);
+	} else {
+		state.currentPoint.passes.push({
+			...blankPass,
+			event: 'timeout',
+			eventDesc: {
+				team: e.target === ourTimeout ? 1 : -1,
+				in: '',
+				out: '',
+			},
+		});
+		sh.setState(state);
+		const str = `/api/v1/games/setPasses/${state._id}`;
+		const body = state.currentPoint;
+		const handler = (res) => {
+			if (res.status !== 'success') {
+				showMessage(
+					'error',
+					`Error updating passes in database - ${res.message}`
+				);
+			}
+			return;
+		};
+		handleRequest(str, 'PATCH', body, handler);
+	}
+};
+//TODO: point setup modal should show start settings for this point if we haven't yet set a lineup.
+const handleSetLineup = (e) => {
 	e.preventDefault();
 
 	const state = sh?.getState();
 	if (!state) return;
 
-	const str = `/api/v1/games/startPoint/${state._id}`;
-	const body = {
-		offense:
-			document.querySelector('input[type="radio"][name="od"]:checked')
-				?.value === 'true',
-		direction: parseInt(
-			document.querySelector(
-				'input[type="radio"][name="attack-direction"]:checked'
-			)?.value
-		),
-		lineup: getElementArray(lineContainer, `.roster-option`).map(getIds),
-	};
-
-	const handler = (res) => {
-		if (res.status === 'success') {
-			pointModal.hide();
-			const evt = new CustomEvent('load-point', {
-				detail: {
+	if (!state.currentPoint || state.currentPoint.scored !== 0) {
+		const body = {
+			offense:
+				document.querySelector('input[type="radio"][name="od"]:checked')
+					?.value === 'true',
+			direction: parseInt(
+				document.querySelector(
+					'input[type="radio"][name="attack-direction"]:checked'
+				)?.value
+			),
+			lineup: getElementArray(lineContainer, `.roster-option`).map(getIds),
+			passes: [],
+		};
+		handleStartPoint(body);
+	} else {
+		const str = `/api/v1/games/setLineup/${state._id}`;
+		const body = {
+			lineup: getElementArray(lineContainer, `.roster-option`).map(getIds),
+		};
+		const handler = (res) => {
+			if (res.status === 'success') {
+				pointModal.hide();
+				const currentPoint = res.data.points.slice(-1).pop();
+				const detail = {
 					...state,
 					...res.data,
 					tournament: {
 						roster: state.roster,
 					},
 					currentPoint: res.data.points.slice(-1).pop(),
-				},
-			});
+				};
+				if (currentPoint.lineup && currentPoint.lineup.length > 0) {
+					const evt = new CustomEvent('load-point', {
+						detail,
+					});
 
-			document.dispatchEvent(evt);
-			showDiv(actionArea);
+					document.dispatchEvent(evt);
+					showDiv(actionArea);
+				}
+			}
+		};
+		handleRequest(str, 'PATCH', body, handler);
+	}
+};
+
+const handleStartPoint = (body) => {
+	const state = sh?.getState();
+	if (!state) return;
+
+	const str = `/api/v1/games/startPoint/${state._id}`;
+
+	const handler = (res) => {
+		if (res.status === 'success') {
+			pointModal.hide();
+			if (res.data.points?.length > 0) {
+				const currentPoint = res.data.points.slice(-1).pop();
+				const detail = {
+					...state,
+					...res.data,
+					tournament: {
+						roster: state.roster,
+					},
+					currentPoint: res.data.points.slice(-1).pop(),
+				};
+				sh.setState({
+					...state,
+					...res.data,
+					currentPoint: detail.currentPoint,
+				});
+				console.log(res.data);
+				console.log(sh.getState());
+				if (currentPoint.lineup && currentPoint.lineup.length > 0) {
+					const evt = new CustomEvent('load-point', {
+						detail,
+					});
+
+					document.dispatchEvent(evt);
+					showDiv(actionArea);
+				}
+			}
 		}
 	};
 
@@ -597,13 +738,20 @@ const updateSetupScoreboard = (e) => {
 	theirScore.innerHTML = data.oppScore;
 };
 
+//TODO: logic for if lineup hasn't been set, we should populate the settings for the start of this point (not the start of next point)
 const updatePointSetup = (e) => {
 	const data = e.detail;
 	if (!data) return;
+	console.log(data);
 	const settings = data.startSettings;
-	const currentPoint =
+	let currentPoint =
 		data.points.length === 0 ? undefined : data.points.slice(-1).pop();
-	//no point has been played
+	//if we haven't set the lineup for this point (and thus disappeared the point setup area), use the previous point for calculating
+	//point settings (e.g. gender ratio, direction, pull/receive)
+	if (currentPoint && currentPoint.lineup.length === 0) {
+		currentPoint =
+			data.points.length === 1 ? undefined : data.points.slice(-2)[0];
+	}
 	let d, o, g;
 	//no point has been played
 	if (!currentPoint) [d, o] = [settings.direction, settings.offense];
@@ -658,7 +806,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	let state = JSON.parse(
 		document.querySelector('#test-data').getAttribute('data-value')
 	);
-	console.log(state.format);
+	console.log(state);
 	if (!state._id) {
 		showMessage(`error`, `Game Id not valid`);
 		setTimeout(() => {
@@ -755,8 +903,13 @@ document.addEventListener('DOMContentLoaded', () => {
 		startModal.show();
 	}
 
-	if (state.currentPoint && state.currentPoint.scored === 0) {
+	if (
+		state.currentPoint &&
+		state.currentPoint.scored === 0 &&
+		state.currentPoint.lineup?.length > 0
+	) {
 		//there is a point still going on - load it and send the data to point.js
+		console.log(state);
 		const evt = new CustomEvent('load-point', {
 			detail: {
 				...state,
@@ -861,7 +1014,9 @@ document.addEventListener('DOMContentLoaded', () => {
 		f.addEventListener('change', handleFilters);
 	});
 
-	pointSetupForm.addEventListener('submit', handleStartPoint);
+	ourTimeout.addEventListener('click', handleTimeout);
+	theirTimeout.addEventListener('click', handleTimeout);
+	pointSetupForm.addEventListener('submit', handleSetLineup);
 
 	document.addEventListener('update-info', (e) => {
 		if (sh) sh.setState(e.detail);
