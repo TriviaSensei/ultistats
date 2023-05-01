@@ -273,6 +273,86 @@ exports.setPasses = catchAsync(async (req, res, next) => {
 	});
 });
 
+exports.subPlayer = catchAsync(async (req, res, next) => {
+	const game = res.locals.game;
+	if (!game) return next(new AppError('Game ID not found', 404));
+	if (game.result !== '')
+		return next(new AppError('This game has ended.', 400));
+	if (game.points.length === 0)
+		return next(new AppError('This game has not started.', 400));
+
+	const roster = res.locals.tournament.roster;
+	if (!roster) return next(new AppError('Roster not found', 404));
+
+	if (
+		req.body.in &&
+		game.points[game.points.length - 1].lineup.includes(req.body.in)
+	)
+		return next(new AppError('Player entering is already in the lineup.', 400));
+
+	if (!req.body.in && !req.body.out)
+		return next(
+			new AppError('You must specify a player to enter or exit.', 404)
+		);
+
+	if (
+		req.body.in &&
+		!req.body.out &&
+		game.points[game.points.length - 1].lineup.length ===
+			res.locals.format.players
+	)
+		return next(
+			new AppError('Lineup is full - you must remove a player.', 400)
+		);
+
+	//remove the player from the lineup if one was specified
+	if (req.body.out) {
+		game.points[game.points.length - 1].lineup = game.points[
+			game.points.length - 1
+		].lineup.filter((p) => {
+			return p !== req.body.out;
+		});
+		//put the player in the injuries array for this point - they will be considered to have played the point (even though they're not in the lineup at the end)
+		if (!game.points[game.points.length - 1].injuries.includes(req.body.out))
+			game.points[game.points.length - 1].injuries.push(req.body.out);
+	}
+
+	//add the new player to the lineup if one was specified
+	if (req.body.in) {
+		const player = roster.find((p) => {
+			return p.id === req.body.in;
+		});
+		if (!player)
+			return next(new AppError('Player entering game not found.', 404));
+
+		if (req.body.out) {
+			const playerOut = roster.find((p) => {
+				return p.id === req.body.out;
+			});
+
+			if (!playerOut)
+				return next(new AppError('Player exiting game not found.', 404));
+			if (playerOut.gender !== player.gender)
+				return next(
+					new AppError('Swapped players must be of same gender-matchup.'),
+					400
+				);
+		}
+		game.points[game.points.length - 1].lineup.push(req.body.in);
+	}
+
+	console.log(game.points[game.points.length - 1].lineup);
+	console.log(game.points[game.points.length - 1].injuries);
+
+	game.markModified('points');
+	const data = await game.save();
+
+	res.status(200).json({
+		status: 'success',
+		data,
+	});
+});
+
 exports.endGame = catchAsync(async (req, res, next) => {
 	const game = res.locals.game;
 

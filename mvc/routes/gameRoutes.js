@@ -17,6 +17,8 @@ router.patch('/endGame/:id', gameController.endGame);
 router.patch('/clear/:id', gameController.clearPoints);
 router.patch('/resetPoint/:id', gameController.resetPoint);
 router.patch('/setLineup/:id', gameController.setLineup);
+router.patch('/subPlayer/:id', gameController.subPlayer);
+
 router.use('/:id', gameController.verifyOwnership);
 router
 	.route('/:id')

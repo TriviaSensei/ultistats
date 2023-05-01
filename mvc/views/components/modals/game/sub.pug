@@ -1,0 +1,41 @@
+.modal.fade#sub-modal(tabindex="-1" aria-labelledby="sub-label" aria-hidden="true")
+    .modal-dialog.modal-dialog-centered
+        .modal-content#sub-modal-content
+            .modal-header
+                h5.modal-title#sub-label Substitute player
+                button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+            .modal-body.d-flex.flex-column.overflow-hidden
+                form#sub-form.w-100-h-100.overflow-hidden
+                    .w-100-h-100.d-flex.flex-column.overflow-hidden
+                        .d-flex.w-100.overflow-hidden 
+                            .f-1.w-50
+                                h5 Player out 
+                            .f-1.w-50
+                                h5 Player in
+                        .d-flex.w-100.overflow-hidden
+                            .f-1.w-50 
+                                .d-flex.w-100 
+                                    .m-auto 
+                                        button#clear-subs.btn.btn-sm.btn-warning(type="button") Clear selections
+                            .f-1.w-50 
+                                .d-flex.w-100
+                                    .d-flex.f-1.flex-column.align-items-center
+                                        .d-flex.f-1.w-100.justify-content-center
+                                            input#toggle-sub-d(type="checkbox" data-target="#player-in" data-toggle="defense" checked)
+                                            label.ms-1.me-2(for="toggle-sub-d") D
+                                            input#toggle-sub-o(type="checkbox" data-target="#player-in" data-toggle="offense" checked)
+                                            label.ms-1.me-2(for="toggle-sub-o") O
+                                    .d-flex.f-1.flex-column.align-items-center
+                                        .d-flex.f-1.w-100.justify-content-center
+                                            input#toggle-sub-hd(type="checkbox" data-target="#player-in" data-toggle="handler" checked)
+                                            label.ms-1.me-2(for="toggle-sub-hd") H
+                                            input#toggle-sub-ct(type="checkbox" data-target="#player-in" data-toggle="cutter" checked)
+                                            label.ms-1.me-2(for="toggle-sub-ct") C
+                                            input#toggle-sub-hy(type="checkbox" data-target="#player-in" data-toggle="hybrid" checked)
+                                            label.ms-1.me-2(for="toggle-sub-hy") Hy
+                        .d-flex.w-100.f-1.overflow-hidden
+                            #player-out.player-container.f-1.m-2.male.female.handler.cutter.hybrid.offense.defense
+                            #player-in.player-container.f-1.m-2.male.female.handler.cutter.hybrid.offense.defense
+            .modal-footer
+                button#confirm-sub.btn.btn-primary(type="submit" form="sub-form") Confirm
+                button#cancel-sub.btn.btn-secondary(type="button" data-bs-dismiss="modal") Cancel

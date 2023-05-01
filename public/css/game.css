@@ -49,10 +49,10 @@ body {
 	overflow-y: auto;
 	overflow-x: hidden;
 	border: 1px solid var(--black);
-	flex-grow: 0;
 }
 
-input[type='checkbox']:checked + label {
+input[type='checkbox']:checked + label,
+input[type='radio']:checked + label {
 	font-weight: bold;
 }
 
@@ -203,4 +203,19 @@ hr.separator {
 
 .dropdown-item {
 	font-size: 0.875rem;
+}
+
+.player-container:not(.male) > .sub-option[data-gender='M'],
+.player-container:not(.female) > .sub-option[data-gender='F'],
+.player-container:not(.defense) > .sub-option[data-line='D'],
+.player-container:not(.offense) > .sub-option[data-line='O'],
+.player-container:not(.handler) > .sub-option[data-position='H'],
+.player-container:not(.cutter) > .sub-option[data-position='C'],
+.player-container:not(.hybrid) > .sub-option[data-position='Hy'] {
+	display: none !important;
+}
+
+.sub-option input[type='radio'] {
+	width: 1rem;
+	height: 1rem;
 }

@@ -41,8 +41,13 @@ const ourTimeout = document.querySelector('#point-timeout-us');
 const theirTimeout = document.querySelector('#point-timeout-them');
 const sub = document.querySelector('#sub');
 
-const actionArea = document.querySelector('#action-div');
+const subModal = new bootstrap.Modal(document.querySelector('#sub-modal'));
+const subForm = document.querySelector('#sub-form');
+const clearSubs = document.querySelector('#clear-subs');
+const playerIn = document.querySelector('#player-in');
+const playerOut = document.querySelector('#player-out');
 
+const actionArea = document.querySelector('#action-div');
 const drop = document.querySelector('#drop');
 const throwaway = document.querySelector('#throwaway');
 const goal = document.querySelector('#goal');
@@ -167,11 +172,6 @@ const handleTimeout = (e) => {
 		!Array.isArray(state.timeoutsLeft) ||
 		state.timeoutsLeft.length !== 2
 	)
-		return;
-
-	console.log(e.target);
-	console.log(state);
-	if (e.target === ourTimeoutBetween || e.target === theirTimeoutBetween)
 		return;
 
 	let team;
@@ -582,6 +582,12 @@ const handleEvent = (e) => {
 
 	const eventName = e.target?.getAttribute('data-event');
 	if (!eventName) return;
+
+	if (eventName === 'sub') {
+		playerIn.selectedIndex = 0;
+		playerOut.selectedIndex = 0;
+		return subModal.show();
+	}
 
 	const currentPoint = state.currentPoint;
 	const passes = currentPoint.passes;
@@ -1292,6 +1298,17 @@ const positionSort = (a, b) => {
 	else return a.name.localeCompare(b.name);
 };
 
+const nameSort = (a, b) => {
+	if (!a.lastName) return 1;
+	if (!b.lastName) return -1;
+
+	if (a.lastName.toLowerCase().trim() !== b.lastName.toLowerCase().trim())
+		return a.lastName.localeCompare(b.lastName);
+	else if (!a.firstName) return 1;
+	else if (!b.firstName) return -1;
+	else return a.firstName.localeCompare(b.firstName);
+};
+
 const handleLoadPoint = (e) => {
 	if (!sh) sh = new StateHandler({ ...e.detail, poppedPasses: [] });
 	else sh.setState({ ...e.detail, poppedPasses: [] });
@@ -1517,7 +1534,7 @@ const handleResultButtons = (state) => {
 const handleEventMenu = (state) => {
 	ourTimeout.disabled = true;
 	theirTimeout.disabled = true;
-	sub.disabled = true;
+	sub.disabled = false;
 
 	const passes = state?.currentPoint?.passes;
 	if (Array.isArray(passes)) {
@@ -1539,6 +1556,161 @@ const handleEventMenu = (state) => {
 
 	// if (state && state.currentPoint && state.currentPoint.scored === 0)
 	// 	sub.disabled = false;
+};
+
+const createSubOption = (p, i) => {
+	const toReturn = createElement(
+		`.sub-option.d-flex.m-1[data-id="${p.id}"][data-gender="${p.gender}"][data-line="${p.line}"][data-position="${p.position}"]`
+	);
+	const r = createElement(`input#sub-${p.id}.mx-1`);
+	r.setAttribute('type', 'radio');
+	r.setAttribute('name', `${i ? 'player-out' : 'player-in'}`);
+	r.addEventListener('change', handleSubFilter);
+	const l = createElement(`label`);
+	l.setAttribute('for', `sub-${p.id}`);
+	l.innerHTML = `${p.lastName}, ${p.firstName} (${p.gender}/${p.line}/${p.position})`;
+	toReturn.appendChild(r);
+	toReturn.appendChild(l);
+	return toReturn;
+};
+
+const setSubs = (state) => {
+	if (!state || !state.currentPoint || !state.roster) return;
+
+	const r = state.roster.sort(nameSort);
+
+	r.forEach((p) => {
+		let op = document.querySelector(`.sub-option[data-id="${p.id}"]`);
+		if (!op) {
+			if (state.currentPoint.lineup.includes(p.id)) {
+				op = createSubOption(p, true);
+				console.log(p);
+			} else op = createSubOption(p, false);
+		}
+		if (state.currentPoint.lineup.includes(p.id)) {
+			op.querySelector('input').setAttribute('name', 'player-out');
+			playerOut.appendChild(op);
+		} else {
+			op.querySelector('input').setAttribute('name', 'player-in');
+			playerIn.appendChild(op);
+		}
+	});
+};
+
+const handleSubFilter = (e) => {
+	// playerIn.classList.remove(
+	// 	'male',
+	// 	'female',
+	// 	'defense',
+	// 	'offense',
+	// 	'handler',
+	// 	'cutter',
+	// 	'hybrid'
+	// );
+	playerIn.classList.add('male', 'female');
+
+	const s = e?.target?.closest('.sub-option');
+	if (!s) return;
+
+	if (s.getAttribute('data-gender') === 'M')
+		playerIn.classList.remove('female');
+	else if (s.getAttribute('data-gender') === 'F')
+		playerIn.classList.remove('male');
+
+	const selectedSub = playerIn.querySelector('input[type="radio"]:checked');
+	if (selectedSub) {
+		const op = selectedSub.closest('.sub-option');
+		if (op.getAttribute('data-gender') !== s.getAttribute('data-gender'))
+			selectedSub.checked = false;
+	}
+};
+
+const handleSub = (e) => {
+	e.preventDefault();
+	const pOut = document
+		.querySelector(`input[name="player-out"]:checked`)
+		?.closest('.sub-option');
+	const pIn = document
+		.querySelector(`input[name="player-in"]:checked`)
+		?.closest('.sub-option');
+
+	const state = sh.getState();
+	console.log(state);
+	if (!state) return;
+
+	if (!pOut && !pIn)
+		return showMessage(
+			'error',
+			'You must select a player to enter or exit the game.'
+		);
+	if (state.currentPoint.lineup.length === state.format.players && !pOut)
+		return showMessage('error', 'You must select a player to exit the game.');
+	let status = 'info';
+	if (!pIn) status = 'warning';
+
+	const playerIn = pIn
+		? state.roster.find((p) => {
+				return p.id === pIn.getAttribute('data-id');
+		  })
+		: undefined;
+	const playerOut = pOut
+		? state.roster.find((p) => {
+				return p.id === pOut.getAttribute('data-id');
+		  })
+		: undefined;
+
+	console.log(pIn, pOut, playerIn, playerOut);
+
+	if (state.division === 'Mixed') {
+		if (playerIn.gender !== playerOut.gender)
+			return showMessage(
+				'error',
+				'Swapped players must be of same gender-matchup.'
+			);
+	}
+
+	let message;
+
+	if (playerIn && playerOut)
+		message = `${playerIn.lastName}, ${playerIn.firstName} entered the game for ${playerOut.lastName}, ${playerOut.firstName}`;
+	else if (playerIn)
+		message = `${playerIn.lastName}, ${playerIn.firstName} entered the game`;
+	else if (playerOut)
+		message = `${playerOut.lastName}, ${playerOut.firstName} subbed out`;
+
+	const str = `/api/v1/games/subPlayer/${state._id}`;
+	const body = {
+		in: playerIn?.id,
+		out: playerOut?.id,
+	};
+	const handler = (res) => {
+		if (res.status === 'success') {
+			sh.setState({
+				...state,
+				points: res.data.points,
+				currentPoint: {
+					...state.currentPoint,
+					lineup: res.data.points.slice(-1).pop().lineup,
+					injuries: res.data.points.slice(-1).pop().injuries,
+				},
+			});
+			subModal.hide();
+			return showMessage(status, message);
+		} else {
+			return showMessage('error', res.message);
+		}
+	};
+	handleRequest(str, 'PATCH', body, handler);
+};
+
+const handleClearSubs = (e) => {
+	const pOut = document.querySelector(`input[name="player-out"]:checked`);
+	const pIn = document.querySelector(`input[name="player-in"]:checked`);
+
+	if (pOut) pOut.checked = false;
+	if (pIn) pIn.checked = false;
+
+	handleSubFilter(null);
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1579,6 +1751,9 @@ document.addEventListener('DOMContentLoaded', () => {
 	midfield.addEventListener('click', setDiscPosition);
 	centerDisc.addEventListener('click', setDiscPosition);
 
+	subForm.addEventListener('submit', handleSub);
+	clearSubs.addEventListener('click', handleClearSubs);
+
 	//events
 	const evArray = [
 		'stall',
@@ -1612,6 +1787,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	sh.addWatcher(null, handleEventMenu);
 	sh.addWatcher(disc, moveDisc);
 	sh.addWatcher(null, drawLastPass);
+	sh.addWatcher(null, setSubs);
 	window.addEventListener('beforeunload', (e) => {
 		e.preventDefault();
 		// updatePasses();
