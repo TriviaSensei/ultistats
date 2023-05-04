@@ -8,29 +8,8 @@ const Format = require('../models/formatModel');
 const catchAsync = require('../../utils/catchAsync');
 const AppError = require('../../utils/appError');
 const round = require('../../utils/round');
-//verify that the logged in user is able to modify this game - they must be a manager of the team playing in the tournament that contains this game.
-exports.verifyOwnership = catchAsync(async (req, res, next) => {
-	if (!res.locals.user)
-		return next(new AppError('You are not logged in.', 403));
 
-	res.locals.game = await Game.findById(req.params.id);
-	if (!res.locals.game) return next(new AppError('Game ID not found', 404));
-	const t = await Tournament.findById(res.locals.game.tournament.toString());
-	if (!t) return next(new AppError('Tournament ID not found', 404));
-	res.locals.tournament = t;
-	const fmt = await Format.findById(t.format.toString());
-	if (!fmt) return next(new AppError('Invalid format', 400));
-	res.locals.format = fmt;
-	const tm = await Team.findById(t.team.toString());
-	if (!tm) return next(new AppError('Team ID not found', 404));
-	res.locals.team = tm;
-
-	if (!tm.managers.includes(res.locals.user._id))
-		return next(new AppError('You are not a manager of this team.', 403));
-
-	next();
-});
-
+/**Testing only */
 exports.clearPoints = catchAsync(async (req, res, next) => {
 	const game = await Game.findById(req.params.id);
 	game.points = game.points.length === 0 ? [] : [game.points[0]];
@@ -55,6 +34,9 @@ exports.resetPoint = catchAsync(async (req, res, next) => {
 			status: 'success',
 		});
 
+	if (game.points.slice(-1).pop().scored === 1) game.score--;
+	else if (game.points.slice(-1).pop().scored === -1) game.oppScore--;
+
 	game.points[game.points.length - 1] = {
 		...game.points[game.points.length - 1],
 		scored: 0,
@@ -62,6 +44,9 @@ exports.resetPoint = catchAsync(async (req, res, next) => {
 		injuries: [],
 		possession: game.points[game.points.length - 1].offense,
 	};
+
+	game.markModified('score');
+	game.markModified('oppScore');
 	game.markModified('points');
 	await game.save();
 	return res.status(200).json({
@@ -69,11 +54,95 @@ exports.resetPoint = catchAsync(async (req, res, next) => {
 	});
 });
 
+exports.resetBeforeHalf = catchAsync(async (req, res, next) => {
+	const game = await Game.findById(req.params.id);
+	if (!game) return next(new AppError('Game not found', 404));
+
+	if (game.period <= 1) {
+		return res.status(200).json({
+			status: 'success',
+		});
+	}
+
+	game.period = 1;
+	game.result = '';
+	while (game.points.length > 0) {
+		if (game.points.slice(-1).pop().period >= 1) {
+			const popped = game.points.pop();
+			if (popped.scored === 1) game.score--;
+			else if (popped.scored === -1) game.oppScore--;
+			if (popped.period === 1) {
+				popped.passes = [];
+				popped.scored = 0;
+				popped.injuries = [];
+				popped.endPeriod = false;
+				popped.passes = [];
+				game.points.push(popped);
+				game.markModified('points');
+				await game.save();
+				break;
+			}
+		} else break;
+	}
+	return res.status(200).json({
+		status: 'success',
+	});
+});
+
+exports.resetAll = catchAsync(async (req, res, next) => {
+	const game = await Game.findById(req.params.id);
+	if (!game) return next(new AppError('Game not found', 404));
+
+	game.points = [];
+	game.score = 0;
+	game.oppScore = 0;
+	game.period = 1;
+	game.result = '';
+
+	game.markModified('points');
+	game.markModified('score');
+	game.markModified('oppScore');
+	game.markModified('period');
+	game.markModified('result');
+
+	await game.save();
+
+	res.status(200).json({
+		status: 'success',
+	});
+});
+/**End test methods */
+
+//verify that the logged in user is able to modify this game - they must be a manager of the team playing in the tournament that contains this game.
+exports.verifyOwnership = catchAsync(async (req, res, next) => {
+	if (!res.locals.user)
+		return next(new AppError('You are not logged in.', 403));
+
+	res.locals.game = await Game.findById(req.params.id);
+	if (!res.locals.game) return next(new AppError('Game ID not found', 404));
+	const t = await Tournament.findById(res.locals.game.tournament.toString());
+	if (!t) return next(new AppError('Tournament ID not found', 404));
+	res.locals.tournament = t;
+	const fmt = await Format.findById(t.format.toString());
+	if (!fmt) return next(new AppError('Invalid format', 400));
+	res.locals.format = fmt;
+	const tm = await Team.findById(t.team.toString());
+	if (!tm) return next(new AppError('Team ID not found', 404));
+	res.locals.team = tm;
+
+	if (!tm.managers.includes(res.locals.user._id))
+		return next(new AppError('You are not a manager of this team.', 403));
+
+	next();
+});
+
 exports.startPoint = catchAsync(async (req, res, next) => {
 	if (res.locals.game.result !== '')
 		return next(new AppError('This game has ended.', 400));
 
 	const points = res.locals.game.points;
+
+	console.log(req.body);
 
 	//TODO: set up the start of a point
 	if (req.body.offense === undefined)
@@ -202,6 +271,8 @@ exports.setLineup = catchAsync(async (req, res, next) => {
 
 	if (req.body.lineup && Array.isArray(req.body.lineup)) {
 		points[len - 1].lineup = req.body.lineup;
+		points[len - 1].offense = req.body.offense;
+		points[len - 1].direction = req.body.direction;
 		res.locals.game.markModified('points');
 		const data = await res.locals.game.save();
 		await data.populate([
@@ -241,6 +312,8 @@ exports.setLineup = catchAsync(async (req, res, next) => {
 //TODO: redo pass updating here gives error - no matching document
 
 exports.setPasses = catchAsync(async (req, res, next) => {
+	const fmt = res.locals.format;
+
 	if (res.locals.game.result !== '')
 		return next(new AppError('This game has ended.', 400));
 
@@ -257,14 +330,48 @@ exports.setPasses = catchAsync(async (req, res, next) => {
 
 	res.locals.game.score = 0;
 	res.locals.game.oppScore = 0;
+	res.locals.game.period = 1;
+
+	let periodEnds = [];
+	for (var i = 0; i < res.locals.format.periods; i++) {
+		const a = ((i + 1) * res.locals.game.cap) / res.locals.format.periods;
+		if (a === Math.floor(a)) periodEnds.push(a);
+		else periodEnds.push(Math.floor(a) + 1);
+	}
+
+	console.log(periodEnds);
 
 	res.locals.game.points.forEach((p) => {
-		if (p.scored === 1) res.locals.game.score++;
-		else if (p.scored === -1) res.locals.game.oppScore++;
+		if (p.scored === 1) {
+			res.locals.game.score++;
+			const newPeriod =
+				periodEnds.findIndex((n) => {
+					return n === res.locals.game.score;
+				}) + 2;
+			if (res.locals.game.period === newPeriod - 1 || p.endPeriod) {
+				res.locals.game.period++;
+				p.endPeriod = true;
+			}
+		} else if (p.scored === -1) {
+			res.locals.game.oppScore++;
+			const newPeriod =
+				periodEnds.findIndex((n) => {
+					return n === res.locals.game.oppScore;
+				}) + 2;
+			if (res.locals.game.period === newPeriod - 1 || p.endPeriod) {
+				res.locals.game.period++;
+				p.endPeriod = true;
+			}
+		}
 	});
+
+	res.locals.game.period = Math.min(
+		res.locals.game.period,
+		res.locals.format.periods
+	);
 	res.locals.game.markModified('score');
 	res.locals.game.markModified('oppScore');
-
+	res.locals.game.markModified('period');
 	await res.locals.game.save();
 
 	res.status(200).json({
@@ -340,6 +447,8 @@ exports.subPlayer = catchAsync(async (req, res, next) => {
 		}
 		game.points[game.points.length - 1].lineup.push(req.body.in);
 	}
+
+	``;
 
 	console.log(game.points[game.points.length - 1].lineup);
 	console.log(game.points[game.points.length - 1].injuries);

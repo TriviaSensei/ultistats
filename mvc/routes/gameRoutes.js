@@ -14,11 +14,15 @@ router.use('/*/:id', gameController.verifyOwnership);
 router.patch('/startPoint/:id', gameController.startPoint);
 router.patch('/setPasses/:id', gameController.setPasses);
 router.patch('/endGame/:id', gameController.endGame);
-router.patch('/clear/:id', gameController.clearPoints);
-router.patch('/resetPoint/:id', gameController.resetPoint);
 router.patch('/setLineup/:id', gameController.setLineup);
 router.patch('/subPlayer/:id', gameController.subPlayer);
 
+/**Test only */
+router.patch('/clear/:id', gameController.clearPoints);
+router.patch('/resetPoint/:id', gameController.resetPoint);
+router.patch('/resetHalf/:id', gameController.resetBeforeHalf);
+router.patch('/resetAll/:id', gameController.resetAll);
+/**end test endpoints */
 router.use('/:id', gameController.verifyOwnership);
 router
 	.route('/:id')

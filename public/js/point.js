@@ -65,6 +65,11 @@ let moving = false;
 let initialLength = 1;
 
 /**Testing only */
+const handler = (res) => {
+	if (res.status === 'success') {
+		location.reload();
+	}
+};
 const reset = document.querySelector('#reset');
 reset.addEventListener('click', () => {
 	if (!sh) return;
@@ -72,26 +77,39 @@ reset.addEventListener('click', () => {
 	if (!id) return;
 
 	const str = `/api/v1/games/clear/${id}`;
-	const handler = (res) => {
-		if (res.status === 'success') {
-			location.reload();
-		}
-	};
 	handleRequest(str, 'PATCH', null, handler);
 });
 
 const resetPoint = document.querySelector('#reset-point');
-resetPoint.addEventListener('click', () => {
+const rp = () => {
 	if (!sh) return;
 	const id = sh.getState()._id;
 	if (!id) return;
 
 	const str = `/api/v1/games/resetPoint/${id}`;
-	const handler = (res) => {
-		if (res.status === 'success') {
-			location.reload();
-		}
-	};
+	handleRequest(str, 'PATCH', null, handler);
+};
+resetPoint.addEventListener('click', rp);
+
+const resetBeforeHalf = document.querySelector('#reset-half');
+resetBeforeHalf.addEventListener('click', () => {
+	if (!sh) return;
+	const id = sh.getState()._id;
+	if (!id) return;
+
+	const str = `/api/v1/games/resetHalf/${id}`;
+	handleRequest(str, 'PATCH', null, handler);
+});
+
+const resetLast = document.querySelector(`#reset-last-point`);
+resetLast.addEventListener('click', rp);
+
+const resetAll = document.querySelector('#reset-all');
+resetAll.addEventListener('click', () => {
+	if (!sh) return;
+	const id = sh.getState()._id;
+	if (!id) return;
+	const str = `/api/v1/games/resetAll/${id}`;
 	handleRequest(str, 'PATCH', null, handler);
 });
 /*****************/
@@ -166,6 +184,7 @@ const updatePasses = () => {
 const handleTimeout = (e) => {
 	if (!sh) return;
 	const state = sh.getState();
+	console.log(state);
 	if (!state) return;
 	if (
 		!state.timeoutsLeft ||
@@ -315,12 +334,11 @@ const getPlayer = (id) => {
 const displayEventDescription = (e) => {
 	if (!e.detail) return;
 	const state = e.detail;
-
 	const currentPoint = state.currentPoint;
 	const passes = state.currentPoint?.passes;
-	if (!passes || !Array.isArray(passes)) return showEvent('(No events)');
 
 	console.log(passes);
+	if (!passes || !Array.isArray(passes)) return showEvent('(No events)');
 
 	if (
 		passes.length === 0 ||
@@ -331,7 +349,19 @@ const displayEventDescription = (e) => {
 				passes[0].x === null ||
 				passes[0].y === null))
 	) {
-		if (currentPoint.offense)
+		if (passes.length === 1) {
+			if (passes[0].goal === -1) {
+				return showEvent(`${state.opponent} scored`);
+			} else if (passes[0].event === 'timeout') {
+				return showEvent(
+					`${
+						passes[0].eventDesc.team === -1 ? state.opponent : state.team
+					} took a timeout<br>${
+						currentPoint.offense ? state.opponent : state.team
+					} pulls to ${currentPoint.offense ? state.team : state.opponent}`
+				);
+			}
+		} else if (currentPoint.offense)
 			return showEvent(`${state.opponent} pulls to ${state.team}`);
 		else return showEvent(`${state.team} pulls to ${state.opponent}`);
 	}
@@ -785,10 +815,14 @@ const undoPass = (e) => {
 
 	if (currentPass.goal !== 0) {
 		state.poppedPasses.push(currentPass);
+		state.discIn = true;
+		if (currentPass.goal === 1) state.score--;
+		else state.oppScore--;
 		state.currentPoint.passes.push({
 			...blankPass,
 			offense: currentPass.offense,
 		});
+		state.currentPoint.scored = 0;
 		sh.setState(state);
 		return sendEvent('return-to-point', state);
 	}
@@ -837,6 +871,8 @@ const redoPass = (e) => {
 
 //TODO: handle events (sub, timeout.)
 const updateCurrentPass = (data, ...opts) => {
+	console.log(data);
+
 	if (!sh) return;
 	let state = sh.getState();
 
@@ -845,18 +881,27 @@ const updateCurrentPass = (data, ...opts) => {
 		if (opts[0].redo) clearPoppedPasses = false;
 	}
 
-	const p = state.currentPoint?.passes;
-	const passes =
-		p.length === 0
-			? [{ ...blankPass, offense: state.currentPoint.offense }]
-			: p;
+	const p = state.currentPoint?.passes.filter((p) => {
+		return !p.event;
+	});
+	if (!p) return;
 
+	let passes;
+	if (p.length === 0) {
+		state.currentPoint.passes.push({
+			...blankPass,
+			offense: state.currentPoint.offense,
+		});
+	}
+	passes = state.currentPoint.passes;
+
+	console.log(passes.slice());
 	let currentPass = passes[passes.length - 1];
 	let currentPoint = state.currentPoint;
 
 	//if we're updating a location, make sure we're not throwing it from the end zone,
 	//and set the last pass ending spot to the goal line, at maximum)
-	if (data.x) {
+	if (data.x >= 0) {
 		if (
 			currentPass.x &&
 			currentPass.x > state.format.length + state.format.endzone
@@ -873,7 +918,7 @@ const updateCurrentPass = (data, ...opts) => {
 	};
 	currentPass = passes[passes.length - 1];
 
-	console.log(passes);
+	console.log(passes.slice());
 
 	//there is a player and location - pass was completed.
 	if (
@@ -911,7 +956,6 @@ const updateCurrentPass = (data, ...opts) => {
 					passes[passes.length - 1].turnover = true;
 					state.currentPoint.possession = false;
 				} else {
-					console.log(passes.slice(-2));
 					return showMessage(
 						'error',
 						'Invalid data for dropped pass - see log for details'
@@ -989,6 +1033,7 @@ const updateCurrentPass = (data, ...opts) => {
 			...blankPass,
 			offense: currentPass.offense,
 		});
+		console.log(passes);
 	}
 
 	state = {
@@ -1312,7 +1357,6 @@ const nameSort = (a, b) => {
 const handleLoadPoint = (e) => {
 	if (!sh) sh = new StateHandler({ ...e.detail, poppedPasses: [] });
 	else sh.setState({ ...e.detail, poppedPasses: [] });
-	console.log(e.detail);
 	const state = sh.getState();
 	if (state.currentPoint) {
 		if (!state.discIn) state.discIn = true;
@@ -1327,13 +1371,18 @@ const handleLoadPoint = (e) => {
 		});
 
 		sh.setState(state);
-		if (state.currentPoint.scored !== 1 && state.currentPoint.scored !== -1) {
+		if (
+			state.currentPoint.scored !== 1 &&
+			state.currentPoint.scored !== -1 &&
+			state.currentPoint.lineup?.length > 0
+		) {
 			showDiv(actionArea);
 		}
 	}
 };
 
 const displayPossession = (state) => {
+	console.log(state);
 	if (!state || !state.currentPoint) return;
 	const passes = state.currentPoint.passes;
 	if (!passes) return;
@@ -1371,6 +1420,9 @@ const handlePlayerButtons = (e) => {
 	if (!e.detail) return;
 
 	let count = 0;
+
+	let cp = e.detail?.currentPoint;
+	if (!cp || !cp.lineup) return;
 
 	//get the array of players
 	const players = e.detail.currentPoint.lineup
@@ -1480,7 +1532,9 @@ const handleUndoRedoButtons = (state) => {
 	const passes = state.currentPoint?.passes;
 
 	if (Array.isArray(passes)) {
-		undo.disabled = passes.length <= 1;
+		if (passes.length === 1) {
+			if (passes[0].goal === -1) undo.disabled = false;
+		} else undo.disabled = passes.length === 0;
 	} else {
 		undo.disabled = true;
 	}
@@ -1541,7 +1595,6 @@ const handleEventMenu = (state) => {
 		const onlyPasses = passes.filter((p) => {
 			return p.event === '';
 		});
-		console.log(onlyPasses);
 		if (
 			onlyPasses.length === 0 ||
 			(onlyPasses.length === 1 &&
@@ -1565,7 +1618,7 @@ const createSubOption = (p, i) => {
 	const r = createElement(`input#sub-${p.id}.mx-1`);
 	r.setAttribute('type', 'radio');
 	r.setAttribute('name', `${i ? 'player-out' : 'player-in'}`);
-	r.addEventListener('change', handleSubFilter);
+	if (i) r.addEventListener('change', handleSubFilter);
 	const l = createElement(`label`);
 	l.setAttribute('for', `sub-${p.id}`);
 	l.innerHTML = `${p.lastName}, ${p.firstName} (${p.gender}/${p.line}/${p.position})`;
@@ -1584,7 +1637,6 @@ const setSubs = (state) => {
 		if (!op) {
 			if (state.currentPoint.lineup.includes(p.id)) {
 				op = createSubOption(p, true);
-				console.log(p);
 			} else op = createSubOption(p, false);
 		}
 		if (state.currentPoint.lineup.includes(p.id)) {
@@ -1661,13 +1713,16 @@ const handleSub = (e) => {
 
 	console.log(pIn, pOut, playerIn, playerOut);
 
-	if (state.division === 'Mixed') {
-		if (playerIn.gender !== playerOut.gender)
-			return showMessage(
-				'error',
-				'Swapped players must be of same gender-matchup.'
-			);
-	}
+	if (
+		state.division === 'Mixed' &&
+		playerIn?.gender &&
+		playerOut?.gender &&
+		playerIn.gender !== playerOut.gender
+	)
+		return showMessage(
+			'error',
+			'Swapped players must be of same gender-matchup.'
+		);
 
 	let message;
 
@@ -1695,6 +1750,15 @@ const handleSub = (e) => {
 				},
 			});
 			subModal.hide();
+			handleSubFilter(null);
+			updateCurrentPass({
+				event: 'sub',
+				eventDesc: {
+					team: 1,
+					in: playerIn?.id,
+					out: playerOut?.id,
+				},
+			});
 			return showMessage(status, message);
 		} else {
 			return showMessage('error', res.message);

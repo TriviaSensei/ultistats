@@ -432,6 +432,9 @@ const handleTimeout = (e) => {
 			passes: [
 				{
 					...blankPass,
+					offense:
+						document.querySelector('input[type="radio"][name="od"]:checked')
+							?.value === 'true',
 					event: 'timeout',
 					eventDesc: {
 						team: e.target === ourTimeout ? 1 : -1,
@@ -491,6 +494,14 @@ const handleSetLineup = (e) => {
 	} else {
 		const str = `/api/v1/games/setLineup/${state._id}`;
 		const body = {
+			offense:
+				document.querySelector('input[type="radio"][name="od"]:checked')
+					?.value === 'true',
+			direction: parseInt(
+				document.querySelector(
+					'input[type="radio"][name="attack-direction"]:checked'
+				)?.value
+			),
 			lineup: getElementArray(lineContainer, `.roster-option`).map(getIds),
 		};
 		const handler = (res) => {
@@ -545,12 +556,12 @@ const handleStartPoint = (body) => {
 				});
 				console.log(res.data);
 				console.log(sh.getState());
-				if (currentPoint.lineup && currentPoint.lineup.length > 0) {
-					const evt = new CustomEvent('load-point', {
-						detail,
-					});
+				const evt = new CustomEvent('load-point', {
+					detail,
+				});
 
-					document.dispatchEvent(evt);
+				document.dispatchEvent(evt);
+				if (currentPoint.lineup && currentPoint.lineup.length > 0) {
 					showDiv(actionArea);
 				}
 			}
@@ -742,7 +753,6 @@ const updateSetupScoreboard = (e) => {
 const updatePointSetup = (e) => {
 	const data = e.detail;
 	if (!data) return;
-	console.log(data);
 	const settings = data.startSettings;
 	let currentPoint =
 		data.points.length === 0 ? undefined : data.points.slice(-1).pop();
@@ -806,7 +816,6 @@ document.addEventListener('DOMContentLoaded', () => {
 	let state = JSON.parse(
 		document.querySelector('#test-data').getAttribute('data-value')
 	);
-	console.log(state);
 	if (!state._id) {
 		showMessage(`error`, `Game Id not valid`);
 		setTimeout(() => {
@@ -909,7 +918,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		state.currentPoint.lineup?.length > 0
 	) {
 		//there is a point still going on - load it and send the data to point.js
-		console.log(state);
 		const evt = new CustomEvent('load-point', {
 			detail: {
 				...state,
@@ -929,6 +937,15 @@ document.addEventListener('DOMContentLoaded', () => {
 			state.startSettings.offense,
 			state.startSettings.genderRatio
 		);
+		const evt = new CustomEvent('load-point', {
+			detail: {
+				...state,
+				tournament: {
+					roster: state.roster,
+				},
+			},
+		});
+		document.dispatchEvent(evt);
 		showDiv(pointSetup);
 	} else {
 		//at least one point has been played, but we are betweeen points - populate the point start, and show the point setup div
@@ -993,6 +1010,16 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 
 		populatePointStart(dir, off, gen);
+		const evt = new CustomEvent('load-point', {
+			detail: {
+				...state,
+				tournament: {
+					roster: state.roster,
+				},
+			},
+		});
+		document.dispatchEvent(evt);
+
 		/**
 		 * If there has not been a point played, or if the last point played has ended, but we haven't started a new one, show the point start view
 		 */
