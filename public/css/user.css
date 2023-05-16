@@ -201,7 +201,10 @@ h6 {
 .feature-table tbody > tr:hover {
 	background-color: var(--color-1);
 }
-
+.roster-table td,
+#manager-table td {
+	padding: 0;
+}
 @media (min-width: 992px) {
 	.user-dashboard-container {
 		padding: 0 10%;
@@ -209,10 +212,5 @@ h6 {
 
 	#request-table {
 		width: 50%;
-	}
-
-	.roster-table td,
-	#manager-table td {
-		padding: 0;
 	}
 }

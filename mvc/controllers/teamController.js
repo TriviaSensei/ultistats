@@ -172,7 +172,7 @@ exports.removePlayer = catchAsync(async (req, res, next) => {
 	team.roster.some((p) => {
 		if (p.id === req.body.id) {
 			status = 'success';
-			message = `Player ${p.lastName}, ${p.firstName} removed from roster.`;
+			message = `Player ${p.lastName}, ${p.firstName} removed from roster. You must manually remove them from any tournament rosters.`;
 			p.active = false;
 			return true;
 		}
@@ -212,7 +212,7 @@ exports.editPlayer = catchAsync(async (req, res, next) => {
 					(req.body.lastName || p.lastName).toLowerCase() ===
 						p2.lastName.toLowerCase()
 				) {
-					status = 'fail';
+					status = 'error';
 					message = `A player with that name (${req.body.lastName}, ${req.body.firstName}) is already on your team.`;
 					return true;
 				} else if (
@@ -246,6 +246,33 @@ exports.editPlayer = catchAsync(async (req, res, next) => {
 	if (found) {
 		team.markModified('roster');
 		const data = await team.save();
+
+		//also modify any tournaments with this player on the roster
+		const tournaments = await Tournament.find({
+			team: team._id,
+		});
+
+		await Promise.all(
+			tournaments.map(async (t) => {
+				if (
+					t.roster.some((p, i) => {
+						if (p.id === req.body.id) {
+							t.roster[i] = {
+								...p,
+								...req.body,
+							};
+							return true;
+						}
+						return false;
+					})
+				) {
+					t.markModified('roster');
+					return t.save();
+				}
+				return t;
+			})
+		);
+
 		return res.status(200).json({
 			status,
 			message,

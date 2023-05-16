@@ -175,7 +175,48 @@ const updatePasses = () => {
 				`Error updating passes in database - ${res.message}`
 			);
 		} else {
-			initialLength = state.currentPoint.passes.length;
+			if (res.data.scored !== 0) {
+				initialLength = 1;
+				state.currentPoint = {
+					...state.currentPoint,
+					...res.data,
+				};
+				state.points[state.points.length - 1].scored = res.data.scored;
+				if (res.data.endPeriod) {
+					state.period++;
+				}
+				sh.setState(state);
+				if (res.data.endPeriod) {
+					let pdName;
+					if (state.format.periods === 4) pdName = 'quarter';
+					else if (state.format.periods === 2) pdName = 'half';
+					else pdName = 'period';
+
+					let pdNo;
+					if (res.data.period === 1) pdNo = '1st';
+					else if (res.data.period === 2) pdNo = '2nd';
+					else if (res.data.period === 3) pdNo = '3rd';
+					else if (res.data.period === 4) pdNo = '4th';
+
+					if (res.data.period === state.format.periods) {
+						pdNo = 'the';
+						pdName = 'game';
+					}
+
+					showMessage(`info`, `End of ${pdNo} ${pdName}`, 2000);
+
+					//at halftime, reset the timeouts
+					if (res.data.period === state.format.periods / 2) {
+						console.log(state);
+						state.timeoutsLeft = state.timeoutsLeft.map((t) => {
+							if (state.timeouts % 2 === 0) return state.timeouts / 2;
+							else if (state.timeouts === 1) return Math.min(t, 1);
+							else if (state.timeouts === 3) return Math.min(t + 1, 2);
+						});
+					}
+				}
+				sendEvent('point-ended', state);
+			} else initialLength = state.currentPoint.passes.length;
 		}
 	};
 	handleRequest(str, 'PATCH', body, handler);
@@ -337,7 +378,6 @@ const displayEventDescription = (e) => {
 	const currentPoint = state.currentPoint;
 	const passes = state.currentPoint?.passes;
 
-	console.log(passes);
 	if (!passes || !Array.isArray(passes)) return showEvent('(No events)');
 
 	if (
@@ -349,6 +389,7 @@ const displayEventDescription = (e) => {
 				passes[0].x === null ||
 				passes[0].y === null))
 	) {
+		console.log(currentPoint);
 		if (passes.length === 1) {
 			if (passes[0].goal === -1) {
 				return showEvent(`${state.opponent} scored`);
@@ -659,7 +700,7 @@ const handleEvent = (e) => {
 					!currentPass.offense ||
 					currentPass.result !== 'complete' ||
 					//it cannot be the first touch of the possession (you can't have a drop without a throw)
-					!lastPass
+					(!lastPass && passes.length !== 2)
 				)
 					return showMessage('error', 'Invalid game event');
 				break;
@@ -678,7 +719,6 @@ const handleEvent = (e) => {
 					);
 				break;
 			case 'goal':
-				console.log(currentPass);
 				//must have a current pass
 				if (!currentPass) return showMessage('error', 'Invalid game event');
 				//if we're not on offense, we are recording a callahan.
@@ -871,8 +911,6 @@ const redoPass = (e) => {
 
 //TODO: handle events (sub, timeout.)
 const updateCurrentPass = (data, ...opts) => {
-	console.log(data);
-
 	if (!sh) return;
 	let state = sh.getState();
 
@@ -895,7 +933,6 @@ const updateCurrentPass = (data, ...opts) => {
 	}
 	passes = state.currentPoint.passes;
 
-	console.log(passes.slice());
 	let currentPass = passes[passes.length - 1];
 	let currentPoint = state.currentPoint;
 
@@ -917,8 +954,6 @@ const updateCurrentPass = (data, ...opts) => {
 		...data,
 	};
 	currentPass = passes[passes.length - 1];
-
-	console.log(passes.slice());
 
 	//there is a player and location - pass was completed.
 	if (
@@ -988,7 +1023,6 @@ const updateCurrentPass = (data, ...opts) => {
 							passes,
 						},
 					};
-					sendEvent('point-ended', state);
 					sh.setState(state);
 					return updatePasses();
 				} else {
@@ -1358,6 +1392,9 @@ const handleLoadPoint = (e) => {
 	if (!sh) sh = new StateHandler({ ...e.detail, poppedPasses: [] });
 	else sh.setState({ ...e.detail, poppedPasses: [] });
 	const state = sh.getState();
+
+	console.log(state);
+
 	if (state.currentPoint) {
 		if (!state.discIn) state.discIn = true;
 
@@ -1382,7 +1419,6 @@ const handleLoadPoint = (e) => {
 };
 
 const displayPossession = (state) => {
-	console.log(state);
 	if (!state || !state.currentPoint) return;
 	const passes = state.currentPoint.passes;
 	if (!passes) return;
@@ -1646,6 +1682,8 @@ const setSubs = (state) => {
 			op.querySelector('input').setAttribute('name', 'player-in');
 			playerIn.appendChild(op);
 		}
+		const rb = op.querySelector('input[type="radio"]');
+		if (rb) rb.checked = false;
 	});
 };
 
@@ -1686,8 +1724,7 @@ const handleSub = (e) => {
 		.querySelector(`input[name="player-in"]:checked`)
 		?.closest('.sub-option');
 
-	const state = sh.getState();
-	console.log(state);
+	let state = sh.getState();
 	if (!state) return;
 
 	if (!pOut && !pIn)
@@ -1740,6 +1777,7 @@ const handleSub = (e) => {
 	};
 	const handler = (res) => {
 		if (res.status === 'success') {
+			console.log(res.data.points.slice(-1).pop());
 			sh.setState({
 				...state,
 				points: res.data.points,
@@ -1749,6 +1787,8 @@ const handleSub = (e) => {
 					injuries: res.data.points.slice(-1).pop().injuries,
 				},
 			});
+			state = sh.getState();
+			console.log(state.currentPoint);
 			subModal.hide();
 			handleSubFilter(null);
 			updateCurrentPass({
@@ -1759,6 +1799,29 @@ const handleSub = (e) => {
 					out: playerOut?.id,
 				},
 			});
+			if (state.currentPoint.genderRatio) {
+				let currentGR = [0, 0];
+				state.currentPoint.lineup.forEach((p) => {
+					const player = state.roster.find((pl) => {
+						return pl.id === p;
+					});
+					if (player) {
+						if (player.gender === 'M') currentGR[0]++;
+						else if (player.gender === 'F') currentGR[1]++;
+					}
+				});
+				if (
+					currentGR[0] > state.currentPoint.genderRatio.m ||
+					currentGR[1] > state.currentPoint.genderRatio.f
+				) {
+					console.log(state.currentPoint.lineup);
+					console.log(currentGR, state.currentPoint.genderRatio);
+					return showMessage(
+						'warning',
+						`This lineup's gender ratio (${currentGR[0]}M/${currentGR[1]}F) violates the prescribed ratio.`
+					);
+				}
+			}
 			return showMessage(status, message);
 		} else {
 			return showMessage('error', res.message);

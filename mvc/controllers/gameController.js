@@ -142,8 +142,6 @@ exports.startPoint = catchAsync(async (req, res, next) => {
 
 	const points = res.locals.game.points;
 
-	console.log(req.body);
-
 	//TODO: set up the start of a point
 	if (req.body.offense === undefined)
 		return next(
@@ -323,8 +321,6 @@ exports.setPasses = catchAsync(async (req, res, next) => {
 	if (res.locals.game.points.length === 0)
 		return next(new AppError('This game has not started.', 400));
 
-	console.log(req.body);
-
 	res.locals.game.points[res.locals.game.points.length - 1] = req.body;
 	res.locals.game.markModified('points');
 
@@ -339,7 +335,7 @@ exports.setPasses = catchAsync(async (req, res, next) => {
 		else periodEnds.push(Math.floor(a) + 1);
 	}
 
-	console.log(periodEnds);
+	// console.log(periodEnds);
 
 	res.locals.game.points.forEach((p) => {
 		if (p.scored === 1) {
@@ -414,14 +410,18 @@ exports.subPlayer = catchAsync(async (req, res, next) => {
 
 	//remove the player from the lineup if one was specified
 	if (req.body.out) {
-		game.points[game.points.length - 1].lineup = game.points[
-			game.points.length - 1
-		].lineup.filter((p) => {
-			return p !== req.body.out;
-		});
+		game.points[game.points.length - 1] = {
+			...game.points[game.points.length - 1],
+			lineup: game.points[game.points.length - 1].lineup.filter((p) => {
+				return p !== req.body.out;
+			}),
+		};
 		//put the player in the injuries array for this point - they will be considered to have played the point (even though they're not in the lineup at the end)
 		if (!game.points[game.points.length - 1].injuries.includes(req.body.out))
-			game.points[game.points.length - 1].injuries.push(req.body.out);
+			game.points[game.points.length - 1].injuries = [
+				...game.points[game.points.length - 1].injuries,
+				req.body.out,
+			];
 	}
 
 	//add the new player to the lineup if one was specified
@@ -445,13 +445,11 @@ exports.subPlayer = catchAsync(async (req, res, next) => {
 					400
 				);
 		}
-		game.points[game.points.length - 1].lineup.push(req.body.in);
+		game.points[game.points.length - 1] = {
+			...game.points[game.points.length - 1],
+			lineup: [...game.points[game.points.length - 1].lineup, req.body.in],
+		};
 	}
-
-	``;
-
-	console.log(game.points[game.points.length - 1].lineup);
-	console.log(game.points[game.points.length - 1].injuries);
 
 	game.markModified('points');
 	const data = await game.save();

@@ -6,7 +6,6 @@ import { populateForm } from './utils/populateForm.js';
 import { createRosterOption, insertOption } from './utils/rosterOption.js';
 import { createElement } from './utils/createElementFromSelector.js';
 import { showDiv } from './utils/showDiv.js';
-import { showEvent } from './utils/showEvent.js';
 
 const dblTouchTime = 500;
 
@@ -36,7 +35,6 @@ const pointModal = new bootstrap.Modal(
 const settingsForm = document.querySelector('#game-start-settings');
 const cancelSaveSettings = document.querySelector('#cancel-save-settings');
 const submitSettings = settingsForm?.querySelector('button[type="submit"]');
-const lastEvent = document.querySelector('#event-desc');
 
 const pointSetup = document.querySelector('#point-settings');
 const pointSetupForm = document.querySelector('#point-setup');
@@ -45,6 +43,7 @@ const lineReset = document.querySelector('#reset-line');
 const scoreboard = document.querySelector('#score-bug');
 const setupScoreboard = document.querySelector('#setup-scoreboard');
 const genderRatioIndicator = document.querySelector('#prescribed-gender-ratio');
+const genderRatioDisplay = document.querySelector('#gr-container');
 const availableContainer = document.querySelector('#available-container');
 const moveToLine = document.querySelector('#move-to-line');
 const clearLine = document.querySelector('#clear-line');
@@ -56,15 +55,14 @@ const genderWarning = document.querySelector('#gender-warning');
 const lineWarning = document.querySelector('#line-warning');
 const startPoint = document.querySelector('#start-point');
 const endPeriod = document.querySelector('#end-period-button');
-const dataArea = document.querySelector('#data-area');
 
 //between point timeouts
 const ourTimeout = document.querySelector('#timeout-us');
 const theirTimeout = document.querySelector('#timeout-them');
 
 //controls
-const undo = document.querySelector('#undo');
-const redo = document.querySelector('#redo');
+// const undo = document.querySelector('#undo');
+// const redo = document.querySelector('#redo');
 
 const actionArea = document.querySelector('#action-div');
 
@@ -76,10 +74,6 @@ const getState = () => {
 	return sh ? sh.getState() : undefined;
 };
 
-function toNearestHalf(n) {
-	return parseFloat((Math.round(n + 0.5) - 0.5).toFixed(1));
-}
-
 const getIds = (o) => {
 	return o.getAttribute('data-id');
 };
@@ -89,7 +83,25 @@ const setGenderRatio = (m, f) => {
 	if (!state) return;
 
 	if (state.genderRule !== 'A') return;
-	genderRatioIndicator.innerHTML = `${m}M / ${f}F`;
+
+	if (state.currentPoint && !state.currentPoint.genderRatio) {
+		sh.setState({
+			...state,
+			currentPoint: {
+				...state.currentPoint,
+				genderRatio: {
+					m,
+					f,
+				},
+			},
+		});
+	}
+
+	genderRatioDisplay.innerHTML = `${m}M / ${f}F`;
+	genderRatioDisplay.setAttribute(
+		'data-majority',
+		m > f ? 'M' : f > m ? 'F' : ''
+	);
 	genderRatioIndicator.setAttribute('data-m', m);
 	genderRatioIndicator.setAttribute('data-f', f);
 };
@@ -287,6 +299,10 @@ const updateCounts = () => {
 
 	//make sure the gender ratio isn't violated - if it is, the line can still be played, but a warning will be displayed next to the start point button.
 	const maxes = genderRatioIndicator.dataset;
+	const evt = new CustomEvent('set-gender-ratio', {
+		detail: maxes,
+	});
+	document.dispatchEvent(evt);
 	if (state.genderRule !== 'A') {
 		genderWarning.classList.add('d-none');
 		return;
@@ -418,11 +434,15 @@ const handleTimeout = (e) => {
 
 	//if there is no current point or if the current point was already scored, start a new point and
 	//add a timeout to it
+	console.log(state);
 	if (!state.currentPoint || state.currentPoint.scored !== 0) {
+		const genderRatio =
+			state.genderRule === 'A' ? genderRatioIndicator.dataset : null;
 		const body = {
 			offense:
-				document.querySelector('input[type="radio"][name="od"]:checked')
-					?.value === 'true',
+				state.points.length === 0
+					? state.startSettings.offense
+					: state.points.slice(-1).pop().scored === -1,
 			direction: parseInt(
 				document.querySelector(
 					'input[type="radio"][name="attack-direction"]:checked'
@@ -444,7 +464,7 @@ const handleTimeout = (e) => {
 				},
 			],
 		};
-		handleStartPoint(body);
+		handleStartPoint(body, genderRatio || null);
 	} else {
 		state.currentPoint.passes.push({
 			...blankPass,
@@ -477,6 +497,21 @@ const handleSetLineup = (e) => {
 	const state = sh?.getState();
 	if (!state) return;
 
+	const genderRatio = genderRatioIndicator.dataset;
+	if (genderRatio.m && genderRatio.f) {
+		const currentGR = [
+			getElementArray(lineContainer, `.roster-option[data-gender="M"]`).length,
+			getElementArray(lineContainer, `.roster-option[data-gender="F"]`).length,
+		];
+		if (currentGR[0] > genderRatio.m || currentGR[1] > genderRatio.f) {
+			showMessage(
+				'warning',
+				`This lineup's gender ratio (${currentGR[0]}M/${currentGR[1]}F) violates the prescribed ratio.`
+			);
+		}
+	}
+
+	//no points started, or the current point has been scored, so we're starting a new point
 	if (!state.currentPoint || state.currentPoint.scored !== 0) {
 		const body = {
 			offense:
@@ -490,7 +525,7 @@ const handleSetLineup = (e) => {
 			lineup: getElementArray(lineContainer, `.roster-option`).map(getIds),
 			passes: [],
 		};
-		handleStartPoint(body);
+		handleStartPoint(body, genderRatio || null);
 	} else {
 		const str = `/api/v1/games/setLineup/${state._id}`;
 		const body = {
@@ -514,7 +549,13 @@ const handleSetLineup = (e) => {
 					tournament: {
 						roster: state.roster,
 					},
-					currentPoint: res.data.points.slice(-1).pop(),
+					currentPoint: {
+						...currentPoint,
+						genderRatio: {
+							m: genderRatio.m,
+							f: genderRatio.f,
+						},
+					},
 				};
 				if (currentPoint.lineup && currentPoint.lineup.length > 0) {
 					const evt = new CustomEvent('load-point', {
@@ -530,32 +571,65 @@ const handleSetLineup = (e) => {
 	}
 };
 
-const handleStartPoint = (body) => {
+const getGenderRatio = () => {
+	let toReturn = [0, 0];
+
+	const state = sh.getState();
+	if (!state) return toReturn;
+
+	const lineup = state.currentPoint?.lineup;
+	if (!lineup) return toReturn;
+
+	lineup.forEach((p) => {
+		const pl = state.roster.find((e) => {
+			return e.id === p;
+		});
+		if (!pl) return;
+		else if (pl.gender === 'M') toReturn[0]++;
+		else if (pl.gender === 'F') toReturn[1]++;
+	});
+
+	return toReturn;
+};
+
+const handleStartPoint = (body, genderRatio) => {
 	const state = sh?.getState();
 	if (!state) return;
 
 	const str = `/api/v1/games/startPoint/${state._id}`;
-
+	console.log(body);
 	const handler = (res) => {
 		if (res.status === 'success') {
 			pointModal.hide();
 			if (res.data.points?.length > 0) {
 				const currentPoint = res.data.points.slice(-1).pop();
+
 				const detail = {
 					...state,
 					...res.data,
 					tournament: {
 						roster: state.roster,
 					},
-					currentPoint: res.data.points.slice(-1).pop(),
+					currentPoint: {
+						...currentPoint,
+						genderRatio: {
+							m: genderRatio.m,
+							f: genderRatio.f,
+						},
+					},
 				};
 				sh.setState({
 					...state,
 					...res.data,
-					currentPoint: detail.currentPoint,
+					currentPoint: {
+						...currentPoint,
+						genderRatio: {
+							m: genderRatio.m,
+							f: genderRatio.f,
+						},
+					},
 				});
-				console.log(res.data);
-				console.log(sh.getState());
+
 				const evt = new CustomEvent('load-point', {
 					detail,
 				});
@@ -565,6 +639,8 @@ const handleStartPoint = (body) => {
 					showDiv(actionArea);
 				}
 			}
+		} else {
+			showMessage('error', res.message);
 		}
 	};
 
@@ -578,13 +654,13 @@ const handleNewPoint = (e) => {
 	if (!state) return;
 
 	let newDirection, newOD;
+	console.log(state);
 	if (state.currentPoint.endPeriod) {
-		if (state.currentPoint.period % 2 === 1) {
+		if (state.currentPoint.period % 2 === 0) {
 			newDirection = state.startSettings.direction;
 			newOD = state.startSettings.offense;
 		} else {
 			newDirection = -state.startSettings.direction;
-
 			newOD = !state.startSettings.offense;
 		}
 	} else {
@@ -1047,6 +1123,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	document.addEventListener('update-info', (e) => {
 		if (sh) sh.setState(e.detail);
+		console.log('updating info');
 	});
 	document.addEventListener('point-ended', handleNewPoint);
 	document.addEventListener('return-to-point', (e) => {

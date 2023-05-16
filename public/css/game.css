@@ -219,3 +219,19 @@ hr.separator {
 	width: 1rem;
 	height: 1rem;
 }
+
+#prescribed-gender-ratio {
+	font-weight: bold;
+}
+
+#gr-container {
+	padding: 0 0.2rem;
+}
+
+#gr-container[data-majority='F'] {
+	background-color: var(--pink);
+}
+
+#gr-container[data-majority='M'] {
+	background-color: var(--blue);
+}
