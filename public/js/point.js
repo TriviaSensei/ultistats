@@ -440,6 +440,8 @@ const displayEventDescription = (e) => {
 		}
 		//if we only got one thing, the whole pass array must be only one element.
 		let events = [];
+
+		console.log(lastThree);
 		if (lastThree.length === 1) {
 			if (lastThree[0].event) {
 				if (lastThree[0].event === 'timeout') {
@@ -486,6 +488,10 @@ const displayEventDescription = (e) => {
 				}
 				return showEvent(
 					`${state.opponent} ${ev}<br>${state.team} to pick up the disc.`
+				);
+			} else if (lastThree[0].result === 'block') {
+				return showEvent(
+					`${lastThree[0].player} got a block<br>${state.team} to pick up the disc`
 				);
 			} else return showEvent(`${state.opponent} have the disc`);
 		} else {
@@ -553,6 +559,7 @@ const displayEventDescription = (e) => {
 								`${state.opponent} threw the disc away<br>${state.team} to pick up`
 							);
 						case 'block':
+							console.log('block');
 							return showEvent(
 								`${lastThree[0].player} got a block<br>${state.team} to pick up`
 							);

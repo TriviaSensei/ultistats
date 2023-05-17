@@ -13,6 +13,7 @@ router.use('/*/:id', gameController.verifyOwnership);
 
 router.patch('/startPoint/:id', gameController.startPoint);
 router.patch('/setPasses/:id', gameController.setPasses);
+router.patch('/endPeriod/:id', gameController.endPeriod);
 router.patch('/endGame/:id', gameController.endGame);
 router.patch('/setLineup/:id', gameController.setLineup);
 router.patch('/subPlayer/:id', gameController.subPlayer);

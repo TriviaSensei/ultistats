@@ -31,7 +31,9 @@ const startModal = new bootstrap.Modal(
 const pointModal = new bootstrap.Modal(
 	document.querySelector('#point-setup-modal')
 );
-
+const endPeriodModal = new bootstrap.Modal(
+	document.querySelector('#end-period-modal')
+);
 const settingsForm = document.querySelector('#game-start-settings');
 const cancelSaveSettings = document.querySelector('#cancel-save-settings');
 const submitSettings = settingsForm?.querySelector('button[type="submit"]');
@@ -55,6 +57,7 @@ const genderWarning = document.querySelector('#gender-warning');
 const lineWarning = document.querySelector('#line-warning');
 const startPoint = document.querySelector('#start-point');
 const endPeriod = document.querySelector('#end-period-button');
+const confirmEndPeriod = document.querySelector('#confirm-end-period');
 
 //between point timeouts
 const ourTimeout = document.querySelector('#timeout-us');
@@ -118,6 +121,7 @@ const populatePointStart = (dir, off, gen) => {
 	const o = document.querySelector(`input[name="od"][value="${off}"]`);
 	if (o) o.checked = true;
 
+	console.log(state);
 	//gender rule A - alternate GR every two points (1 - 23 - 45 - ...)
 	if (state.genderRule === 'A') {
 		if (gen && genderRatioIndicator) {
@@ -654,7 +658,7 @@ const handleNewPoint = (e) => {
 	if (!state) return;
 
 	let newDirection, newOD;
-	console.log(state);
+	// console.log(state);
 	if (state.currentPoint.endPeriod) {
 		if (state.currentPoint.period % 2 === 0) {
 			newDirection = state.startSettings.direction;
@@ -886,6 +890,33 @@ const updateEndPeriodButton = (e) => {
 	if (!e.detail) return;
 	e.target.disabled =
 		e.detail.period >= e.detail.format.periods || e.detail.points.length === 0;
+};
+
+const handleEndPeriod = (e) => {
+	const state = sh.getState();
+	const str = `/api/v1/games/endPeriod/${state._id}`;
+	const handler = (res) => {
+		if (res.status !== 'success') {
+			showMessage('error', res.message);
+		} else {
+			let pdName;
+			if (state.format.periods === 4) pdName = 'quarter';
+			else if (state.format.periods === 2) pdName = 'half';
+			else pdName = 'period';
+
+			let pdNo;
+			if (res.data.period === 2) pdNo = '1st';
+			else if (res.data.period === 3) pdNo = '2nd';
+			else if (res.data.period === 4) pdNo = '3rd';
+			showMessage('info', `End of ${pdNo} ${pdName}`, 2000);
+			endPeriodModal.hide();
+			sh.setState({
+				...state,
+				...res.data,
+			});
+		}
+	};
+	handleRequest(str, 'PATCH', null, handler);
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1120,6 +1151,8 @@ document.addEventListener('DOMContentLoaded', () => {
 	ourTimeout.addEventListener('click', handleTimeout);
 	theirTimeout.addEventListener('click', handleTimeout);
 	pointSetupForm.addEventListener('submit', handleSetLineup);
+
+	confirmEndPeriod.addEventListener('click', handleEndPeriod);
 
 	document.addEventListener('update-info', (e) => {
 		if (sh) sh.setState(e.detail);

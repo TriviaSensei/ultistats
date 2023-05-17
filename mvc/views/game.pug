@@ -20,6 +20,7 @@ block modals
     include components/modals/game/startSettings
     include components/modals/game/pointSetup
     include components/modals/game/sub
+    include components/modals/game/confirmEndPeriod
 block content
     #data-area.d-none
         #test-data(data-value=`${JSON.stringify(gameData)}`)
@@ -99,9 +100,9 @@ block content
                             button#timeout-us.f-1.btn.btn-warning.me-(data-team="1") Our timeout 
                             button#timeout-them.f-1.btn.btn-warning.ms-1(data-team="-1") Their timeout  
                         .d-flex.flex-column.w-100
-                            button.btn.btn-secondary.mb-1(type="button" data-bs-toggle="modal" data-bs-target="#start-settings-modal") Edit game start settings
+                            button.btn.btn-dark.mb-1(type="button" data-bs-toggle="modal" data-bs-target="#start-settings-modal") Edit game start settings
                             button#reset-last-point.btn.btn-dark.mb-1(type="button") Reset last point
-                            button#end-period-button.btn.btn-dark.mb-1(type="button") End period
+                            button#end-period-button.btn.btn-dark.mb-1(type="button" data-bs-toggle="modal" data-bs-target="#end-period-modal") End period
                             button#end-game-button.btn.btn-dark(type="button") End game
                     #action-div.d-flex.flex-column.w-100.h-100.overflow-auto.d-none
                         include game/editPoint

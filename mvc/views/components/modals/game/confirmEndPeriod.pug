@@ -1,0 +1,11 @@
+.modal.fade#end-period-modal(tabindex="-1" aria-labelledby="end-period-label" aria-hidden="true")
+    .modal-dialog.modal-dialog-centered
+        .modal-content#end-period-modal-content
+            .modal-header
+                h5.modal-title#end-period-label End period?
+                button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+            .modal-body.d-flex.flex-column.overflow-hidden
+                p Are you sure you want to manually end the period? This cannot be undone.
+            .modal-footer
+                button#confirm-end-period.btn.btn-primary(type="button") Confirm
+                button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Cancel

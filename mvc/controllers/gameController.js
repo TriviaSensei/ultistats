@@ -460,6 +460,30 @@ exports.subPlayer = catchAsync(async (req, res, next) => {
 	});
 });
 
+exports.endPeriod = catchAsync(async (req, res, next) => {
+	if (res.locals.game.period === res.locals.format.periods)
+		return next(new AppError('You are in the last period.', 400));
+
+	const lastPoint = res.locals.game.points[res.locals.game.points.length - 1];
+
+	if (lastPoint.scored === 0)
+		return next(new AppError('The last point has not finished.', 400));
+
+	res.locals.game.points[res.locals.game.points.length - 1].endPeriod = true;
+	res.locals.game.period++;
+
+	res.locals.game.markModified('points');
+	res.locals.game.markModified('period');
+	const data = await res.locals.game.save();
+	await data.populate({
+		path: 'format',
+	});
+	res.status(200).json({
+		status: 'success',
+		data,
+	});
+});
+
 exports.endGame = catchAsync(async (req, res, next) => {
 	const game = res.locals.game;
 
