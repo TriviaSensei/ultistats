@@ -8,6 +8,7 @@ import { createElement } from './utils/createElementFromSelector.js';
 import { showDiv } from './utils/showDiv.js';
 
 const dblTouchTime = 500;
+const pointsOffWarning = 6;
 
 const blankPass = {
 	offense: undefined,
@@ -919,6 +920,28 @@ const handleEndPeriod = (e) => {
 	handleRequest(str, 'PATCH', null, handler);
 };
 
+const handlePointsOff = (e) => {
+	const lbl = e.target.querySelector('.points-off');
+	const state = e.detail;
+	const id = e.target.getAttribute('data-id');
+
+	let pointsOff = 0;
+
+	for (var i = state.points.length - 1; i >= 0; i--) {
+		const point = state.points[i];
+		if (point.lineup.includes(id) || point.injuries.includes(id)) break;
+		else if (point.scored !== 0) pointsOff++;
+	}
+
+	if (pointsOff >= pointsOffWarning) {
+		lbl.innerHTML = pointsOff;
+		lbl.classList.remove('invisible');
+	} else {
+		lbl.innerHTML = '';
+		lbl.classList.add('invisible');
+	}
+};
+
 document.addEventListener('DOMContentLoaded', () => {
 	let state = JSON.parse(
 		document.querySelector('#test-data').getAttribute('data-value')
@@ -929,14 +952,6 @@ document.addEventListener('DOMContentLoaded', () => {
 			location.href = '/mystuff';
 		}, 1000);
 	}
-
-	state.roster.forEach((p) => {
-		const op = createRosterOption(p, handleArrows);
-		op.addEventListener('dblclick', handleMoveOne);
-		op.addEventListener('click', handleDoubleTap);
-		op.addEventListener('dbltap', handleMoveOne);
-		insertOption(op, availableContainer);
-	});
 
 	state.lines
 		.sort((a, b) => {
@@ -991,6 +1006,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	sh = new StateHandler(state);
 
+	state.roster.forEach((p) => {
+		const op = createRosterOption(p, handleArrows);
+		op.addEventListener('dblclick', handleMoveOne);
+		op.addEventListener('click', handleDoubleTap);
+		op.addEventListener('dbltap', handleMoveOne);
+		insertOption(op, availableContainer);
+		sh.addWatcher(op, handlePointsOff);
+	});
 	/*
 	Start view 
 		- Settings modal - if game start settings aren't set

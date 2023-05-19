@@ -361,6 +361,26 @@ exports.setPasses = catchAsync(async (req, res, next) => {
 		}
 	});
 
+	//check for game end by point cap (cap = 0 means no cap, e.g. AUDL or PUL format)
+	if (res.locals.game.cap > 0) {
+		const lead = Math.max(res.locals.game.score, res.locals.game.oppScore);
+		const trail = Math.min(res.locals.game.score, res.locals.game.oppScore);
+		if (
+			//ahead by the win-by amount and score is at least equal to the cap
+			(lead >= trail + res.locals.game.winBy && lead >= res.locals.game.cap) ||
+			//...or ahead at all, and we've hit the hard point cap
+			(lead > trail && lead >= res.locals.game.hardCap)
+		) {
+			res.locals.game.result =
+				res.locals.game.score > res.locals.game.oppScore
+					? 'W'
+					: res.locals.game.score < res.locals.game.oppScore
+					? 'L'
+					: 'T';
+			res.locals.game.markModified('result');
+		}
+	}
+
 	res.locals.game.period = Math.min(
 		res.locals.game.period,
 		res.locals.format.periods

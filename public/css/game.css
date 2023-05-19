@@ -34,14 +34,19 @@ body {
 	margin-left: 1rem;
 }
 
-.direction-span.left::after {
-	content: '⇦';
+.direction-span::after {
+	background-color: var(--color-3);
 	font-weight: bold;
+	color: white;
+	padding: 0 0.2rem;
+}
+
+.direction-span.left::after {
+	content: '◀◀';
 }
 
 .direction-span.right::after {
-	content: '⇨';
-	font-weight: bold;
+	content: '▶▶';
 }
 
 .player-container {
@@ -234,4 +239,22 @@ hr.separator {
 
 #gr-container[data-majority='M'] {
 	background-color: var(--blue);
+}
+
+.points-off {
+	color: red;
+	font-weight: bold;
+	margin-left: 2px;
+}
+
+.points-off:not(.invisible):not(.invisible-div)::before {
+	content: '(Off';
+	padding-right: 0.2rem;
+}
+.points-off:not(.invisible):not(.invisible-div)::after {
+	content: ')';
+}
+
+.invisible-div {
+	display: none !important;
 }

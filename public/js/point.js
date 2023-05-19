@@ -441,7 +441,6 @@ const displayEventDescription = (e) => {
 		//if we only got one thing, the whole pass array must be only one element.
 		let events = [];
 
-		console.log(lastThree);
 		if (lastThree.length === 1) {
 			if (lastThree[0].event) {
 				if (lastThree[0].event === 'timeout') {
@@ -821,7 +820,6 @@ const drawLastPass = (state) => {
 		drawLine(null);
 		return drawDisc(pageX, pageY);
 	} else if (passes.length < 2) return drawLine(null);
-
 	let lastPassStart, lastPassEnd;
 	for (var i = passes.length - 1; i >= 0; i--) {
 		if (!passes[i].offense) break;
@@ -848,7 +846,6 @@ const drawLastPass = (state) => {
 	drawDisc(pageX, pageY);
 
 	if (!lastPassStart) return drawLine(null);
-
 	const [x0, y0] = getPageCoordinates(lastPassStart.x, lastPassStart.y);
 	drawLine(x0, y0, pageX, pageY);
 };
@@ -1202,6 +1199,7 @@ const drawLine = (x0, y0, x1, y1) => {
 };
 
 //event fires when we move the disc around. On touchend or mouseup, we update the data.
+//TODO: on mobile, clicking a button still moves the disc to the edge of the field
 const setDiscPosition = (e) => {
 	const state = sh.getState();
 	if (!state) return;
@@ -1256,6 +1254,8 @@ const setDiscPosition = (e) => {
 			isNaN(y) || y === null ? cp.y : y
 		);
 	} else if (isMobile) {
+		if (e.target !== field && e.target !== disc) return;
+		console.log(e.type);
 		//if we are on mobile and it's a touchend event, the location is the changed touch
 		if (e.type === 'touchend') {
 			({ pageX, pageY } = e.changedTouches[0]);
@@ -1267,6 +1267,8 @@ const setDiscPosition = (e) => {
 			(e.target === disc || e.target === field)
 		) {
 			({ pageX, pageY } = e.targetTouches[0]);
+		} else if (e.type === 'mousedown') {
+			({ pageX, pageY } = e);
 		}
 	} else if (
 		e.type === 'mousedown' &&
@@ -1665,8 +1667,10 @@ const createSubOption = (p, i) => {
 	const l = createElement(`label`);
 	l.setAttribute('for', `sub-${p.id}`);
 	l.innerHTML = `${p.lastName}, ${p.firstName} (${p.gender}/${p.line}/${p.position})`;
+	const l2 = createElement(`label.points-off.invisible`);
 	toReturn.appendChild(r);
 	toReturn.appendChild(l);
+	toReturn.appendChild(l2);
 	return toReturn;
 };
 

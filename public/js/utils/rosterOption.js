@@ -21,8 +21,12 @@ export const createRosterOption = (p, changeFunc) => {
 	lbl.innerHTML = `${name} (${p.gender ? p.gender + '/' : ''}${
 		p.line ? p.line + '/' : ''
 	}${p.position || '-'})`;
+	const lbl2 = createElement('label.points-off.invisible');
 	op.appendChild(cb);
-	op.appendChild(lbl);
+	const cont = createElement('.d-flex.flex-row-reverse');
+	cont.appendChild(lbl2);
+	cont.appendChild(lbl);
+	op.appendChild(cont);
 	return op;
 };
 

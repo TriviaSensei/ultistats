@@ -64,12 +64,17 @@
                                             input#toggle-line-ct(type="checkbox" data-target="#available-container" data-toggle="cutter" checked)
                                             label.ms-1.me-2(for="toggle-line-ct") C
                                             input#toggle-line-hy(type="checkbox" data-target="#available-container" data-toggle="hybrid" checked)
-                                            label.ms-1.me-2(for="toggle-line-hy") Hy              
+                                            label.ms-1.me-2(for="toggle-line-hy") Hy      
+                                    .d-flex.f-1.flex-column.align-items-center 
+                                        .form-label.mb-1 Pts Off 
+                                        .d-flex.f-1.w-100.justify-content-center
+                                            input#toggle-pts-off(type="checkbox" data-target="#available-container" data-toggle="off" checked)
+                                            label.ms-1.me-2(for="toggle-pts-off") Show    
                                 #line-selector.d-flex.f-1.w-100.overflow-hidden
                                     .d-flex.flex-column.f-1.px-1.h-100.overflow-hidden
                                         .form-label Available 
                                         .h-100.w-100.d-flex.f-1.overflow-hidden
-                                            #available-container.player-container.h-100.w-100.left-side.overflow-auto.male.female.defense.offense.handler.cutter.hybrid
+                                            #available-container.player-container.h-100.w-100.left-side.overflow-auto.male.female.defense.offense.handler.cutter.hybrid.off
                                     .px-1.m-auto
                                         .input-group-f.w-100
                                             .my-1.w-100

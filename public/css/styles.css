@@ -339,8 +339,14 @@ tbody > tr.filler-row:not(:last-child) {
 .player-container:not(.offense) > .roster-option[data-line='O'],
 .player-container:not(.handler) > .roster-option[data-position='H'],
 .player-container:not(.cutter) > .roster-option[data-position='C'],
-.player-container:not(.hybrid) > .roster-option[data-position='Hy'] {
+.player-container:not(.hybrid) > .roster-option[data-position='Hy'],
+.player-container:not(.off) > .roster-option .points-off {
 	display: none !important;
+}
+
+.player-container.off .points-off:not(.invisible) + label {
+	font-weight: bold;
+	color: red;
 }
 
 #m-count {
