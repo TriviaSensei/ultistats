@@ -201,6 +201,7 @@ const updatePasses = () => {
 					if (res.data.period === state.format.periods) {
 						pdNo = 'the';
 						pdName = 'game';
+						console.log(state);
 					}
 
 					showMessage(`info`, `End of ${pdNo} ${pdName}`, 2000);
@@ -364,7 +365,6 @@ const getPlayer = (id) => {
 	if (!sh || !id) return blank;
 
 	const state = sh.getState();
-
 	const toReturn = state.roster.find((p) => {
 		return p.id === id;
 	});
@@ -377,7 +377,7 @@ const displayEventDescription = (e) => {
 	const state = e.detail;
 	const currentPoint = state.currentPoint;
 	const passes = state.currentPoint?.passes;
-
+	console.log(state);
 	if (!passes || !Array.isArray(passes)) return showEvent('(No events)');
 
 	if (
@@ -440,7 +440,7 @@ const displayEventDescription = (e) => {
 		}
 		//if we only got one thing, the whole pass array must be only one element.
 		let events = [];
-
+		console.log(lastThree);
 		if (lastThree.length === 1) {
 			if (lastThree[0].event) {
 				if (lastThree[0].event === 'timeout') {
@@ -850,25 +850,60 @@ const drawLastPass = (state) => {
 	drawLine(x0, y0, pageX, pageY);
 };
 
+//TODO: integrate this with the undopass function when we undo a scoring pass
+const handleReturnToPoint = () => {
+	let state = sh.getState();
+	const str = `/api/v1/games/returnToPoint/${state._id}`;
+	const handler = (res) => {
+		if (res.status === 'success') {
+			console.log(res.data);
+			state = {
+				...state,
+				...res.data,
+				currentPoint: {
+					...res.data.points.slice(-1).pop(),
+					scored: 0,
+				},
+				poppedPasses: [],
+				discIn: true,
+			};
+			sh.setState(state);
+			const evt = new CustomEvent('update-info', {
+				detail: state,
+			});
+			document.dispatchEvent(evt);
+			const evt2 = new CustomEvent('return-to-point', { detail: state });
+			document.dispatchEvent(evt2);
+		} else {
+			showMessage('error', res.message);
+		}
+	};
+	handleRequest(str, 'PATCH', null, handler);
+};
+
 const undoPass = (e) => {
 	const state = sh.getState();
+
+	console.log(state);
+	const passes = state.currentPoint.passes;
+
+	if (passes.length === 0) return handleReturnToPoint();
 	//get rid of the blank pass at the end first
 	const currentPass = state.currentPoint.passes.pop();
 
-	console.log(currentPass);
-
 	if (currentPass.goal !== 0) {
-		state.poppedPasses.push(currentPass);
-		state.discIn = true;
-		if (currentPass.goal === 1) state.score--;
-		else state.oppScore--;
-		state.currentPoint.passes.push({
-			...blankPass,
-			offense: currentPass.offense,
-		});
-		state.currentPoint.scored = 0;
-		sh.setState(state);
-		return sendEvent('return-to-point', state);
+		return handleReturnToPoint();
+		// state.poppedPasses.push(currentPass);
+		// state.discIn = true;
+		// if (currentPass.goal === 1) state.score--;
+		// else state.oppScore--;
+		// state.currentPoint.passes.push({
+		// 	...blankPass,
+		// 	offense: currentPass.offense,
+		// });
+		// state.currentPoint.scored = 0;
+		// sh.setState(state);
+		// return sendEvent('return-to-point', state);
 	}
 
 	const lastPass = state.currentPoint.passes.pop();
@@ -1402,8 +1437,6 @@ const handleLoadPoint = (e) => {
 	else sh.setState({ ...e.detail, poppedPasses: [] });
 	const state = sh.getState();
 
-	console.log(state);
-
 	if (state.currentPoint) {
 		if (!state.discIn) state.discIn = true;
 
@@ -1576,13 +1609,12 @@ const handleUndoRedoButtons = (state) => {
 
 	const passes = state.currentPoint?.passes;
 
-	if (Array.isArray(passes)) {
-		if (passes.length === 1) {
-			if (passes[0].goal === -1) undo.disabled = false;
-		} else undo.disabled = passes.length === 0;
-	} else {
-		undo.disabled = true;
-	}
+	undo.disabled = !Array.isArray(passes);
+	// if (Array.isArray(passes)) {
+	// 	undo.
+	// } else {
+	// 	undo.disabled = true;
+	// }
 };
 
 const handleResultButtons = (state) => {

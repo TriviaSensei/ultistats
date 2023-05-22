@@ -122,7 +122,6 @@ const populatePointStart = (dir, off, gen) => {
 	const o = document.querySelector(`input[name="od"][value="${off}"]`);
 	if (o) o.checked = true;
 
-	console.log(state);
 	//gender rule A - alternate GR every two points (1 - 23 - 45 - ...)
 	if (state.genderRule === 'A') {
 		if (gen && genderRatioIndicator) {

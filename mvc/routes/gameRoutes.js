@@ -17,7 +17,7 @@ router.patch('/endPeriod/:id', gameController.endPeriod);
 router.patch('/endGame/:id', gameController.endGame);
 router.patch('/setLineup/:id', gameController.setLineup);
 router.patch('/subPlayer/:id', gameController.subPlayer);
-
+router.patch('/returnToPoint/:id', gameController.returnToPoint);
 /**Test only */
 router.patch('/clear/:id', gameController.clearPoints);
 router.patch('/resetPoint/:id', gameController.resetPoint);

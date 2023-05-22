@@ -8,6 +8,23 @@ const Format = require('../models/formatModel');
 const catchAsync = require('../../utils/catchAsync');
 const AppError = require('../../utils/appError');
 const round = require('../../utils/round');
+const { resolve } = require('path');
+
+const blankPass = {
+	offense: undefined,
+	player: '',
+	x: undefined,
+	y: undefined,
+	result: '',
+	turnover: false,
+	goal: 0,
+	event: '',
+	eventDesc: {
+		team: 0,
+		in: '',
+		out: '',
+	},
+};
 
 /**Testing only */
 exports.clearPoints = catchAsync(async (req, res, next) => {
@@ -474,6 +491,65 @@ exports.subPlayer = catchAsync(async (req, res, next) => {
 	game.markModified('points');
 	const data = await game.save();
 
+	res.status(200).json({
+		status: 'success',
+		data,
+	});
+});
+
+exports.returnToPoint = catchAsync(async (req, res, next) => {
+	const game = res.locals.game;
+	if (game.points.length === 0)
+		return next(new AppError('No points in this game.', 400));
+
+	let cp = game.points[game.points.length - 1];
+
+	//current point has not been scored, so pop it and go back to the last point
+	if (cp.scored === 0) {
+		res.locals.game.points.pop();
+		cp = game.points[game.points.length - 1];
+		cp.scored = 0;
+	}
+
+	//go back a period if needed
+	if (cp.endPeriod)
+		res.locals.game.period = Math.min(
+			res.locals.game.period - 1,
+			res.locals.format.periods
+		);
+	//if there was a result, unset it
+	res.locals.game.result = '';
+
+	//reset the score to the previous
+	if (cp.scored === 1) res.locals.game.score--;
+	else if (cp.scored === -1) res.locals.game.oppScore--;
+
+	cp.scored = 0;
+
+	if (cp.passes.length === 0)
+		return next(
+			new AppError('Invalid data - contact your administrator.', 400)
+		);
+	const lastPass = cp.passes[cp.passes.length - 1];
+	lastPass.goal = 0;
+	cp.passes.push({
+		...blankPass,
+		offense:
+			(lastPass.offense && !lastPass.turnover) ||
+			(!lastPass.offense && lastPass.turnover),
+	});
+
+	res.locals.game.markModified('score');
+	res.locals.game.markModified('oppScore');
+	res.locals.game.markModified('result');
+	res.locals.game.markModified('points');
+	const data = await res.locals.game.save();
+	await data.populate({
+		path: 'format',
+	});
+	// const data = await res.locals.game.populate({
+	// 	path: 'format',
+	// });
 	res.status(200).json({
 		status: 'success',
 		data,
