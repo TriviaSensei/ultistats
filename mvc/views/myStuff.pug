@@ -3,6 +3,9 @@ extends _base
 block styles 
     link(rel='stylesheet' href='/css/user.css')
     link(rel='stylesheet' href="/css/tournaments.css")
+    link(rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css")
+    script(src="https://code.jquery.com/jquery-3.6.0.js" )
+    script(src="https://code.jquery.com/ui/1.13.2/jquery-ui.js" )
 
 block modals 
     include components/modals/editPlayerModal
@@ -46,8 +49,9 @@ block content
 block scripts 
     //- script(src="https://js.stripe.com/v3/" defer)
     //- script(src="/js/utils/stripe.js" type="module" defer)
+    
     script(src="/js/teams.js" type="module" defer)
     script(src="/js/tournaments.js" type="module" defer)
     script(src="/js/games.js" type="module" defer)
+    script(src="/js/stats.js" type="module" defer)
     script(src="/js/subscription.js" type="module" defer)
-    

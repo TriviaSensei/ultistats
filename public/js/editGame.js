@@ -434,11 +434,12 @@ const handleTimeout = (e) => {
 			return showMessage('error', 'Opponent has no timeouts left.');
 		state.timeoutsLeft[1]--;
 		sh.setState(state);
+	} else if (state.result !== '') {
+		return showMessage('error', 'The game has ended.');
 	}
 
 	//if there is no current point or if the current point was already scored, start a new point and
 	//add a timeout to it
-	console.log(state);
 	if (!state.currentPoint || state.currentPoint.scored !== 0) {
 		const genderRatio =
 			state.genderRule === 'A' ? genderRatioIndicator.dataset : null;
@@ -792,7 +793,9 @@ const updateScoreboard = (e) => {
 	them.querySelector('.team-score').innerHTML = data.oppScore;
 
 	e.target.querySelector('.game-period').innerHTML =
-		data.period === 0
+		data.result !== ''
+			? 'Final'
+			: data.period === 0
 			? 'Pre'
 			: data.period === 1
 			? '1st'
@@ -939,6 +942,11 @@ const handlePointsOff = (e) => {
 		lbl.innerHTML = '';
 		lbl.classList.add('invisible');
 	}
+};
+
+const handleTimeoutButtons = (state) => {
+	ourTimeout.disabled = state.result !== '';
+	theirTimeout.disabled = state.result !== '';
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1199,4 +1207,5 @@ document.addEventListener('DOMContentLoaded', () => {
 	sh.addWatcher(setupScoreboard, updateSetupScoreboard);
 	sh.addWatcher(pointSetupForm, updatePointSetup);
 	sh.addWatcher(endPeriod, updateEndPeriodButton);
+	sh.addWatcher(null, handleTimeoutButtons);
 });

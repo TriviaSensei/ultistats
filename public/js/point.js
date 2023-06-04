@@ -60,6 +60,9 @@ const revBrick = document.querySelector('#reverse-brick');
 const midfield = document.querySelector('#midfield');
 const centerDisc = document.querySelector('#center');
 
+//point setup
+const pointSetupButton = document.querySelector('#toggle-point-setup');
+
 let moving = false;
 
 let initialLength = 1;
@@ -183,7 +186,20 @@ const updatePasses = () => {
 				};
 				state.points[state.points.length - 1].scored = res.data.scored;
 				if (res.data.endPeriod) {
-					state.period++;
+					state.period = Math.min(state.period + 1, state.format.periods);
+					if (
+						state.score > state.oppScore &&
+						state.score >= state.oppScore + state.winBy &&
+						state.score >= state.cap
+					) {
+						state.result = 'W';
+					} else if (
+						state.score < state.oppScore &&
+						state.score + state.winBy <= state.oppScore &&
+						state.oppScore >= state.cap
+					) {
+						state.result = 'L';
+					}
 				}
 				sh.setState(state);
 				if (res.data.endPeriod) {
@@ -440,7 +456,6 @@ const displayEventDescription = (e) => {
 		}
 		//if we only got one thing, the whole pass array must be only one element.
 		let events = [];
-		console.log(lastThree);
 		if (lastThree.length === 1) {
 			if (lastThree[0].event) {
 				if (lastThree[0].event === 'timeout') {
@@ -850,7 +865,6 @@ const drawLastPass = (state) => {
 	drawLine(x0, y0, pageX, pageY);
 };
 
-//TODO: integrate this with the undopass function when we undo a scoring pass
 const handleReturnToPoint = () => {
 	let state = sh.getState();
 	const str = `/api/v1/games/returnToPoint/${state._id}`;
@@ -884,7 +898,6 @@ const handleReturnToPoint = () => {
 const undoPass = (e) => {
 	const state = sh.getState();
 
-	console.log(state);
 	const passes = state.currentPoint.passes;
 
 	if (passes.length === 0) return handleReturnToPoint();
@@ -1958,6 +1971,12 @@ document.addEventListener('DOMContentLoaded', () => {
 	sh.addWatcher(disc, moveDisc);
 	sh.addWatcher(null, drawLastPass);
 	sh.addWatcher(null, setSubs);
+	sh.addWatcher(pointSetupButton, (e) => {
+		const tgt = e?.target;
+		const det = e?.detail;
+		if (!tgt || !det) return;
+		e.target.disabled = e.detail.result !== '';
+	});
 	window.addEventListener('beforeunload', (e) => {
 		e.preventDefault();
 		// updatePasses();

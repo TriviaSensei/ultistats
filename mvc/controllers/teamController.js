@@ -102,7 +102,11 @@ exports.addPlayer = catchAsync(async (req, res, next) => {
 			p.displayName = req.body.displayName;
 			p.number = req.body.number;
 			team.roster.some((p2, j) => {
-				if (parseInt(p2.number) === parseInt(req.body.number) && i !== j) {
+				if (
+					parseInt(p2.number) === parseInt(req.body.number) &&
+					i !== j &&
+					p2.active
+				) {
 					status = 'warning';
 					message = `${message}\nNumber ${p2.number} is already being worn by ${p2.firstName} ${p2.lastName}`;
 					return true;
@@ -424,8 +428,30 @@ exports.getTournaments = catchAsync(async (req, res, next) => {
 			},
 			{
 				path: 'games',
-				select:
-					'_id round opponent result score oppScore period cap winBy hardCap timeouts',
+				select: `_id round opponent result score oppScore period cap winBy hardCap timeouts`,
+			},
+		])
+		.sort({
+			startDate: 1,
+		});
+
+	res.status(200).json({
+		status: 'success',
+		data,
+	});
+});
+
+exports.getTournamentDetails = catchAsync(async (req, res, next) => {
+	const data = await Tournament.find({
+		team: req.params.id,
+	})
+		.populate([
+			{
+				path: 'format',
+			},
+			{
+				path: 'games',
+				select: `_id round opponent result score oppScore period cap winBy hardCap timeouts points`,
 			},
 		])
 		.sort({

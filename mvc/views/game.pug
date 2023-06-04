@@ -24,34 +24,34 @@ block modals
 block content
     #data-area.d-none
         #test-data(data-value=`${JSON.stringify(gameData)}`)
-        #game-data(data-value=`${gameData._id}` data-cap=`${gameData.cap}` data-hard-cap=`${gameData.hardCap}` data-win-by=`${gameData.winBy}` data-timeouts=`${gameData.timeouts}` data-period=`${gameData.period}`)
-        #score-data(data-us=`${gameData.score}` data-them=`${gameData.oppScore}`)
-        #division(data-value=`${division}`)
-        #gender-data(data-rule=`${genderRule}` data-start=`${genderRule === 'A' ? gameData.startSettings.genderRatio : gameData.startSettings.genderRatioChoice}`)
-        #our-name(data-name=`${team}`)
-        #their-name(data-name=`${gameData.opponent}`)
-        #start-settings(data-jersey=`${gameData.startSettings.jersey}` data-offense=`${gameData.startSettings.offense}` data-gender-ratio=`${gameData.startSettings.genderRatio}` data-gender-ratio-choice=`${gameData.startSettings.genderRatioChoice}` data-direction=`${gameData.startSettings.direction}`)
-        #format-settings(data-max-male=`${gameData.format.genderMax[0]}` data-max-female=`${gameData.format.genderMax[1]}` data-allow-period-end=`${gameData.format.allowPeriodEnd}` data-players=`${gameData.format.players}` data-periods=`${gameData.format.periods}` data-width=`${gameData.format.width}` data-length=`${gameData.format.length}` data-endzone=`${gameData.format.endzone}` data-brick=`${gameData.format.brick}`)
-        #point-data
-            each point in gameData.points 
-                .point(data-score=`${point.score}` data-opp-score=`${point.oppScore}` data-period=`${point.period}` data-end-period=`${point.endPeriod}` data-scored=`${point.scored}` data-offense=`${point.offense}`)
-                    each pass in point.passes 
-                        - if (pass.event === 'timeout')
-                            .timeout(data-team=`${pass.eventDesc.team}`)
-        - if (currentPoint)
-            #current-point(data-score=`${currentPoint.score}` data-opp-score=`${currentPoint.oppScore}` data-period=`${currentPoint.period}` data-end-period=`${currentPoint.endPeriod}` data-offense=`${currentPoint.offense}` data-direction=`${currentPoint.direction}` data-scored=`${currentPoint.scored}`)
-                #lineup
-                    - if (currentPoint.lineup)
-                        each player in currentPoint.lineup
-                            .player(data-id=`${player}`)
-                #injuries 
-                    - if (currentPoint.injuries)
-                        each player in currentPoint.injuries 
-                            .player(data-id=`${player}`)
-                #passes 
-                    - if (currentPoint.passes)
-                        each pass in currentPoint.passes 
-                            .pass(data-thrower=`${pass.thrower}` data-receiver=`${pass.receiver}` data-defender=`${pass.defender}` data-x0=`${pass.x0}` data-y0=`${pass.y0}` data-x1=`${pass.x1}` data-y1=`${pass.y1}` data-result=`${pass.result}` data-goal=`${pass.goal}`)
+        //- #game-data(data-value=`${gameData._id}` data-cap=`${gameData.cap}` data-hard-cap=`${gameData.hardCap}` data-win-by=`${gameData.winBy}` data-timeouts=`${gameData.timeouts}` data-period=`${gameData.period}`)
+        //- #score-data(data-us=`${gameData.score}` data-them=`${gameData.oppScore}`)
+        //- #division(data-value=`${division}`)
+        //- #gender-data(data-rule=`${genderRule}` data-start=`${genderRule === 'A' ? gameData.startSettings.genderRatio : gameData.startSettings.genderRatioChoice}`)
+        //- #our-name(data-name=`${team}`)
+        //- #their-name(data-name=`${gameData.opponent}`)
+        //- #start-settings(data-jersey=`${gameData.startSettings.jersey}` data-offense=`${gameData.startSettings.offense}` data-gender-ratio=`${gameData.startSettings.genderRatio}` data-gender-ratio-choice=`${gameData.startSettings.genderRatioChoice}` data-direction=`${gameData.startSettings.direction}`)
+        //- #format-settings(data-max-male=`${gameData.format.genderMax[0]}` data-max-female=`${gameData.format.genderMax[1]}` data-allow-period-end=`${gameData.format.allowPeriodEnd}` data-players=`${gameData.format.players}` data-periods=`${gameData.format.periods}` data-width=`${gameData.format.width}` data-length=`${gameData.format.length}` data-endzone=`${gameData.format.endzone}` data-brick=`${gameData.format.brick}`)
+        //- #point-data
+        //-     each point in gameData.points 
+        //-         .point(data-score=`${point.score}` data-opp-score=`${point.oppScore}` data-period=`${point.period}` data-end-period=`${point.endPeriod}` data-scored=`${point.scored}` data-offense=`${point.offense}`)
+        //-             each pass in point.passes 
+        //-                 - if (pass.event === 'timeout')
+        //-                     .timeout(data-team=`${pass.eventDesc.team}`)
+        //- - if (currentPoint)
+        //-     #current-point(data-score=`${currentPoint.score}` data-opp-score=`${currentPoint.oppScore}` data-period=`${currentPoint.period}` data-end-period=`${currentPoint.endPeriod}` data-offense=`${currentPoint.offense}` data-direction=`${currentPoint.direction}` data-scored=`${currentPoint.scored}`)
+        //-         #lineup
+        //-             - if (currentPoint.lineup)
+        //-                 each player in currentPoint.lineup
+        //-                     .player(data-id=`${player}`)
+        //-         #injuries 
+        //-             - if (currentPoint.injuries)
+        //-                 each player in currentPoint.injuries 
+        //-                     .player(data-id=`${player}`)
+        //-         #passes 
+        //-             - if (currentPoint.passes)
+        //-                 each pass in currentPoint.passes 
+        //-                     .pass(data-thrower=`${pass.thrower}` data-receiver=`${pass.receiver}` data-defender=`${pass.defender}` data-x0=`${pass.x0}` data-y0=`${pass.y0}` data-x1=`${pass.x1}` data-y1=`${pass.y1}` data-result=`${pass.result}` data-goal=`${pass.goal}`)
     .w-100.h-100.d-flex.flex-column.ai-c.overflow-hidden
         .profile-body.h-100.m-auto.d-flex.flex-column.align-items-center.p-2
             .w-100.p-2
@@ -95,7 +95,7 @@ block content
             .f-1.w-100.overflow-hidden
                 .w-100.h-100.overflow-hidden
                     #point-settings.w-100.h-100.d-flex.flex-column.justify-content-between.overflow-hidden.d-none
-                        button.btn.btn-primary(type="button" data-bs-toggle="modal" data-bs-target="#point-setup-modal") Setup Point
+                        button#toggle-point-setup.btn.btn-primary(type="button" data-bs-toggle="modal" data-bs-target="#point-setup-modal") Setup Point
                         .d-flex.w-100.align-items-center.justify-content-center
                             button#timeout-us.f-1.btn.btn-warning.me-(data-team="1") Our timeout 
                             button#timeout-them.f-1.btn.btn-warning.ms-1(data-team="-1") Their timeout  

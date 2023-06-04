@@ -726,6 +726,7 @@ const cancelSaveRoster = (e) => {
 };
 
 const saveRoster = (msg, after) => {
+	if (!tournamentSelect.value) return;
 	const str = `/api/v1/tournaments/${tournamentSelect.value}`;
 	const handler = (res) => {
 		if (res.status === 'success') {

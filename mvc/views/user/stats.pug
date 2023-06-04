@@ -1,73 +1,17 @@
-h5 My stats
-ol
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
-    li asdf 
+h5 Stats
+.input-group-h.w-100.ai-c.mb-3
+    .input-group-f.input-group-1.px-2.overflow-hidden
+        label.form-label(for="stats-team-select") Select team:
+        select#stats-team-select
+            option(value="") [Select a team]
+            each team in user.teams 
+                option(value=`${team.id}`)= `${team.name}`
+    .input-group-f.input-group-1.px-2.overflow-hidden
+        label.form-label(for="stats-year-select") Date Range:
+        .w-100 
+            .date-slider-div #[span#stat-start-date] - #[span#stat-end-date]
+                #date-slider
+    .input-group-f.input-group-1.px-2.overflow-hidden
+        label.form-label(for="tournament-stat-select") Select event: 
+        select#tournament-stat-select(disabled)
+            option(value="") All

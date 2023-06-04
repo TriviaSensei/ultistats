@@ -16,6 +16,7 @@ router.patch('/addManager/:id', teamController.requestAddManager);
 router.patch('/cancelManager/:id', teamController.cancelAddManager);
 router.patch('/leaveTeam/:id', teamController.leaveTeam);
 router.get('/tournaments/:id', teamController.getTournaments);
+router.get('/tournament-details/:id', teamController.getTournamentDetails);
 
 router.use('/:id', teamController.verifyOwnership);
 

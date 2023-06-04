@@ -191,9 +191,9 @@ const handleRemovePlayer = (e) => {
 		const str = `/api/v1/teams/removePlayer/${teamSelect.value}`;
 		const handler = (res) => {
 			if (res.status === 'success') {
-				showMessage('info', res.message);
+				showMessage('info', res.message, 2000);
 			} else {
-				showMessage(res.status, res.message);
+				showMessage(res.status, res.message, 2000);
 			}
 		};
 		handleRequest(str, 'PATCH', { id }, handler);
@@ -203,7 +203,8 @@ const handleRemovePlayer = (e) => {
 		});
 		showMessage(
 			'info',
-			`Player ${p.lastName}, ${p.firstName} removed from roster.`
+			`Player ${p.lastName}, ${p.firstName} removed from roster.`,
+			2000
 		);
 	}
 

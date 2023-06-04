@@ -511,12 +511,15 @@ exports.returnToPoint = catchAsync(async (req, res, next) => {
 		cp.scored = 0;
 	}
 
-	//go back a period if needed
-	if (cp.endPeriod)
-		res.locals.game.period = Math.min(
-			res.locals.game.period - 1,
-			res.locals.format.periods
-		);
+	//figure out the period if we undid an end-period point
+	if (cp.endPeriod) {
+		cp.endPeriod = false;
+		res.locals.game.period = 1;
+		res.locals.game.points.forEach((p) => {
+			if (p.endPeriod) res.locals.game.period++;
+		});
+	}
+
 	//if there was a result, unset it
 	res.locals.game.result = '';
 
