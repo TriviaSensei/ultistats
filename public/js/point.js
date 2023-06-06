@@ -68,53 +68,54 @@ let moving = false;
 let initialLength = 1;
 
 /**Testing only */
-const handler = (res) => {
-	if (res.status === 'success') {
-		location.reload();
-	}
-};
-const reset = document.querySelector('#reset');
-reset.addEventListener('click', () => {
-	if (!sh) return;
-	const id = sh.getState()._id;
-	if (!id) return;
+// const handler = (res) => {
+// 	if (res.status === 'success') {
+// 		location.reload();
+// 	}
+// };
+// const reset = document.querySelector('#reset');
 
-	const str = `/api/v1/games/clear/${id}`;
-	handleRequest(str, 'PATCH', null, handler);
-});
+// reset.addEventListener('click', () => {
+// 	if (!sh) return;
+// 	const id = sh.getState()._id;
+// 	if (!id) return;
 
-const resetPoint = document.querySelector('#reset-point');
-const rp = () => {
-	if (!sh) return;
-	const id = sh.getState()._id;
-	if (!id) return;
+// 	const str = `/api/v1/games/clear/${id}`;
+// 	handleRequest(str, 'PATCH', null, handler);
+// });
 
-	const str = `/api/v1/games/resetPoint/${id}`;
-	handleRequest(str, 'PATCH', null, handler);
-};
-resetPoint.addEventListener('click', rp);
+// const resetPoint = document.querySelector('#reset-point');
+// const rp = () => {
+// 	if (!sh) return;
+// 	const id = sh.getState()._id;
+// 	if (!id) return;
 
-const resetBeforeHalf = document.querySelector('#reset-half');
-resetBeforeHalf.addEventListener('click', () => {
-	if (!sh) return;
-	const id = sh.getState()._id;
-	if (!id) return;
+// 	const str = `/api/v1/games/resetPoint/${id}`;
+// 	handleRequest(str, 'PATCH', null, handler);
+// };
+// resetPoint.addEventListener('click', rp);
 
-	const str = `/api/v1/games/resetHalf/${id}`;
-	handleRequest(str, 'PATCH', null, handler);
-});
+// const resetBeforeHalf = document.querySelector('#reset-half');
+// resetBeforeHalf.addEventListener('click', () => {
+// 	if (!sh) return;
+// 	const id = sh.getState()._id;
+// 	if (!id) return;
 
-const resetLast = document.querySelector(`#reset-last-point`);
-resetLast.addEventListener('click', rp);
+// 	const str = `/api/v1/games/resetHalf/${id}`;
+// 	handleRequest(str, 'PATCH', null, handler);
+// });
 
-const resetAll = document.querySelector('#reset-all');
-resetAll.addEventListener('click', () => {
-	if (!sh) return;
-	const id = sh.getState()._id;
-	if (!id) return;
-	const str = `/api/v1/games/resetAll/${id}`;
-	handleRequest(str, 'PATCH', null, handler);
-});
+// const resetLast = document.querySelector(`#reset-last-point`);
+// resetLast.addEventListener('click', rp);
+
+// const resetAll = document.querySelector('#reset-all');
+// resetAll.addEventListener('click', () => {
+// 	if (!sh) return;
+// 	const id = sh.getState()._id;
+// 	if (!id) return;
+// 	const str = `/api/v1/games/resetAll/${id}`;
+// 	handleRequest(str, 'PATCH', null, handler);
+// });
 /*****************/
 
 const sendEvent = (name, data) => {
@@ -173,10 +174,10 @@ const updatePasses = () => {
 	const body = state.currentPoint;
 	const handler = (res) => {
 		if (res.status !== 'success') {
-			showMessage(
-				'error',
-				`Error updating passes in database - ${res.message}`
-			);
+			// showMessage(
+			// 	'error',
+			// 	`Error updating passes in database - ${res.message}`
+			// );
 		} else {
 			if (res.data.scored !== 0) {
 				initialLength = 1;

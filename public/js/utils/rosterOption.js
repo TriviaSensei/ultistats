@@ -20,7 +20,9 @@ export const createRosterOption = (p, changeFunc) => {
 	lbl.setAttribute('for', cb.id);
 	lbl.innerHTML = `${name} (${p.gender ? p.gender + '/' : ''}${
 		p.line ? p.line + '/' : ''
-	}${p.position || '-'})`;
+	}${p.position || '-'}${
+		p.pointsPlayed >= 0 ? ', ' + p.pointsPlayed + ' PP' : ''
+	})`;
 	const lbl2 = createElement('label.points-off.invisible');
 	op.appendChild(cb);
 	const cont = createElement('.d-flex.flex-row-reverse');

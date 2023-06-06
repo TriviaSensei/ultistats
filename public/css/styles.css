@@ -26,6 +26,15 @@ body {
 	font-size: 0.8rem;
 }
 
+.no-select {
+	-webkit-touch-callout: none; /* iOS Safari */
+	-webkit-user-select: none; /* Safari */
+	-khtml-user-select: none; /* Konqueror HTML */
+	-moz-user-select: none; /* Old versions of Firefox */
+	-ms-user-select: none; /* Internet Explorer/Edge */
+	user-select: none;
+}
+
 * {
 	box-sizing: border-box;
 }
@@ -354,6 +363,66 @@ tbody > tr.filler-row:not(:last-child) {
 }
 #f-count {
 	color: var(--pink);
+}
+
+.multi-dropdown {
+	background-color: white;
+	border: 1px solid var(--med-gray);
+	min-height: 1.2rem;
+}
+
+.multi-dropdown button {
+	background-color: white;
+	text-align: left;
+	border: none;
+	width: 100%;
+}
+
+.multi-dropdown button:after {
+	width: 0.7rem;
+	height: 0.7rem;
+	margin: auto;
+	content: '';
+	background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23212529'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+	cursor: pointer;
+	box-sizing: border-box;
+	border-collapse: collapse;
+}
+
+.multi-dropdown button > * {
+	pointer-events: none;
+}
+
+.multi-dropdown-contents {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	background-color: white;
+	border: 1px solid var(--med-gray);
+}
+.collapsing {
+	-webkit-transition-duration: 0.1s;
+	transition-duration: 0.1s;
+}
+
+.tournament-header {
+	font-weight: bold;
+	cursor: pointer;
+	text-align: left;
+	margin-left: 0.4rem;
+}
+
+.game-option {
+	display: flex;
+	margin-left: 0.4rem;
+}
+
+.game-option > input[type='checkbox'] + label {
+	margin-left: 0.4rem;
+}
+
+.game-option > input[type='checkbox']:checked + label {
+	font-weight: bold;
 }
 
 @media (pointer: fine) {

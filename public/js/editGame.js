@@ -59,7 +59,8 @@ const lineWarning = document.querySelector('#line-warning');
 const startPoint = document.querySelector('#start-point');
 const endPeriod = document.querySelector('#end-period-button');
 const confirmEndPeriod = document.querySelector('#confirm-end-period');
-
+const endGameButton = document.querySelector('#end-game-button');
+const confirmEndGame = document.querySelector('#confirm-end-game');
 //between point timeouts
 const ourTimeout = document.querySelector('#timeout-us');
 const theirTimeout = document.querySelector('#timeout-them');
@@ -949,9 +950,37 @@ const handleTimeoutButtons = (state) => {
 	theirTimeout.disabled = state.result !== '';
 };
 
+const handleEndGameButton = (e) => {
+	if (e.detail.result !== '') {
+		e.target.innerHTML = 'Exit game';
+	} else {
+		e.target.innerHTML = 'End game';
+	}
+};
+
+const handleEndGame = (e) => {
+	const state = sh.getState();
+
+	if (state.result === '') {
+		const str = `/api/v1/games/endGame/${state._id}`;
+		const handler = (res) => {
+			if (res.status === 'success') {
+				showMessage('info', 'Game ended.');
+				setTimeout(() => {
+					location.href = '/mystuff';
+				}, 1000);
+			}
+		};
+		handleRequest(str, 'PATCH', null, handler);
+	} else {
+		location.href = '/mystuff';
+	}
+};
+
 document.addEventListener('DOMContentLoaded', () => {
+	const dataArea = document.querySelector('#data-area');
 	let state = JSON.parse(
-		document.querySelector('#test-data').getAttribute('data-value')
+		dataArea.querySelector('#game-data').getAttribute('data-value')
 	);
 	if (!state._id) {
 		showMessage(`error`, `Game Id not valid`);
@@ -1008,13 +1037,17 @@ document.addEventListener('DOMContentLoaded', () => {
 	});
 
 	//remove the temporary data area
-	// dataArea.remove();
+	dataArea.remove();
 	showMessage(`info`, `Entering game ${state.team} vs. ${state.opponent}`);
 
 	sh = new StateHandler(state);
 
 	state.roster.forEach((p) => {
-		const op = createRosterOption(p, handleArrows);
+		const pointsPlayed = state.points.reduce((prev, c) => {
+			if (c.lineup.includes(p.id) || c.injuries.includes(p.id)) return prev + 1;
+			return prev;
+		}, 0);
+		const op = createRosterOption({ ...p, pointsPlayed }, handleArrows);
 		op.addEventListener('dblclick', handleMoveOne);
 		op.addEventListener('click', handleDoubleTap);
 		op.addEventListener('dbltap', handleMoveOne);
@@ -1183,7 +1216,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	pointSetupForm.addEventListener('submit', handleSetLineup);
 
 	confirmEndPeriod.addEventListener('click', handleEndPeriod);
-
+	confirmEndGame.addEventListener('click', handleEndGame);
 	document.addEventListener('update-info', (e) => {
 		if (sh) sh.setState(e.detail);
 		console.log('updating info');
@@ -1208,4 +1241,5 @@ document.addEventListener('DOMContentLoaded', () => {
 	sh.addWatcher(pointSetupForm, updatePointSetup);
 	sh.addWatcher(endPeriod, updateEndPeriodButton);
 	sh.addWatcher(null, handleTimeoutButtons);
+	sh.addWatcher(endGameButton, handleEndGameButton);
 });

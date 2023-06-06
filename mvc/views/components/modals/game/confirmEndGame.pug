@@ -1,0 +1,11 @@
+.modal.fade#end-game-modal(tabindex="-1" aria-labelledby="end-game-label" aria-hidden="true")
+    .modal-dialog.modal-dialog-centered
+        .modal-content#end-game-modal-content
+            .modal-header
+                h5.modal-title#end-game-label End game?
+                button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+            .modal-body.d-flex.flex-column.overflow-hidden
+                p Ending the game will finalize the result in the database and cannot be undone. Do you wish to continue?
+            .modal-footer
+                button#confirm-end-game.btn.btn-primary(type="button") Yes
+                button.btn.btn-secondary(type="button" data-bs-dismiss="modal") No

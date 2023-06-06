@@ -21,9 +21,10 @@ block modals
     include components/modals/game/pointSetup
     include components/modals/game/sub
     include components/modals/game/confirmEndPeriod
+    include components/modals/game/confirmEndGame
 block content
     #data-area.d-none
-        #test-data(data-value=`${JSON.stringify(gameData)}`)
+        #game-data(data-value=`${JSON.stringify(gameData)}`)
         //- #game-data(data-value=`${gameData._id}` data-cap=`${gameData.cap}` data-hard-cap=`${gameData.hardCap}` data-win-by=`${gameData.winBy}` data-timeouts=`${gameData.timeouts}` data-period=`${gameData.period}`)
         //- #score-data(data-us=`${gameData.score}` data-them=`${gameData.oppScore}`)
         //- #division(data-value=`${division}`)
@@ -101,9 +102,9 @@ block content
                             button#timeout-them.f-1.btn.btn-warning.ms-1(data-team="-1") Their timeout  
                         .d-flex.flex-column.w-100
                             button.btn.btn-dark.mb-1(type="button" data-bs-toggle="modal" data-bs-target="#start-settings-modal") Edit game start settings
-                            button#reset-last-point.btn.btn-dark.mb-1(type="button") Reset last point
+                            //- button#reset-last-point.btn.btn-dark.mb-1(type="button") Reset last point
                             button#end-period-button.btn.btn-dark.mb-1(type="button" data-bs-toggle="modal" data-bs-target="#end-period-modal") End period
-                            button#end-game-button.btn.btn-dark(type="button") End game
+                            button#end-game-button.btn.btn-dark(type="button" data-bs-toggle="modal" data-bs-target="#end-game-modal") End game
                     #action-div.d-flex.flex-column.w-100.h-100.overflow-auto.d-none
                         include game/editPoint
 block scripts
