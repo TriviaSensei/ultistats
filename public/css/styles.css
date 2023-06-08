@@ -342,6 +342,10 @@ tbody > tr.filler-row:not(:last-child) {
 	max-height: 1rem;
 }
 
+.roster-option > input[type='checkbox']:checked + div {
+	font-weight: bold;
+}
+
 .player-container:not(.male) > .roster-option[data-gender='M'],
 .player-container:not(.female) > .roster-option[data-gender='F'],
 .player-container:not(.defense) > .roster-option[data-line='D'],
@@ -399,6 +403,8 @@ tbody > tr.filler-row:not(:last-child) {
 	width: 100%;
 	background-color: white;
 	border: 1px solid var(--med-gray);
+	max-height: 30vh;
+	overflow-y: scroll;
 }
 .collapsing {
 	-webkit-transition-duration: 0.1s;

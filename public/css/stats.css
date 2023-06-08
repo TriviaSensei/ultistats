@@ -1,0 +1,14 @@
+.tournament-button {
+	border: none;
+	background-color: white;
+	font-weight: bold;
+	cursor: pointer;
+}
+
+.tourney-section:not(:last-child)::after {
+	margin: 0.5rem auto;
+	display: block;
+	content: '';
+	width: 50%;
+	border: 1px solid darkgrey;
+}

@@ -21,7 +21,11 @@ export const createRosterOption = (p, changeFunc) => {
 	lbl.innerHTML = `${name} (${p.gender ? p.gender + '/' : ''}${
 		p.line ? p.line + '/' : ''
 	}${p.position || '-'}${
-		p.pointsPlayed >= 0 ? ', ' + p.pointsPlayed + ' PP' : ''
+		p.pointsPlayed >= 0
+			? ',&nbsp;<span class="points-played">' +
+			  p.pointsPlayed +
+			  '</span>&nbsp;PP'
+			: ''
 	})`;
 	const lbl2 = createElement('label.points-off.invisible');
 	op.appendChild(cb);

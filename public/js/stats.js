@@ -16,32 +16,31 @@ const gameDropDownCollapse = new bootstrap.Collapse('#game-dropdown');
 const filterCollapse = new bootstrap.Collapse('#filter-accordion');
 const collapseFilters = document.querySelector('#hide-filters');
 
-let allData;
-let filteredData;
+let data = {
+	all: null,
+	date: null,
+	tournament: null,
+	reportData: null,
+};
 
-const updateData = (data) => {
-	const val = tourneySelect.options[tourneySelect.selectedIndex].value;
-	//remove any tournaments that got filtered out
-	console.log(data);
+const updateDataByDate = () => {
+	//retain the old selected tourney
+	const selectedTourney = tourneySelect.value;
+
+	//remove any options that get filtered out by date
 	const ops = getElementArray(tourneySelect, 'option');
-	console.log(ops);
 	ops.forEach((o) => {
 		if (
-			!data.some((t) => {
+			!data.date.some((t) => {
 				return t._id === o.value;
 			}) &&
 			o.value !== ''
-		) {
-			console.log(`removing ${o.innerHTML} (${o.value})`);
-			//remove the tourney option
+		)
 			o.remove();
-			//remove the section and any games from the game selector
-			const sect = gameDropdown.querySelector(`section[data-id="${o.value}"]`);
-			if (sect) sect.remove();
-		}
 	});
+
 	//add any tournaments that got added in
-	data.forEach((t) => {
+	data.date.forEach((t) => {
 		//if the option is already there, don't do anything else.
 		const tourney = tourneySelect.querySelector(`option[value="${t._id}"]`);
 		if (tourney) return tourneySelect.appendChild(tourney);
@@ -55,39 +54,40 @@ const updateData = (data) => {
 		op.innerHTML = tourneyText;
 		op.setAttribute('value', t._id);
 		tourneySelect.appendChild(op);
+	});
 
-		//handle the game dropdown
-		if (t.games.length > 0) {
-			const existingSection = gameDropdown.querySelector(
-				`section[data-id="${t._id}"]`
-			);
-
-			if (existingSection) gameDropdown.appendChild(existingSection);
-			else {
-				const sect = createElement('section');
-				if (!gameDropdown.querySelector(`section[data-id="${t._id}"]`)) {
-					sect.setAttribute('data-id', t._id);
-					const tourneyHeader = createElement('.tournament-header');
-					tourneyHeader.setAttribute('data-id', t._id);
-					tourneyHeader.innerHTML = tourneyText;
-					sect.appendChild(tourneyHeader);
-				}
-				t.games.forEach((g) => {
-					const gameOption = createGameOption(g, t._id);
-					sect.appendChild(gameOption);
-				});
-				gameDropdown.appendChild(sect);
+	//if the old tournament got removed from the list, or if we had selected "all", we will have to refresh the report data.
+	if (
+		!getElementArray(tourneySelect, 'option').some((o, i) => {
+			if (o.value === selectedTourney) {
+				tourneySelect.selectedIndex = i;
+				return true;
 			}
-		}
-	});
-	tourneySelect.removeAttribute('disabled');
-	gameSelect.removeAttribute('disabled');
-	getElementArray(tourneySelect, 'option').some((o, i) => {
-		if (o.value === val) {
-			tourneySelect.selectedIndex = i;
-			return true;
-		}
-	});
+		}) ||
+		tourneySelect.value === ''
+	)
+		handleSelectTourney();
+};
+
+const toggleAllGames = (e) => {
+	const sect = e.target.closest('section.tourney-section');
+	if (!sect) return;
+	const checkedBoxes = getElementArray(sect, 'input[type="checkbox"]:checked');
+	const uncheckedBoxes = getElementArray(
+		sect,
+		'input[type="checkbox"]:not(:checked)'
+	);
+
+	if (uncheckedBoxes.length === 0) {
+		checkedBoxes.forEach((b) => {
+			b.checked = false;
+		});
+	} else {
+		uncheckedBoxes.forEach((b) => {
+			b.checked = true;
+		});
+	}
+	handleSelectGames();
 };
 
 const createGameOption = (game, id) => {
@@ -97,6 +97,8 @@ const createGameOption = (game, id) => {
 	box.setAttribute('value', game._id);
 	box.setAttribute('id', `game-${game._id}`);
 	box.setAttribute('data-id', game._id);
+	box.setAttribute('checked', true);
+	box.addEventListener('change', handleSelectGames);
 	const label = createElement('label');
 	label.innerHTML = `${game.round} vs ${game.opponent} ${
 		game.result
@@ -110,6 +112,31 @@ const createGameOption = (game, id) => {
 	return op;
 };
 
+const handleSliderValues = (data) => {
+	$('#date-slider').slider('option', 'disabled', true);
+	$('#date-slider').slider('option', 'min', 0);
+	$('#date-slider').slider('option', 'max', 1);
+	$('#date-slider').slider('option', 'values', [0, 1]);
+	startDate.innerHTML = '';
+	endDate.innerHTML = '';
+
+	if (data.length === 0) return;
+
+	let minDate = Date.parse(data[0].startDate) + offset;
+	let maxDate = Date.parse(data[data.length - 1].startDate) + offset;
+
+	$('#date-slider').slider('option', 'min', minDate - msInDay);
+	$('#date-slider').slider('option', 'max', maxDate + msInDay);
+	$('#date-slider').slider('option', 'values', [
+		minDate - msInDay,
+		maxDate + msInDay,
+	]);
+	$('#date-slider').slider('option', 'disabled', false);
+
+	startDate.innerHTML = new Date(minDate - msInDay).toLocaleDateString();
+	endDate.innerHTML = new Date(maxDate + msInDay).toLocaleDateString();
+};
+
 const getTournaments = (e) => {
 	tourneySelect.innerHTML = '<option value="">All</option>';
 	if (!teamSelect.value) return;
@@ -118,8 +145,8 @@ const getTournaments = (e) => {
 	const handler = (res) => {
 		$('#date-slider').slider('option', 'disabled', true);
 		tourneySelect.setAttribute('disabled', true);
-		startDate.innerHTML = '';
-		endDate.innerHTML = '';
+		gameSelect.setAttribute('disabled', true);
+
 		gameSelectHeader.innerHTML = 'Select games';
 		gameDropdown.innerHTML = '';
 		gameDropDownCollapse.hide();
@@ -132,35 +159,114 @@ const getTournaments = (e) => {
 				})
 			)
 				return showMessage('warning', 'No games listed for this team.', 2000);
-			allData = res.data;
-			filteredData = res.data;
-			res.data = res.data.sort((a, b) => {
+
+			const allData = res.data.sort((a, b) => {
 				return Date.parse(b.startDate - a.startDate);
 			});
+			data.all = [...allData];
+			data.date = [...allData];
+			data.tournament = [...allData];
+			data.reportData = [...allData];
 
-			let minDate = Date.parse(res.data[0].startDate) + offset;
-			let maxDate =
-				Date.parse(res.data[res.data.length - 1].startDate) + offset;
-
-			$('#date-slider').slider('option', 'min', minDate - msInDay);
-			$('#date-slider').slider('option', 'max', maxDate + msInDay);
-			$('#date-slider').slider('option', 'values', [
-				minDate - msInDay,
-				maxDate + msInDay,
-			]);
-			$('#date-slider').slider('option', 'disabled', false);
-
-			startDate.innerHTML = new Date(minDate - msInDay).toLocaleDateString();
-			endDate.innerHTML = new Date(maxDate + msInDay).toLocaleDateString();
-			// startDate.innerHTML = new Date(minDate);
-			// endDate.innerHTML = new Date(maxDate);
-
-			updateData(filteredData);
+			handleSliderValues(allData);
+			updateDataByDate();
+			tourneySelect.removeAttribute('disabled');
+			gameSelect.removeAttribute('disabled');
 		} else {
 			showMessage('error', res.message);
 		}
 	};
 	handleRequest(str, 'GET', { populate: true }, handler);
+};
+
+//handle selecting a tourney (or all tourneys)
+const handleSelectTourney = () => {
+	let gamesChanged = false;
+	//further filter the date-filtered data
+	//if we selected a single tournament, we'll have a single-element array
+	if (tourneySelect.value === '') data.tournament = data.date;
+	else
+		data.tournament = data.date.filter((t) => {
+			return t._id === tourneySelect.value;
+		});
+
+	//for data.tournament, now handle the list of games
+	//remove any sections for tournaments that aren't in data.tournament
+	const sects = getElementArray(gameDropdown, 'section');
+	sects.forEach((s) => {
+		const id = s.getAttribute('data-id');
+		if (
+			!data.tournament.find((t) => {
+				return t._id === id;
+			})
+		) {
+			if (s.querySelector('input[type="checkbox"]:checked'))
+				gamesChanged = true;
+			s.remove();
+		}
+	});
+
+	//add in any sections that aren't already there
+	data.tournament.forEach((t) => {
+		const existingSection = gameDropdown.querySelector(
+			`section[data-id="${t._id}"]`
+		);
+		//if the section already exists, append it again (it will be moved to the bottom of the dropdown -
+		//these are sorted chronologically so this keeps the order
+		if (existingSection) gameDropdown.appendChild(existingSection);
+		else {
+			gamesChanged = true;
+			const sect = createElement('section.tourney-section');
+			if (!gameDropdown.querySelector(`section[data-id="${t._id}"]`)) {
+				sect.setAttribute('data-id', t._id);
+				const tourneyHeader = createElement('.tournament-header');
+				tourneyHeader.setAttribute('data-id', t._id);
+				const tourneyButton = createElement('button.tournament-button');
+				tourneyButton.setAttribute('role', 'button');
+				tourneyButton.addEventListener('click', toggleAllGames);
+				const tourneyText = `${t.name} (${new Date(
+					Date.parse(t.startDate) + offset
+				).toLocaleDateString()}-${new Date(
+					Date.parse(t.endDate) + offset
+				).toLocaleDateString()})`;
+				tourneyButton.innerHTML = tourneyText;
+				tourneyHeader.appendChild(tourneyButton);
+				sect.appendChild(tourneyHeader);
+			}
+			if (t.games.length > 0)
+				t.games.forEach((g) => {
+					const gameOption = createGameOption(g, t._id);
+					sect.appendChild(gameOption);
+				});
+			else {
+				const ph = createElement('.ms-4.text-start');
+				ph.innerHTML = '(No games listed)';
+				sect.appendChild(ph);
+			}
+			gameDropdown.appendChild(sect);
+		}
+	});
+
+	if (gamesChanged) handleSelectGames();
+};
+
+//handle toggling a game in or out of the data
+const handleSelectGames = () => {
+	let selectedGames = 0;
+	data.reportData = data.tournament.map((t) => {
+		const games = t.games.filter((g) => {
+			return gameDropdown.querySelector(
+				`.game-option[data-tourney="${t._id}"] > input[type="checkbox"][value="${g._id}"]:checked`
+			);
+		});
+		selectedGames = selectedGames + games.length;
+		return {
+			...t,
+			games,
+		};
+	});
+
+	gameSelect.innerHTML = `Select games (${selectedGames} selected)`;
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -172,8 +278,10 @@ document.addEventListener('DOMContentLoaded', () => {
 			max: msInDay,
 			values: [0, msInDay],
 			step: msInDay,
+
 			disabled: true,
 			slide: (e, ui) => {
+				//change the values in the labels above the slider
 				startDate.innerHTML = new Date(
 					ui.values[0] + offset
 				).toLocaleDateString();
@@ -181,13 +289,15 @@ document.addEventListener('DOMContentLoaded', () => {
 					ui.values[1] + offset
 				).toLocaleDateString();
 
-				filteredData = allData.filter((t) => {
-					const a = ui.values[0] <= Date.parse(t.startDate) + offset;
-					const b = ui.values[1] >= Date.parse(t.startDate) + offset;
-					return a && b;
+				//filter the tournaments by date
+				data.date = data.all.filter((t) => {
+					return (
+						Date.parse(t.startDate) >= ui.values[0] &&
+						Date.parse(t.endDate) <= ui.values[1]
+					);
 				});
 
-				updateData(filteredData);
+				updateDataByDate();
 			},
 		});
 	});
@@ -197,4 +307,6 @@ document.addEventListener('DOMContentLoaded', () => {
 			gameDropDownCollapse.hide();
 		}
 	});
+
+	tourneySelect.addEventListener('change', handleSelectTourney);
 });

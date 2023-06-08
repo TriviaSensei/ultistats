@@ -923,7 +923,7 @@ const handleEndPeriod = (e) => {
 	handleRequest(str, 'PATCH', null, handler);
 };
 
-const handlePointsOff = (e) => {
+const handlePointsPlayed = (e) => {
 	const lbl = e.target.querySelector('.points-off');
 	const state = e.detail;
 	const id = e.target.getAttribute('data-id');
@@ -943,6 +943,13 @@ const handlePointsOff = (e) => {
 		lbl.innerHTML = '';
 		lbl.classList.add('invisible');
 	}
+
+	let pp = 0;
+	e.detail.points.forEach((p) => {
+		if (p.lineup.includes(id) || p.injuries.includes(id)) pp++;
+	});
+	const ppLabel = e.target.querySelector('.points-played');
+	if (ppLabel) ppLabel.innerHTML = pp;
 };
 
 const handleTimeoutButtons = (state) => {
@@ -1052,7 +1059,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		op.addEventListener('click', handleDoubleTap);
 		op.addEventListener('dbltap', handleMoveOne);
 		insertOption(op, availableContainer);
-		sh.addWatcher(op, handlePointsOff);
+		sh.addWatcher(op, handlePointsPlayed);
 	});
 	/*
 	Start view 
