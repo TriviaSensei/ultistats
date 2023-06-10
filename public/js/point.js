@@ -601,7 +601,9 @@ const displayEventDescription = (e) => {
 							`${playerIn.firstName} came in for ${playerOut.firstName}`
 						);
 						if (order.charAt(0) === 'O') {
-							events.push(`${lastThree[1].player} has the disc`);
+							if (lastThree[0].eventDesc.out === lastThree[1].id)
+								events.push(`${playerIn.firstName} has the disc`);
+							else events.push(`${lastThree[1].player} has the disc`);
 						} else {
 							events.push(`${state.opponent} have the disc`);
 						}
@@ -627,6 +629,23 @@ const displayEventDescription = (e) => {
 									lastThree[0].id === lastThree[2].id
 								)
 									showMessage('warning', 'Warning - self-pass detected');
+
+								//case where thrower gets subbed out - get the new thrower
+								if (lastThree[1].eventDesc.out === lastThree[2].id) {
+									const pIn = getPlayer(lastThree[1].eventDesc.in);
+									if (pIn)
+										return showEvent(
+											`${pIn.firstName} → ${lastThree[0].player} (${
+												dx >= 0 ? '+' : ''
+											}${dx})`
+										);
+									else
+										return showEvent(
+											`Unknown → ${lastThree[0].player} (${
+												dx >= 0 ? '+' : ''
+											}${dx})`
+										);
+								}
 								return showEvent(
 									`${lastThree[2].player} → ${lastThree[0].player} (${
 										dx >= 0 ? '+' : ''
@@ -827,6 +846,7 @@ const getPlace = (yds) => {
 const drawLastPass = (state) => {
 	if (!state || !state.currentPoint) return;
 	const passes = state.currentPoint.passes;
+	if (!passes) return;
 	//if we are at the start of a point, just draw the disc in the middle of the field
 	if (passes.length === 0) {
 		const [pageX, pageY] = getPageCoordinates(
@@ -875,20 +895,29 @@ const handleReturnToPoint = () => {
 			state = {
 				...state,
 				...res.data,
-				currentPoint: {
-					...res.data.points.slice(-1).pop(),
-					scored: 0,
-				},
+				currentPoint:
+					res.data.points.length > 0
+						? {
+								...res.data.points.slice(-1).pop(),
+								scored: 0,
+						  }
+						: undefined,
 				poppedPasses: [],
 				discIn: true,
 			};
 			sh.setState(state);
-			const evt = new CustomEvent('update-info', {
-				detail: state,
-			});
-			document.dispatchEvent(evt);
-			const evt2 = new CustomEvent('return-to-point', { detail: state });
-			document.dispatchEvent(evt2);
+			console.log(state);
+			if (state.currentPoint) {
+				const evt = new CustomEvent('update-info', {
+					detail: state,
+				});
+				document.dispatchEvent(evt);
+				const evt2 = new CustomEvent('return-to-point', { detail: state });
+				document.dispatchEvent(evt2);
+			} else {
+				const evt = new CustomEvent('point-ended', { detail: state });
+				document.dispatchEvent(evt);
+			}
 		} else {
 			showMessage('error', res.message);
 		}
@@ -1475,12 +1504,12 @@ const handleLoadPoint = (e) => {
 };
 
 const displayPossession = (state) => {
-	if (!state || !state.currentPoint) return;
-	const passes = state.currentPoint.passes;
-	if (!passes) return;
-	//display the arrow
 	teamDirection.classList.remove('left', 'right');
 	oppDirection.classList.remove('left', 'right');
+	if (!state || !state.currentPoint) return;
+	const passes = state.currentPoint?.passes;
+	if (!passes) return;
+	//display the arrow
 	//no passes - set possession based on who is receiving the pull
 	if (passes.length === 0) {
 		if (state.currentPoint.offense) {
@@ -1732,7 +1761,7 @@ const setSubs = (state) => {
 				op = createSubOption(p, true);
 			} else op = createSubOption(p, false);
 		}
-		if (state.currentPoint.lineup.includes(p.id)) {
+		if (state.currentPoint?.lineup?.includes(p.id)) {
 			op.querySelector('input').setAttribute('name', 'player-out');
 			playerOut.appendChild(op);
 		} else {
@@ -1804,8 +1833,6 @@ const handleSub = (e) => {
 				return p.id === pOut.getAttribute('data-id');
 		  })
 		: undefined;
-
-	console.log(pIn, pOut, playerIn, playerOut);
 
 	if (
 		state.division === 'Mixed' &&

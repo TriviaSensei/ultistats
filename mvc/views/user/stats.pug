@@ -1,5 +1,4 @@
-h5 Stats
-.accordion#filter-accordion.w-100
+.accordion#filter-accordion.w-100.mb-3
     .accordion-item 
         h2.accordion-header#filter-header 
             button.accordion-button(type="button" data-bs-toggle="collapse" data-bs-target="#filter-body" aria-expanded="true" aria-controls="filter-body") Filters 
@@ -29,4 +28,8 @@ h5 Stats
                                 .w-100 Select games 
                         #game-dropdown.multi-dropdown-contents.no-select.collapse
                 button#hide-filters.btn.btn-sm.btn-primary(data-bs-toggle="collapse" data-bs-target="#filter-body" aria-controls="filter-body") Hide
+#report-area.w-100.px-3.d-flex.flex-column.invisible
+    include ../stats/overview
+    include ../stats/eff
+    include ../stats/leaders
                             

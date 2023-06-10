@@ -503,16 +503,33 @@ exports.returnToPoint = catchAsync(async (req, res, next) => {
 		return next(new AppError('No points in this game.', 400));
 
 	let cp = game.points[game.points.length - 1];
-
 	//current point has not been scored, so pop it and go back to the last point
 	if (cp.scored === 0) {
 		res.locals.game.points.pop();
 		cp = game.points[game.points.length - 1];
-		cp.scored = 0;
+		if (cp) cp.scored = 0;
+	}
+
+	if (!cp) {
+		res.locals.game.markModified('score');
+		res.locals.game.markModified('oppScore');
+		res.locals.game.markModified('result');
+		res.locals.game.markModified('points');
+		const data = await res.locals.game.save();
+		await data.populate({
+			path: 'format',
+		});
+		// const data = await res.locals.game.populate({
+		// 	path: 'format',
+		// });
+		return res.status(200).json({
+			status: 'success',
+			data,
+		});
 	}
 
 	//figure out the period if we undid an end-period point
-	if (cp.endPeriod) {
+	if (cp && cp.endPeriod) {
 		cp.endPeriod = false;
 		res.locals.game.period = 1;
 		res.locals.game.points.forEach((p) => {

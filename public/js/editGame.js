@@ -661,7 +661,10 @@ const handleNewPoint = (e) => {
 
 	let newDirection, newOD;
 	// console.log(state);
-	if (state.currentPoint.endPeriod) {
+	if (!state.currentPoint) {
+		newDirection = state.startSettings.direction;
+		newOD = state.startSettings.offense;
+	} else if (state.currentPoint.endPeriod) {
 		if (state.currentPoint.period % 2 === 0) {
 			newDirection = state.startSettings.direction;
 			newOD = state.startSettings.offense;
@@ -1226,7 +1229,6 @@ document.addEventListener('DOMContentLoaded', () => {
 	confirmEndGame.addEventListener('click', handleEndGame);
 	document.addEventListener('update-info', (e) => {
 		if (sh) sh.setState(e.detail);
-		console.log('updating info');
 	});
 	document.addEventListener('point-ended', handleNewPoint);
 	document.addEventListener('return-to-point', (e) => {

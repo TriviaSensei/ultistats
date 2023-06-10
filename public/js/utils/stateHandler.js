@@ -59,6 +59,8 @@ export class StateHandler {
 			if (this.validator && !this.validateState(s(this.state)))
 				throw new Error('State is invalid');
 			this.state = s(this.state);
+		} else if (Array.isArray(s)) {
+			this.state = [...s];
 		} else {
 			if (this.validator && !this.validateState(s))
 				throw new Error('State is invalid');
@@ -78,7 +80,9 @@ export class StateHandler {
 	}
 
 	getState() {
-		if ((typeof this.state).toLowerCase() === 'object') {
+		if (Array.isArray(this.state)) {
+			return this.state;
+		} else if ((typeof this.state).toLowerCase() === 'object') {
 			return {
 				...this.state,
 			};

@@ -2,6 +2,7 @@ import { handleRequest } from './utils/requestHandler.js';
 import { showMessage } from './utils/messages.js';
 import { getElementArray } from './utils/getElementArray.js';
 import { createElement } from './utils/createElementFromSelector.js';
+import { StateHandler } from './utils/stateHandler.js';
 const msInDay = 24 * 60 * 60 * 1000;
 const offset = new Date().getTimezoneOffset() * 60000;
 
@@ -13,8 +14,8 @@ const gameSelect = document.querySelector('#game-select');
 const gameSelectHeader = gameSelect?.querySelector('div');
 const gameDropdown = document.querySelector('#game-dropdown');
 const gameDropDownCollapse = new bootstrap.Collapse('#game-dropdown');
-const filterCollapse = new bootstrap.Collapse('#filter-accordion');
-const collapseFilters = document.querySelector('#hide-filters');
+
+const reportArea = document.querySelector('#report-area');
 
 let data = {
 	all: null,
@@ -22,6 +23,8 @@ let data = {
 	tournament: null,
 	reportData: null,
 };
+
+const sh = new StateHandler(null);
 
 const updateDataByDate = () => {
 	//retain the old selected tourney
@@ -139,17 +142,18 @@ const handleSliderValues = (data) => {
 
 const getTournaments = (e) => {
 	tourneySelect.innerHTML = '<option value="">All</option>';
-	if (!teamSelect.value) return;
+	gameDropdown.innerHTML = '';
+	gameSelectHeader.innerHTML = 'Select games';
+	gameSelect.setAttribute('disabled', true);
+	$('#date-slider').slider('option', 'disabled', true);
+	tourneySelect.setAttribute('disabled', true);
+	gameDropdown.innerHTML = '';
+	gameDropDownCollapse.hide();
+	reportArea.classList.add('invisible');
 
+	if (!teamSelect.value) return;
 	const str = `/api/v1/teams/tournament-details/${teamSelect.value}`;
 	const handler = (res) => {
-		$('#date-slider').slider('option', 'disabled', true);
-		tourneySelect.setAttribute('disabled', true);
-		gameSelect.setAttribute('disabled', true);
-
-		gameSelectHeader.innerHTML = 'Select games';
-		gameDropdown.innerHTML = '';
-		gameDropDownCollapse.hide();
 		if (res.status === 'success') {
 			if (res.data.length === 0)
 				return showMessage('warning', 'No events listed for this team.', 2000);
@@ -163,10 +167,10 @@ const getTournaments = (e) => {
 			const allData = res.data.sort((a, b) => {
 				return Date.parse(b.startDate - a.startDate);
 			});
-			data.all = [...allData];
-			data.date = [...allData];
-			data.tournament = [...allData];
-			data.reportData = [...allData];
+			data.all = JSON.parse(JSON.stringify(allData));
+			data.date = JSON.parse(JSON.stringify(allData));
+			data.tournament = JSON.parse(JSON.stringify(allData));
+			data.reportData = JSON.parse(JSON.stringify(allData));
 
 			handleSliderValues(allData);
 			updateDataByDate();
@@ -233,8 +237,11 @@ const handleSelectTourney = () => {
 				tourneyHeader.appendChild(tourneyButton);
 				sect.appendChild(tourneyHeader);
 			}
-			if (t.games.length > 0)
-				t.games.forEach((g) => {
+			const tGames = t.games.filter((g) => {
+				return g.result !== '';
+			});
+			if (tGames.length > 0)
+				tGames.forEach((g) => {
 					const gameOption = createGameOption(g, t._id);
 					sect.appendChild(gameOption);
 				});
@@ -266,7 +273,9 @@ const handleSelectGames = () => {
 		};
 	});
 
-	gameSelect.innerHTML = `Select games (${selectedGames} selected)`;
+	gameSelectHeader.innerHTML = `Select games (${selectedGames} selected)`;
+	if (selectedGames === 0) reportArea.classList.add('invisible');
+	else sh.setState(data.reportData);
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -309,4 +318,18 @@ document.addEventListener('DOMContentLoaded', () => {
 	});
 
 	tourneySelect.addEventListener('change', handleSelectTourney);
+
+	const reportSections = ['overview', 'eff', 'leaders'];
+	sh.addWatcher(null, (state) => {
+		if (!state) return;
+
+		const evt = new CustomEvent('data-update', {
+			detail: state,
+		});
+		reportArea.classList.remove('invisible');
+		reportSections.forEach((s) => {
+			const sect = reportArea.querySelector(`#${s}`);
+			if (sect) sect.dispatchEvent(evt);
+		});
+	});
 });

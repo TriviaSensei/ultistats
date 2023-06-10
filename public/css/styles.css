@@ -221,6 +221,7 @@ button > a > div {
 .tab-inner {
 	height: 100%;
 	overflow-y: auto;
+	scrollbar-width: thin;
 	overflow-x: hidden;
 }
 

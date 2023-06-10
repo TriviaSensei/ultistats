@@ -12,3 +12,49 @@
 	width: 50%;
 	border: 1px solid darkgrey;
 }
+
+#report-area > div:not(:last-child) {
+	margin-bottom: 2rem;
+}
+
+.stat-header {
+	font-weight: bold;
+	text-decoration: underline;
+	font-size: 1rem;
+}
+
+.stat-value {
+	font-weight: bold;
+	font-size: 1.5rem;
+}
+
+thead {
+	border-bottom: 1px solid black;
+}
+
+tr {
+	border-bottom: 1px solid darkgray;
+}
+
+#leaders-table.pp th:not(.pp),
+#leaders-table.g th:not(.g),
+#leaders-table.a th:not(.a),
+#leaders-table.d th:not(.d),
+#leaders-table.cp th:not(.cp),
+#leaders-table.py th:not(.py),
+#leaders-table.ry th:not(.ry),
+#leaders-table.ty th:not(.ty),
+#leaders-table.tch th:not(.tch),
+#leaders-table.to th:not(.to),
+#leaders-table.pp td:not(.pp),
+#leaders-table.g td:not(.g),
+#leaders-table.a td:not(.a),
+#leaders-table.d td:not(.d),
+#leaders-table.cp td:not(.cp),
+#leaders-table.py td:not(.py),
+#leaders-table.ry td:not(.ry),
+#leaders-table.ty td:not(.ty),
+#leaders-table.tch td:not(.tch),
+#leaders-table.to td:not(.to) {
+	display: none;
+}
