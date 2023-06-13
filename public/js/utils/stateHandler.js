@@ -80,7 +80,8 @@ export class StateHandler {
 	}
 
 	getState() {
-		if (Array.isArray(this.state)) {
+		if (!this.state) return null;
+		else if (Array.isArray(this.state)) {
 			return this.state;
 		} else if ((typeof this.state).toLowerCase() === 'object') {
 			return {

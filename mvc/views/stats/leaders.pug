@@ -1,19 +1,55 @@
-#leaders.m-auto.mb-3 
+#leaders.m-auto.mb-3.d-flex.flex-column.justify-content-center
     h5 Leaders 
-    table#leaders-table.w-100.g
-        thead 
+    .settings-row.d-flex.m-auto.mb-3
+        .setting-container.hidden-radios
+            #stat-selectors.radio-container.d-flex 
+                input#stat-all(type="radio" value="" name="stat" data-target="#leaders-table" data-field="all")
+                label(for="stat-all") All
+                input#stat-pts(type="radio" value="pp" name="stat" data-target="#leaders-table" data-field="points" checked)
+                label(for="stat-pts") Pts
+                input#stat-g(type="radio" value="g" name="stat" data-target="#leaders-table" data-field="goals")
+                label(for="stat-g") G
+                input#stat-ast(type="radio" value="a" name="stat" data-target="#leaders-table" data-field="assists")
+                label(for="stat-ast") Ast
+                input#stat-blk(type="radio" value="d" name="stat" data-target="#leaders-table" data-field="blocks")
+                label(for="stat-blk") Blk
+                input#stat-cmp(type="radio" value="cp" name="stat" data-target="#leaders-table" data-field="cmp-pct")
+                label(for="stat-cmp") Cmp%
+                input#stat-py(type="radio" value="py" name="stat" data-target="#leaders-table" data-field="passYards")
+                label(for="stat-py") P-Yd 
+                input#stat-ry(type="radio" value="ry" name="stat" data-target="#leaders-table" data-field="recYards")
+                label(for="stat-ry") R-Yd
+                input#stat-ty(type="radio" value="ty" name="stat" data-target="#leaders-table" data-field="totalYards")
+                label(for="stat-ty") T-Yd
+                input#stat-tch(type="radio" value="tch" name="stat" data-target="#leaders-table" data-field="touches")
+                label(for="stat-tch") Tch
+                input#stat-to(type="radio" value="to" name="stat" data-target="#leaders-table" data-field="turnovers")
+                label(for="stat-to") TO
+                input#stat-tpt(type="radio" value="tpt" name="stat" data-target="#leaders-table" data-field="tch-per-turn")
+                label(for="stat-tpt") Tch/TO
+    .settings-row.d-flex.m-auto.mb-3
+        .setting-container.hidden-radios
+            #toggle-all.radio-container.d-flex 
+                input#stat-show-top(type="radio" value="top" name="show" checked)
+                label(for="stat-show-top" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="Show leaders only") Top
+                input#stat-show-all(type="radio" value="all" name="show")
+                label(for="stat-show-all" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Show all rows") All
+    table#leaders-table.m-auto.pp
+        thead
             tr 
-                th.pp.g.a.d.cp.py.ry.ty.tch.to Player 
-                th.pp.cp.to Pts Played
-                th.g G
-                th.a Ast
-                th.d Blk
-                th.cp Cmp 
-                th.cp Att
-                th.cp Cmp%
-                th.py.ty P-Yds 
-                th.ry.ty R-Yds
-                th.ty T-Yds
-                th.tch Touches
-                th.to Turns
-        tbody
+                th.pp.g.a.d.cp.py.ry.ty.tch.to.tpt Name
+                th.pp.cp.to(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Points played") Pts
+                th.g(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Goals scored") G
+                th.a(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Assists") Ast
+                th.d(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Blocks") Blk
+                th.cp(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Total # of passes completed") Cmp 
+                th.cp(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Total # of throws") Att
+                th.cp(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Percentage of throws completed") Cmp%
+                th.py.ty(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Passing yards - total vertical yards gained as a thrower. All throws, including backwards throws, are counted here.") P-Yds 
+                th.ry.ty(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Receiving yards - total vertical yards gained as a cutter. All caught passes, including backwards passes, are counted here.") R-Yds
+                th.ty(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Swing yards - if a pass travels further horizontally than vertical yards gained or lost, those horizontal yards are counted here. Mostly vertical passes are not counted towards swing yards.") Sw-Yds
+                th.ty(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Total yards (Passing and receiving only)") T-Yds
+                th.tch.to.tpt(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Total touches on offense") Tch
+                th.to.tpt(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Total turnovers") TO
+                th.to.tpt(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Touches per turnover") Tch/TO
+        tbody#leaders-body.pp

@@ -35,6 +35,10 @@ thead {
 tr {
 	border-bottom: 1px solid darkgray;
 }
+td,
+th {
+	padding: 0 5px;
+}
 
 #leaders-table.pp th:not(.pp),
 #leaders-table.g th:not(.g),
@@ -46,6 +50,7 @@ tr {
 #leaders-table.ty th:not(.ty),
 #leaders-table.tch th:not(.tch),
 #leaders-table.to th:not(.to),
+#leaders-table.tpt th:not(.tpt),
 #leaders-table.pp td:not(.pp),
 #leaders-table.g td:not(.g),
 #leaders-table.a td:not(.a),
@@ -55,6 +60,30 @@ tr {
 #leaders-table.ry td:not(.ry),
 #leaders-table.ty td:not(.ty),
 #leaders-table.tch td:not(.tch),
-#leaders-table.to td:not(.to) {
+#leaders-table.to td:not(.to),
+#leaders-table.tpt td:not(.tpt) {
 	display: none;
+}
+
+#leaders-table th {
+	background-color: var(--white);
+	position: sticky;
+	border-bottom: 1px solid black;
+	top: 0;
+}
+tr:hover {
+	background-color: var(--color-1);
+}
+
+tr.invisible-row {
+	display: none;
+}
+
+tbody.display-all > tr.invisible-row {
+	display: table-row;
+}
+
+th:not(:last-child),
+td:not(:last-child) {
+	border-right: 1px solid darkgrey;
 }

@@ -308,6 +308,7 @@ tbody > tr.filler-row:not(:last-child) {
 .hidden-radios input[type='radio']:checked + label {
 	background-color: var(--color-1);
 	color: var(--black);
+	font-weight: bold;
 }
 
 .hidden-radios .radio-container {
