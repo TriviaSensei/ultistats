@@ -39,7 +39,7 @@ eff.addEventListener('data-update', (e) => {
 		],
 	};
 
-	e.detail.forEach((t) => {
+	e.detail.data.forEach((t) => {
 		const ez = t.format.endzone + t.format.length - t.format.brick;
 		t.games.forEach((g) => {
 			g.points.forEach((pt) => {

@@ -51,6 +51,9 @@ th {
 #leaders-table.tch th:not(.tch),
 #leaders-table.to th:not(.to),
 #leaders-table.tpt th:not(.tpt),
+#leaders-table.pm th:not(.pm),
+#leaders-table.pd th:not(.pd),
+#leaders-table.sp th:not(.sp),
 #leaders-table.pp td:not(.pp),
 #leaders-table.g td:not(.g),
 #leaders-table.a td:not(.a),
@@ -61,17 +64,34 @@ th {
 #leaders-table.ty td:not(.ty),
 #leaders-table.tch td:not(.tch),
 #leaders-table.to td:not(.to),
-#leaders-table.tpt td:not(.tpt) {
+#leaders-table.tpt td:not(.tpt),
+#leaders-table.pm td:not(.pm),
+#leaders-table.pd td:not(.pd),
+#leaders-table.sp td:not(.sp) {
 	display: none;
 }
 
-#leaders-table th {
+#leaders-table tr > th:first-child,
+#leaders-table tr > td:first-child {
+	display: table-cell !important;
+}
+
+.free option.sub {
+	display: none;
+}
+
+.table-container {
+	max-width: 100%;
+	overflow-x: auto;
+}
+
+#leaders-table thead {
 	background-color: var(--white);
 	position: sticky;
 	border-bottom: 1px solid black;
 	top: 0;
 }
-tr:hover {
+tbody > tr:hover {
 	background-color: var(--color-1);
 }
 
@@ -81,6 +101,10 @@ tr.invisible-row {
 
 tbody.display-all > tr.invisible-row {
 	display: table-row;
+}
+
+tbody {
+	overflow-x: auto;
 }
 
 th:not(:last-child),

@@ -22,6 +22,7 @@ let data = {
 	date: null,
 	tournament: null,
 	reportData: null,
+	subscription: null,
 };
 
 const sh = new StateHandler(null);
@@ -171,7 +172,7 @@ const getTournaments = (e) => {
 			data.date = JSON.parse(JSON.stringify(allData));
 			data.tournament = JSON.parse(JSON.stringify(allData));
 			data.reportData = JSON.parse(JSON.stringify(allData));
-
+			data.subscription = res.subscription || null;
 			handleSliderValues(allData);
 			updateDataByDate();
 			tourneySelect.removeAttribute('disabled');
@@ -275,7 +276,11 @@ const handleSelectGames = () => {
 
 	gameSelectHeader.innerHTML = `Select games (${selectedGames} selected)`;
 	if (selectedGames === 0) reportArea.classList.add('invisible');
-	else sh.setState(data.reportData);
+	else
+		sh.setState({
+			data: data.reportData,
+			subscription: data.subscription,
+		});
 };
 
 document.addEventListener('DOMContentLoaded', () => {

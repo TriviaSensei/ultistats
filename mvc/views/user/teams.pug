@@ -181,7 +181,11 @@
                                     td ✓
                                     each m in memberships 
                                         td ✓
-                                
+                                tr 
+                                    td Offensive/Defensive Efficiency
+                                    td ✓
+                                    each m in memberships 
+                                        td= `${m.efficiency ? '✓' : ''}`
                                 tr 
                                     td Passing and Receiving Yards
                                     td
@@ -192,11 +196,6 @@
                                     td
                                     each m in memberships 
                                         td= `${m.plusMinus ? '✓' : ''}`
-                                tr 
-                                    td Offensive/Defensive Efficiency
-                                    td
-                                    each m in memberships 
-                                        td= `${m.efficiency ? '✓' : ''}`
                                 tr 
                                     td Graphical Reports and Visual Statistics
                                     td

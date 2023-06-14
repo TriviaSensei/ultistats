@@ -458,9 +458,16 @@ exports.getTournamentDetails = catchAsync(async (req, res, next) => {
 			startDate: 1,
 		});
 
+	const team = await Team.findById(req.params.id).populate([
+		{ path: 'subscription' },
+	]);
+
+	console.log(team.subscription);
 	res.status(200).json({
 		status: 'success',
 		data,
+		// subscription: null,
+		subscription: team.subscription.name || null,
 	});
 });
 

@@ -11,7 +11,7 @@ overview.addEventListener('data-update', (e) => {
 	let gf = 0;
 	let ga = 0;
 
-	e.detail.forEach((t) => {
+	e.detail.data.forEach((t) => {
 		t.games.forEach((g) => {
 			if (g.result === 'W') wins++;
 			else if (g.result === 'L') losses++;

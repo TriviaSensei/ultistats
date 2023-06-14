@@ -2,7 +2,9 @@ import { createElement } from '../utils/createElementFromSelector.js';
 import { getElementArray } from '../utils/getElementArray.js';
 import { StateHandler } from '../utils/stateHandler.js';
 
+const statSelect = document.querySelector('#stat-selector');
 const leaders = document.querySelector('#leaders');
+const leadersTable = document.querySelector('#leaders-table');
 const tbody = leaders.querySelector('#leaders-body');
 const sh = new StateHandler(null);
 const newPlayer = (p) => {
@@ -20,6 +22,8 @@ const newPlayer = (p) => {
 		swingYards: 0,
 		touches: 0,
 		turnovers: 0,
+		plusMinus: 0,
+		pointDiff: 0,
 	};
 };
 
@@ -52,19 +56,28 @@ const stats = [
 		calc: (d) => {
 			return Math.round(d.passYards);
 		},
+		sub: true,
 	},
 	{
 		name: 'recYards',
 		calc: (d) => {
 			return Math.round(d.recYards);
 		},
+		sub: true,
 	},
-	'swingYards',
+	{
+		name: 'swingYards',
+		calc: (d) => {
+			return Math.round(d.swingYards);
+		},
+		sub: true,
+	},
 	{
 		name: 'totalYards',
 		calc: (d) => {
 			return Math.round(d.passYards) + Math.round(d.recYards);
 		},
+		sub: true,
 	},
 	'touches',
 	{
@@ -94,21 +107,45 @@ const stats = [
 			else if (b.turnovers === 0) return 1;
 		},
 	},
+	{
+		name: 'plusMinus',
+		calc: (d) => {
+			return d.goals + d.assists + d.blocks - d.turnovers;
+		},
+	},
+	{
+		name: 'pointDiff',
+		sub: true,
+	},
+	{
+		name: 'scorePct',
+		calc: (d) => {
+			return `${((100 * (d.points + d.pointDiff)) / (2 * d.points)).toFixed(
+				1
+			)}%`;
+		},
+		sort: (a, b) => {
+			return (
+				(b.points + b.pointDiff) / b.points -
+				(a.points + a.pointDiff) / a.points
+			);
+		},
+		sub: true,
+	},
 ];
 
 const handleColumns = (e) => {
-	const tgt = document.querySelector(e.target.getAttribute('data-target'));
-	if (!tgt) return;
+	const cName = e.target.value;
 
-	const cName = e.target.getAttribute('value');
-	tgt.setAttribute('class', `m-auto ${cName}`);
+	if (cName === 'all') leadersTable.setAttribute('class', `m-auto`);
+	else leadersTable.setAttribute(`class`, `m-auto ${cName}`);
 
 	const state = sh.getState();
 	if (!state) return;
 
 	sh.setState({
 		...state,
-		sort: e.target.getAttribute('data-field'),
+		sort: e.target.options[e.target.selectedIndex].getAttribute('data-field'),
 	});
 };
 
@@ -119,9 +156,10 @@ const toggleAll = (e) => {
 
 const createCell = (classList, value) => {
 	const toReturn = createElement('td');
-	classList.forEach((c) => {
-		toReturn.classList.add(c);
-	});
+	if (classList.length > 0)
+		classList.forEach((c) => {
+			if (c !== '') toReturn.classList.add(c);
+		});
 	toReturn.innerHTML = value;
 	return toReturn;
 };
@@ -131,12 +169,18 @@ sh.addWatcher(leaders, (e) => {
 	const state = sh.getState();
 	if (!state) return;
 
+	if (!state.subscription) leaders.classList.add('free');
+	else leaders.classList.remove('free');
+
 	const headerRow = getElementArray(document, '#leaders thead th');
 	let threshold;
 	state.data.forEach((d) => {
 		//calculate the calculated fields
 		stats.forEach((s, j) => {
-			if ((typeof s).toLowerCase() === 'object') {
+			if (
+				(typeof s).toLowerCase() === 'object' &&
+				typeof s.calc === 'function'
+			) {
 				d[s.name] = s.calc(d);
 			}
 		});
@@ -185,20 +229,29 @@ sh.addWatcher(leaders, (e) => {
 			if (typeof s === 'string') {
 				if (typeof d[s] === 'string') value = d[s];
 				else value = Math.floor(d[s]);
-			} else if ((typeof s).toLowerCase() === 'object') value = s.calc(d);
+			} else if ((typeof s).toLowerCase() === 'object') {
+				value = s.sub
+					? state.subscription
+						? s.calc
+							? s.calc(d)
+							: d[s.name]
+						: ''
+					: s.calc
+					? s.calc(d)
+					: d[s.name];
+			}
 			const c = createCell(classes, value);
 			newRow.appendChild(c);
 		});
 
 		tbody.appendChild(newRow);
 	});
+
+	//make things disappear depending on subscription level
 });
 
-getElementArray(leaders, '#stat-selectors > input[type="radio"]').forEach(
-	(r) => {
-		r.addEventListener('change', handleColumns);
-	}
-);
+statSelect.addEventListener('change', handleColumns);
+
 getElementArray(leaders, '#toggle-all > input[type="radio"]').forEach((r) => {
 	r.addEventListener('change', toggleAll);
 });
@@ -224,7 +277,7 @@ overview.addEventListener('data-update', (e) => {
 	 */
 
 	//for every tournament
-	e.detail.forEach((t) => {
+	e.detail.data.forEach((t) => {
 		//check the roster and add any new players that aren't already in the data
 		if (t.games.length > 0 && t.games.find((g) => g.result !== '')) {
 			t.roster.forEach((p) => {
@@ -233,9 +286,8 @@ overview.addEventListener('data-update', (e) => {
 
 			t.games.forEach((g) => {
 				g.points.forEach((pt, i) => {
-					//points played
-
 					pt.lineup.forEach((pl) => {
+						//points played
 						if (data[pl]) data[pl].points++;
 						else {
 							data[pl] = newPlayer({
@@ -245,6 +297,8 @@ overview.addEventListener('data-update', (e) => {
 							});
 							data[pl].points++;
 						}
+						//point diff
+						data[pl].pointDiff = data[pl].pointDiff + pt.scored;
 					});
 					pt.injuries.forEach((pl) => {
 						if (!pt.lineup.includes(pl) && data[pl]) data[pl].points++;
@@ -369,6 +423,7 @@ overview.addEventListener('data-update', (e) => {
 		sh.setState({
 			data: dataArr,
 			sort: 'points',
+			subscription: e.detail.subscription,
 		});
 	} else {
 		sh.setState({
