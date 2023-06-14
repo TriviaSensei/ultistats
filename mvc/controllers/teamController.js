@@ -462,7 +462,6 @@ exports.getTournamentDetails = catchAsync(async (req, res, next) => {
 		{ path: 'subscription' },
 	]);
 
-	console.log(team.subscription);
 	res.status(200).json({
 		status: 'success',
 		data,

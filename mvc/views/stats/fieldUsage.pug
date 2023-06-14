@@ -1,0 +1,15 @@
+#field-usage.w-100.m-auto.mb-3.d-flex.flex-column.justify-content-center 
+    h5 Field Usage 
+    .setting-container.hidden-radios.mb-3
+        #toggle-pass-results.radio-container.d-flex.flex-wrap.justify-content-center
+            input#passes-complete(type="checkbox" value="complete" name="pass-show" checked)
+            label(for="passes-complete" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Completions") Complete
+            input#passes-drop(type="checkbox" value="drop" name="pass-show" checked)
+            label(for="passes-drop" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Drops") Drop
+            input#passes-throwaway(type="checkbox" value="throwaway" name="pass-show" checked)
+            label(for="passes-throwaway" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Throwaways") Throwaway 
+            input#passes-stall(type="checkbox" value="stall" name="pass-show" checked)
+            label(for="passes-stall" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Stalls") Stall 
+    .field-container.w-100.p-2
+        #field-usage-field.field.ratio
+    svg#fu-legend

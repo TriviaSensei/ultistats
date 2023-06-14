@@ -282,8 +282,6 @@ const getTournament = (e) => {
 			return a1.localeCompare(b1);
 		});
 
-		console.log(roster);
-
 		//clear all roster/line options
 		getElementArray(document, '.roster-option').forEach((op) => {
 			op.remove();

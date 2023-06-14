@@ -173,6 +173,12 @@ const getTournaments = (e) => {
 			data.tournament = JSON.parse(JSON.stringify(allData));
 			data.reportData = JSON.parse(JSON.stringify(allData));
 			data.subscription = res.subscription || null;
+			if (allData.length > 0) {
+				const evt = new CustomEvent('set-dimensions', {
+					detail: allData[0].format,
+				});
+				document.querySelector('#field-usage-field').dispatchEvent(evt);
+			}
 			handleSliderValues(allData);
 			updateDataByDate();
 			tourneySelect.removeAttribute('disabled');

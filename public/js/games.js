@@ -102,7 +102,7 @@ const createGameRow = (g) => {
 	}
 	//completed
 	else {
-		res.innerHTML = `<a href="/games/${g._id}">${g.result} ${g.score}-${g.oppScore}</a>`;
+		res.innerHTML = `${g.result} ${g.score}-${g.oppScore}`;
 	}
 
 	const editInfo = createElement('td');

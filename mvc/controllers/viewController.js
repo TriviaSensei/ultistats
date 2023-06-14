@@ -110,7 +110,7 @@ exports.getAccount = (req, res) => {
 exports.getManagerPage = catchAsync(async (req, res) => {
 	if (!req.user) return res.redirect('/login');
 
-	const formats = await Format.find();
+	const formats = await Format.find({ hidden: false }).select('-hidden');
 
 	const products = await stripe.products.list();
 	const priceData = await Promise.all(

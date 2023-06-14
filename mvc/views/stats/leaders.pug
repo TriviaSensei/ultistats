@@ -1,47 +1,50 @@
-#leaders.w-100.m-auto.mb-3.d-flex.flex-column.justify-content-center
-    h5 Leaders 
-    .setting-container.mb-3
-        select#stat-selector
-            option(value="pp" data-field="points" selected) Points Played 
-            option(value="g" data-field="goals") Goals 
-            option(value="a" data-field="assists") Assists 
-            option(value="d" data-field="blocks") Blocks 
-            option(value="cp" data-field="cmp-pct") Completion %
-            option.sub(value="py" data-field="passYards") Pass Yards 
-            option.sub(value="ry" data-field="recYards") Receiving Yards 
-            option.sub(value="ty" data-field="totalYards") Total Yards 
-            option(value="tch" data-field="touches") Touches 
-            option(value="to" data-field="turnovers") Turnovers 
-            option(value="tpt" data-field="tch-per-turn") Touches per Turnover
-            option(value="pm" data-field="plusMinus") +/-
-            option.sub(value="pd" data-field="pointDiff") PD
-            option.sub(value="sp" data-field="scorePct") Score %
+#leaders.w-100
+    .w-100.m-auto.d-flex.flex-column.justify-content-center
+        h5 Leaders 
+        .setting-container.mb-3
+            select#stat-selector
+                option(value="pp" data-field="points" selected) Points Played
+                option(value="g" data-field="goals") Goals 
+                option(value="a" data-field="assists") Assists 
+                option(value="d" data-field="blocks") Blocks 
+                option(value="cp" data-field="cmp-pct") Completion %
+                option.sub(value="py" data-field="passYards") Pass Yards 
+                option.sub(value="ry" data-field="recYards") Receiving Yards 
+                option.sub(value="ty" data-field="totalYards") Total Yards 
+                option(value="tch" data-field="touches") Touches 
+                option(value="to" data-field="turnovers") Turnovers 
+                option(value="tpt" data-field="tch-per-turn") Touches per Turnover
+                option(value="pm" data-field="plusMinus") +/-
+                option.sub(value="pd" data-field="pointDiff") PD
+                option.sub(value="sp" data-field="scorePct") Score %
 
-    .setting-container.hidden-radios.mb-3
-        #toggle-all.radio-container.d-flex.flex-wrap.justify-content-center
-            input#stat-show-top(type="radio" value="top" name="show" checked)
-            label(for="stat-show-top" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="Show leaders only") Top
-            input#stat-show-all(type="radio" value="all" name="show")
-            label(for="stat-show-all" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Show all rows") All
-    table#leaders-table.m-auto.pp
-        thead
-            tr 
-                th Name
-                th.pp.cp.to.pd.sp(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Points played") Pts
-                th.g.pm(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Goals scored") G
-                th.a.pm(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Assists") Ast
-                th.d.pm(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Blocks") Blk
-                th.cp(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Total # of passes completed") Cmp 
-                th.cp(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Total # of throws") Att
-                th.cp(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Percentage of throws completed") Cmp%
-                th.py.ty(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Passing yards - total vertical yards gained as a thrower. All throws, including backwards throws, are counted here.") P-Yds 
-                th.ry.ty(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Receiving yards - total vertical yards gained as a cutter. All caught passes, including backwards passes, are counted here.") R-Yds
-                th.ty(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Swing yards - if a pass travels further horizontally than vertical yards gained or lost, those horizontal yards are counted here. Mostly vertical passes are not counted towards swing yards.") Sw-Yds
-                th.ty(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Total yards (Passing and receiving only)") T-Yds
-                th.tch.to.tpt(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Total touches on offense") Tch
-                th.to.pm.tpt(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Total turnovers") TO
-                th.to.tpt(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Touches per turnover") Tch/TO
-                th.pm(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="+/- - Total goals, assists, and blocks, minus turnovers") +/-
-                th.pp.pd.sp(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Plus/Minus - team goal differential on points played") PD
-                th.pp.pd.sp(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Score Pct - % points played where the team scores") Score %
-        tbody#leaders-body.pp
+        .setting-container.hidden-radios.mb-3
+            #toggle-all.radio-container.d-flex.flex-wrap.justify-content-center
+                input#stat-show-top(type="radio" value="top" name="show" checked)
+                label(for="stat-show-top" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="Show leaders only") Top
+                input#stat-show-all(type="radio" value="all" name="show")
+                label(for="stat-show-all" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Show all rows") All
+        table#leaders-table.m-auto.pp
+            thead
+                tr 
+                    th Name
+                    th.pp.pd.sp(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Offensive points played") O-Pts
+                    th.pp.pd.sp(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Defensive points played") D-Pts
+                    th.pp.cp.to.pd.sp(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Total points played") Pts
+                    th.g.pm(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Goals scored") G
+                    th.a.pm(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Assists") Ast
+                    th.d.pm(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Blocks") Blk
+                    th.cp(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Total # of passes completed") Cmp 
+                    th.cp(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Total # of throws") Att
+                    th.cp(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Percentage of throws completed") Cmp%
+                    th.py.ty(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Passing yards - total vertical yards gained as a thrower. All throws, including backwards throws, are counted here.") P-Yds 
+                    th.ry.ty(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Receiving yards - total vertical yards gained as a cutter. All caught passes, including backwards passes, are counted here.") R-Yds
+                    th.ty(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Swing yards - if a pass travels further horizontally than vertical yards gained or lost, those horizontal yards are counted here. Mostly vertical passes are not counted towards swing yards.") Sw-Yds
+                    th.ty(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Total yards (Passing and receiving only)") T-Yds
+                    th.tch.to.tpt(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Total touches on offense") Tch
+                    th.to.pm.tpt(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Total turnovers") TO
+                    th.to.tpt(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Touches per turnover") Tch/TO
+                    th.pm(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="+/- - Total goals, assists, and blocks, minus turnovers") +/-
+                    th.pp.pd.sp(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Point Diff - team goal differential on points played") PD
+                    th.pp.pd.sp(data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Score Pct - % points played where the team scores") Score %
+            tbody#leaders-body.pp

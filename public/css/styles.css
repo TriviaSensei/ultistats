@@ -11,6 +11,7 @@
 	--color-2: #06b500;
 	--color-3: #6e0000;
 	--translucent: rgba(0, 0, 0, 0.5);
+	--field-color: #005c0c;
 }
 body,
 html {
@@ -285,7 +286,8 @@ tbody > tr.filler-row:not(:last-child) {
 	display: none;
 }
 
-.hidden-radios input[type='radio'] {
+.hidden-radios input[type='radio'],
+.hidden-radios input[type='checkbox'] {
 	display: none;
 }
 
@@ -305,7 +307,8 @@ tbody > tr.filler-row:not(:last-child) {
 	cursor: pointer;
 }
 
-.hidden-radios input[type='radio']:checked + label {
+.hidden-radios input[type='radio']:checked + label,
+.hidden-radios input[type='checkbox']:checked + label {
 	background-color: var(--color-1);
 	color: var(--black);
 	font-weight: bold;

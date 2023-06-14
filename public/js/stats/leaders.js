@@ -5,13 +5,15 @@ import { StateHandler } from '../utils/stateHandler.js';
 const statSelect = document.querySelector('#stat-selector');
 const leaders = document.querySelector('#leaders');
 const leadersTable = document.querySelector('#leaders-table');
+const fieldUsage = document.querySelector('#field-usage-field');
 const tbody = leaders.querySelector('#leaders-body');
 const sh = new StateHandler(null);
 const newPlayer = (p) => {
 	return {
 		name: `${p.lastName}, ${p.firstName}`,
 		id: p.id,
-		points: 0,
+		oPoints: 0,
+		dPoints: 0,
 		goals: 0,
 		assists: 0,
 		blocks: 0,
@@ -30,7 +32,14 @@ const newPlayer = (p) => {
 const rowLimit = 5;
 const stats = [
 	'name',
-	'points',
+	'oPoints',
+	'dPoints',
+	{
+		name: 'points',
+		calc: (d) => {
+			return d.oPoints + d.dPoints;
+		},
+	},
 	'goals',
 	'assists',
 	'blocks',
@@ -156,7 +165,7 @@ const toggleAll = (e) => {
 
 const createCell = (classList, value) => {
 	const toReturn = createElement('td');
-	if (classList.length > 0)
+	if (classList && classList.length > 0)
 		classList.forEach((c) => {
 			if (c !== '') toReturn.classList.add(c);
 		});
@@ -224,7 +233,7 @@ sh.addWatcher(leaders, (e) => {
 
 		//create the cells
 		stats.forEach((s, j) => {
-			const classes = headerRow[j].classList.value.split(' ');
+			const classes = headerRow[j].classList?.value?.split(' ');
 			let value = '';
 			if (typeof s === 'string') {
 				if (typeof d[s] === 'string') value = d[s];
@@ -287,16 +296,16 @@ overview.addEventListener('data-update', (e) => {
 			t.games.forEach((g) => {
 				g.points.forEach((pt, i) => {
 					pt.lineup.forEach((pl) => {
-						//points played
-						if (data[pl]) data[pl].points++;
-						else {
+						if (!data[pl])
 							data[pl] = newPlayer({
 								firstName: 'Unknown',
 								lastName: 'Unknown',
 								id: pl,
 							});
-							data[pl].points++;
-						}
+						//points played
+						if (pt.offense) data[pl].oPoints++;
+						else data[pl].dPoints++;
+
 						//point diff
 						data[pl].pointDiff = data[pl].pointDiff + pt.scored;
 					});
@@ -430,6 +439,14 @@ overview.addEventListener('data-update', (e) => {
 			...state,
 			data: dataArr,
 		});
+	}
+
+	//send the array to the field usage widget
+	if (e.detail.subscription === 'Plus' && fieldUsage) {
+		const evt = new CustomEvent('data-update', {
+			detail: passes,
+		});
+		fieldUsage.dispatchEvent(evt);
 	}
 
 	// const testid = '07875982-8ee5-4e14-970d-83e1632629ef';
