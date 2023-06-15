@@ -3,13 +3,13 @@
     .setting-container.hidden-radios.mb-3
         #toggle-pass-results.radio-container.d-flex.flex-wrap.justify-content-center
             input#passes-complete(type="checkbox" value="complete" name="pass-show" checked)
-            label(for="passes-complete" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Completions") Complete
+            label(for="passes-complete") Complete
             input#passes-drop(type="checkbox" value="drop" name="pass-show" checked)
-            label(for="passes-drop" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Drops") Drop
+            label(for="passes-drop") Drop
             input#passes-throwaway(type="checkbox" value="throwaway" name="pass-show" checked)
-            label(for="passes-throwaway" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Throwaways") Throwaway 
+            label(for="passes-throwaway") Throwaway 
             input#passes-stall(type="checkbox" value="stall" name="pass-show" checked)
-            label(for="passes-stall" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Stalls") Stall 
+            label(for="passes-stall") Stall 
     .field-container.w-100.p-2
         #field-usage-field.field.ratio
-    svg#fu-legend
+    .legend-container.d-flex.justify-content-evenly

@@ -12,6 +12,7 @@ let x, y, g;
 const results = ['complete', 'drop', 'throwaway', 'stall'];
 const colors = ['#17becf', '#ffff00', '#e377c2', '#7f7f7f'];
 const color = d3.scaleOrdinal(colors);
+
 field.addEventListener(
 	'set-dimensions',
 	(e) => {
@@ -94,6 +95,28 @@ field.addEventListener(
 			.attr('y2', y(e.detail.width / 2 - 1))
 			.attr('stroke', 'white')
 			.attr('width', 2);
+
+		results.forEach((r) => {
+			const legend = d3
+				.select('#field-usage > .legend-container')
+				.append('svg');
+			const legendItem = legend.append('g').attr('transform', `translate(0,5)`);
+			legendItem
+				.append('circle')
+				.attr('cx', 5)
+				.attr('cy', 7)
+				.attr('r', 5)
+				.attr('stroke', 'black')
+				.attr('fill', color(r));
+			legendItem
+				.append('text')
+				.attr('x', 15)
+				.attr('y', 10)
+				.attr('text-anchor', 'start')
+				.style('text-transform', 'capitalize')
+				.text(r);
+			console.log(legendItem);
+		});
 	},
 	{ once: true }
 );
