@@ -28,10 +28,27 @@
                             button.d-flex#game-select(type="button" data-bs-toggle="collapse" data-bs-target="#game-dropdown" aria-expanded="false" aria-controls="game-dropdown" disabled)
                                 .w-100 Select games 
                         #game-dropdown.multi-dropdown-contents.no-select.collapse
-                button#hide-filters.btn.btn-sm.btn-primary(data-bs-toggle="collapse" data-bs-target="#filter-body" aria-controls="filter-body") Hide
 #report-area.w-100.px-3.d-flex.flex-column.f-1.overflow-auto.invisible
-    include ../stats/overview
-    include ../stats/eff
-    include ../stats/leaders
-    include ../stats/fieldUsage
-                            
+    .d-none
+        include ../stats/overview
+    .d-none
+        include ../stats/eff
+    .d-none 
+        include ../stats/leaders
+    .plus-only.mb-3
+        h5 Individial/Team Visuals
+        .d-none 
+            include ../stats/fieldUsage
+        include ../stats/passChart
+        include ../stats/connections
+        #stat-carousel.carousel.slide(data-bs-ride="false")
+            .carousel-inner.h-100.w-100
+                .carousel-item.h-100.w-100.active                    
+                .carousel-item.h-100.w-100
+                .carousel-item.h-100.w-100
+            button.carousel-control-prev(type="button" data-bs-target="#stat-carousel" data-bs-slide="prev")
+                span.carousel-control-prev-icon(aria-hidden="true")
+                span.visually-hidden Previous
+            button.carousel-control-next(type="button" data-bs-target="#stat-carousel" data-bs-slide="next")
+                span.carousel-control-next-icon(aria-hidden="true")
+                span.visually-hidden Next                            

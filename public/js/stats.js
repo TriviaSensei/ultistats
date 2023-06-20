@@ -173,11 +173,17 @@ const getTournaments = (e) => {
 			data.tournament = JSON.parse(JSON.stringify(allData));
 			data.reportData = JSON.parse(JSON.stringify(allData));
 			data.subscription = res.subscription || null;
+			if (data.subscription)
+				document.body.classList.add(data.subscription.toLowerCase());
 			if (allData.length > 0) {
-				const evt = new CustomEvent('set-dimensions', {
+				const evt = new CustomEvent('init', {
 					detail: allData[0].format,
 				});
-				document.querySelector('#field-usage-field').dispatchEvent(evt);
+				const inits = ['field-usage-field', 'pass-chart'];
+				inits.forEach((i) => {
+					const obj = document.querySelector(`#${i}`);
+					if (obj) obj.dispatchEvent(evt);
+				});
 			}
 			handleSliderValues(allData);
 			updateDataByDate();

@@ -14,7 +14,7 @@ const colors = ['#17becf', '#ffff00', '#e377c2', '#7f7f7f'];
 const color = d3.scaleOrdinal(colors);
 
 field.addEventListener(
-	'set-dimensions',
+	'init',
 	(e) => {
 		const len = e.detail.endzone * 2 + e.detail.length;
 		const wid = e.detail.width;
@@ -103,7 +103,7 @@ field.addEventListener(
 			const legendItem = legend.append('g').attr('transform', `translate(0,5)`);
 			legendItem
 				.append('circle')
-				.attr('cx', 5)
+				.attr('cx', 7)
 				.attr('cy', 7)
 				.attr('r', 5)
 				.attr('stroke', 'black')
@@ -115,7 +115,6 @@ field.addEventListener(
 				.attr('text-anchor', 'start')
 				.style('text-transform', 'capitalize')
 				.text(r);
-			console.log(legendItem);
 		});
 	},
 	{ once: true }
@@ -139,6 +138,7 @@ field.addEventListener('data-update', (e) => {
 });
 
 const update = (data) => {
+	if (!data) return;
 	const filter = getElementArray(area, 'input[type="checkbox"]:checked').map(
 		(b) => b.getAttribute('value')
 	);

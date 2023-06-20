@@ -6,6 +6,7 @@ const statSelect = document.querySelector('#stat-selector');
 const leaders = document.querySelector('#leaders');
 const leadersTable = document.querySelector('#leaders-table');
 const fieldUsage = document.querySelector('#field-usage-field');
+const passChart = document.querySelector('#pass-chart');
 const tbody = leaders.querySelector('#leaders-body');
 const sh = new StateHandler(null);
 const newPlayer = (p) => {
@@ -442,11 +443,13 @@ overview.addEventListener('data-update', (e) => {
 	}
 
 	//send the array to the field usage widget
-	if (e.detail.subscription === 'Plus' && fieldUsage) {
+	if (e.detail.subscription === 'Plus') {
 		const evt = new CustomEvent('data-update', {
 			detail: passes,
 		});
-		fieldUsage.dispatchEvent(evt);
+		//send the array to the graphics widgets
+		if (fieldUsage) fieldUsage.dispatchEvent(evt);
+		if (passChart) passChart.dispatchEvent(evt);
 	}
 
 	// const testid = '07875982-8ee5-4e14-970d-83e1632629ef';
