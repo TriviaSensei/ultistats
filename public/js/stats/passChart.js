@@ -3,18 +3,11 @@ const parent = document.querySelector('#pass-chart');
 const chartArea = parent.querySelector('.graph-container');
 
 const grid = d3
-	.select('#pass-chart > .graph-container')
+	.select('#pass-chart .graph-container')
 	.append('svg')
 	.attr('id', 'pass-chart-grid')
-	.attr('height', '80%')
-	.attr('width', '100%');
-
-const legend = d3
-	.select('#pass-chart > .graph-container')
-	.append('svg')
-	.attr('id', 'pass-chart-legend')
-	.attr('height', '20%')
-	.attr('width', '100%');
+	.attr('width', '100%')
+	.attr('height', '100%');
 
 const colorScale1 = d3
 	.scaleLinear()
@@ -26,51 +19,48 @@ const colorScale2 = d3
 	.domain([0.5, 1])
 	.range(['#ffff00', '#00bf30']);
 
-const textScale1 = d3.scaleLinear().domain([0, 0.5]).range(['white', 'black']);
-const textScale2 = d3.scaleLinear().domain([0.5, 1]).range(['black', 'white']);
-
-const colorScale3 = d3
-	.scaleLinear()
-	.domain([0, 1])
-	.range(['ff0000', '#ffff00', '#00bf30']);
-
 const colorScale = (x) => {
 	if (x <= 0.5) return colorScale1(x);
 	else if (x <= 1) return colorScale2(x);
 	else return null;
 };
-const textScale = (x) => {
-	if (x <= 0.5) return textScale1(x);
-	else if (x <= 1) return textScale2(x);
-	else return null;
-};
+
 const t = d3.transition().duration(200);
 let gridChart;
 let x, y;
 let h, w;
 
 const margin = {
-	bottom: 50,
+	bottom: 150,
 	top: 10,
-	left: null,
-	right: null,
+	x: 80,
 };
+const gradientWidth = 3 / 5;
+const gradientHeight = 15;
+
+let sizeAxis,
+	dims,
+	chartRect,
+	bottom,
+	legendMargin,
+	legendWidth,
+	sizeLegendScale;
 
 parent.addEventListener(
 	'init',
 	(e) => {
-		const chartAll = parent.querySelector(
-			'.graph-container > #pass-chart-grid'
-		);
-		let dims = chartAll.getBoundingClientRect();
+		const chartAll = parent.querySelector('.graph-container');
+		dims = chartAll.getBoundingClientRect();
 
 		h = dims.height - margin.bottom - margin.top;
 		w = h * 1.2;
 
-		if (w > dims.width) {
-			w = dims.width - margin.bottom - margin.top;
+		if (w > dims.width - margin.x * 2) {
+			w = dims.width - margin.x * 2;
 			h = w / 1.2;
 		}
+		const maxBoxSize = w / 6;
+
 		//actual grid area
 		gridChart = grid
 			.append('g')
@@ -95,7 +85,7 @@ parent.addEventListener(
 			.call(xAxisCall);
 
 		//x-label
-		gridChart
+		const xAxisLabel = gridChart
 			.append('text')
 			.text('Yards swung')
 			.attr('x', w / 2)
@@ -121,27 +111,62 @@ parent.addEventListener(
 			.attr('transform', 'rotate(-90)')
 			.attr('text-anchor', 'middle');
 
-		// let x = 0;
-		// for (var i = 0; i < 6; i++) {
-		// 	for (var j = 0; j < 5; j++) {
-		// 		gridChart
-		// 			.append('rect')
-		// 			.attr('height', h / 5)
-		// 			.attr('width', h / 5)
-		// 			.attr('fill', colorScale(x))
-		// 			.attr('transform', `translate(${(i * h) / 5},${(j * h) / 5})`);
-		// 		gridChart
-		// 			.append('text')
-		// 			.text(x.toFixed(2))
-		// 			.attr('stroke', 'black')
-		// 			.attr('text-anchor', 'middle')
-		// 			.attr(
-		// 				'transform',
-		// 				`translate(${(i * h) / 5 + h / 10},${(j * h) / 5 + 30})`
-		// 			);
-		// 		x = x + 1 / 30;
-		// 	}
-		// }
+		chartRect = document.querySelector('#grid-chart');
+		bottom = chartRect.getBoundingClientRect().height;
+
+		legendMargin = {
+			x: 30,
+			y: 25,
+		};
+		legendWidth = gradientWidth * dims.width - legendMargin.x * 2;
+
+		//gradient legend
+		const maxGradientElements = 100;
+		const legendRow = grid
+			.append('g')
+			.attr('id', 'legend-row')
+			.attr('transform', `translate(0,${bottom + legendMargin.y})`);
+		const gradientElements = Math.min(maxGradientElements, legendWidth);
+		for (var i = 0; i < gradientElements; i++) {
+			const pct = (2 * i + 1) / (2 * gradientElements);
+			legendRow
+				.append('rect')
+				.attr('x', legendMargin.x + (i * legendWidth) / gradientElements)
+				.attr('y', legendMargin.y)
+				.attr('width', legendWidth / gradientElements)
+				.attr('height', gradientHeight)
+				.attr('fill', colorScale(pct))
+				.attr('stroke', colorScale(pct));
+		}
+
+		//axis
+		const gradientX = d3.scaleLinear().domain([0, 1]).range([0, legendWidth]);
+		const gradientAxisCall = d3
+			.axisBottom(gradientX)
+			.tickValues([0, 0.25, 0.5, 0.75, 1])
+			.tickFormat((d) => `${100 * d}%`);
+		const gradientAxis = legendRow
+			.append('g')
+			.attr('class', 'x axis')
+			.attr('id', 'gradient-axis')
+			.attr(
+				'transform',
+				`translate(${legendMargin.x},${legendMargin.y + gradientHeight})`
+			)
+			.call(gradientAxisCall);
+		legendRow
+			.append('text')
+			.text('Cmp%')
+			.attr('x', legendMargin.x + legendWidth / 2)
+			.attr('y', legendMargin.y + gradientHeight + 30)
+			.attr('text-anchor', 'middle');
+
+		legendRow
+			.append('text')
+			.text('Attempts')
+			.attr('x', gradientWidth * dims.width + legendMargin.x + w / 12)
+			.attr('y', legendMargin.y + gradientHeight + 30)
+			.attr('text-anchor', 'middle');
 	},
 	{ once: true }
 );
@@ -203,15 +228,16 @@ const update = (data) => {
 
 	const extent = d3.extent(grp, (d) => d.att);
 
-	const rects = gridChart.selectAll('rect').data(grp, (d) => d.group);
+	const rects = gridChart.selectAll('rect.data-rect').data(grp, (d) => d.group);
 	rects.exit().remove();
 	rects
 		.enter()
 		.append('rect')
 		.on('mouseover', showTip)
 		.on('mouseout', hideTip)
+		.merge(rects)
+		.attr('class', 'data-rect')
 		.attr('data-info', (d) => {
-			console.log(d);
 			const group = d.group.split(',').map((x) => parseInt(x));
 			const gain =
 				group[1] >= 30
@@ -233,6 +259,11 @@ const update = (data) => {
 				(100 * d.cmp) /
 				d.att
 			).toFixed(1)}%)`;
+
+			if (d.group === '10,0') {
+				console.log(d);
+				console.log(html);
+			}
 
 			return html;
 		})
@@ -258,4 +289,85 @@ const update = (data) => {
 			.attr('cx', x(0))
 			.attr('cy', y(0))
 			.attr('r', 5);
+
+	//box size legend update
+	let valuesToShow = [extent[1]];
+	while (valuesToShow.slice(-1).pop() >= 2 && valuesToShow.length < 3) {
+		valuesToShow.push(Math.floor(valuesToShow.slice(-1).pop() / 3));
+	}
+	valuesToShow = valuesToShow.map((v) => {
+		return {
+			value: v,
+			sideRatio: Math.sqrt(v / valuesToShow[0]),
+		};
+	});
+
+	const legendRow = grid.select('#legend-row');
+	const legendBoxes = legendRow
+		.selectAll('rect.legend-box')
+		.data(valuesToShow, (d) => d.sideRatio);
+	legendBoxes.exit().remove();
+	legendBoxes
+		.enter()
+		.append('rect')
+		.merge(legendBoxes)
+		.attr('class', 'legend-box')
+		.attr('fill', 'none')
+		.attr('stroke', 'black')
+		.attr('x', dims.width * gradientWidth + legendMargin.x)
+		.attr('y', (d) => legendMargin.y + gradientHeight - (w / 6) * d.sideRatio)
+		.attr('width', (d) => (w / 6) * d.sideRatio)
+		.attr('height', (d) => (w / 6) * d.sideRatio);
+
+	const legendLines = legendRow
+		.selectAll('line.legend-line')
+		.data(valuesToShow, (d) => d.sideRatio);
+	legendLines.exit().remove();
+	legendLines
+		.enter()
+		.append('line')
+		.merge(legendLines)
+		.attr('class', 'legend-line')
+		.attr('stroke', 'black')
+		.attr('stroke-dasharray', '2,2')
+		.attr(
+			'x1',
+			(d) => dims.width * gradientWidth + (w / 6) * d.sideRatio + legendMargin.x
+		)
+		.attr('y1', (d) => legendMargin.y + gradientHeight - (w / 6) * d.sideRatio)
+		.attr('x2', (d) => {
+			//if 40 px would go off the slide, go as far as we can
+			if (
+				dims.width * gradientWidth + w / 6 + legendMargin.x + 40 >
+				dims.width - legendMargin.x
+			) {
+				return dims.width - legendMargin.x - 20;
+			} else {
+				return dims.width * gradientWidth + w / 6 + legendMargin.x + 40;
+			}
+		})
+		.attr('y2', (d) => legendMargin.y + gradientHeight - (w / 6) * d.sideRatio);
+
+	const legendLabels = legendRow
+		.selectAll('text.legend-text')
+		.data(valuesToShow, (d) => d.sideRatio);
+	legendLabels.exit().remove();
+	legendLabels
+		.enter()
+		.append('text')
+		.merge(legendLabels)
+		.text((d) => d.value)
+		.attr('class', 'legend-text')
+		.attr('x', (d) => {
+			if (
+				dims.width * gradientWidth + w / 6 + legendMargin.x + 40 >
+				dims.width - legendMargin.x
+			) {
+				return dims.width - legendMargin.x - 15;
+			} else {
+				return dims.width * gradientWidth + w / 6 + legendMargin.x + 45;
+			}
+		})
+		.attr('y', (d) => legendMargin.y + gradientHeight - (w / 6) * d.sideRatio)
+		.attr('alignment-baseline', 'middle');
 };

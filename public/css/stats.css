@@ -135,7 +135,6 @@ body:not(.plus) .plus-only {
 
 .graph-container {
 	border: 1px solid black;
-	height: 45vh;
 	display: flex;
 	flex-direction: column;
 }
@@ -146,6 +145,7 @@ body:not(.plus) .plus-only {
 	background-color: black;
 	color: var(--white);
 	text-align: left;
+	z-index: 3;
 }
 
 .d3-tooltip:after {

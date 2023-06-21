@@ -1,15 +1,16 @@
-#field-usage.slide-contents.w-100.m-auto.mb-3.d-flex.flex-column.justify-content-center 
-    h5 Field Usage 
-    .setting-container.hidden-radios.mb-3
-        #toggle-pass-results.radio-container.d-flex.flex-wrap.justify-content-center
-            input#passes-complete(type="checkbox" value="complete" name="pass-show" checked)
-            label(for="passes-complete") Complete
-            input#passes-drop(type="checkbox" value="drop" name="pass-show" checked)
-            label(for="passes-drop") Drop
-            input#passes-throwaway(type="checkbox" value="throwaway" name="pass-show" checked)
-            label(for="passes-throwaway") Throwaway 
-            input#passes-stall(type="checkbox" value="stall" name="pass-show" checked)
-            label(for="passes-stall") Stall 
-    .field-container.w-100.p-2
-        #field-usage-field.field.ratio
-    .legend-container.d-flex.justify-content-evenly
+#field-usage.slide-contents.w-100.m-auto
+    h5 Field Usage
+    .w-100.ratio.ratio-4x3
+        .setting-container.hidden-radios.mb-3
+            #toggle-pass-results.radio-container.d-flex.flex-wrap.justify-content-center
+                input#passes-complete(type="checkbox" value="complete" name="pass-show" checked)
+                label(for="passes-complete") Complete
+                input#passes-drop(type="checkbox" value="drop" name="pass-show" checked)
+                label(for="passes-drop") Drop
+                input#passes-throwaway(type="checkbox" value="throwaway" name="pass-show" checked)
+                label(for="passes-throwaway") Throwaway 
+                input#passes-stall(type="checkbox" value="stall" name="pass-show" checked)
+                label(for="passes-stall") Stall 
+        .field-container.w-100.p-2
+            #field-usage-field.field.ratio
+        .legend-container.d-flex.justify-content-evenly
