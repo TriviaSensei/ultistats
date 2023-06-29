@@ -98,8 +98,9 @@ field.addEventListener(
 
 		results.forEach((r) => {
 			const legend = d3
-				.select('#field-usage > .legend-container')
-				.append('svg');
+				.select('#field-usage .legend-container')
+				.append('svg')
+				.attr('height', 50);
 			const legendItem = legend.append('g').attr('transform', `translate(0,5)`);
 			legendItem
 				.append('circle')

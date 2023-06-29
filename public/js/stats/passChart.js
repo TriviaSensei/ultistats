@@ -1,13 +1,17 @@
+import { getElementArray } from '../utils/getElementArray.js';
+import { createElement } from '../utils/createElementFromSelector.js';
+
 let allData;
 const parent = document.querySelector('#pass-chart');
 const chartArea = parent.querySelector('.graph-container');
+const playerSelect = parent.querySelector('#pass-chart-player-select');
 
 const grid = d3
 	.select('#pass-chart .graph-container')
 	.append('svg')
 	.attr('id', 'pass-chart-grid')
 	.attr('width', '100%')
-	.attr('height', '100%');
+	.attr('class', 'f-1');
 
 const colorScale1 = d3
 	.scaleLinear()
@@ -48,8 +52,8 @@ let sizeAxis,
 
 parent.addEventListener(
 	'init',
-	(e) => {
-		const chartAll = parent.querySelector('.graph-container');
+	() => {
+		const chartAll = parent.querySelector('#pass-chart-grid');
 		dims = chartAll.getBoundingClientRect();
 
 		h = dims.height - margin.bottom - margin.top;
@@ -174,8 +178,51 @@ parent.addEventListener(
 let grp;
 
 parent.addEventListener('data-update', (e) => {
-	allData = e.detail.filter((p) => {
+	allData = e.detail.passes.filter((p) => {
 		return p.thrower;
+	});
+
+	console.log(e.detail);
+	//remove any players that should be gone
+	getElementArray(playerSelect, 'option:not([value=""])').forEach((op) => {
+		if (
+			e.detail.tournaments.some((t) => {
+				const id = op.getAttribute('data-id');
+				if (t.games.length === 0) return false;
+				return t.roster.some((p) => {
+					return p.id === id;
+				});
+			})
+		)
+			return;
+		op.remove();
+	});
+
+	//add the player options that should be added
+	let options = [];
+	e.detail.tournaments.forEach((t) => {
+		if (t.games.length > 0)
+			t.roster.forEach((p) => {
+				if (
+					!options.some((pl) => {
+						return pl.id === p.id;
+					})
+				)
+					options.push({ ...p });
+			});
+	});
+	options.sort((a, b) => {
+		return a.name.localeCompare(b.name);
+	});
+	options.forEach((o) => {
+		const op = playerSelect.querySelector(`option[value="${o.id}"]`);
+		if (op) playerSelect.appendChild(op);
+		else {
+			const newOp = createElement('option');
+			newOp.setAttribute('value', o.id);
+			newOp.innerHTML = o.name;
+			playerSelect.appendChild(newOp);
+		}
 	});
 
 	update(allData);
@@ -259,11 +306,6 @@ const update = (data) => {
 				(100 * d.cmp) /
 				d.att
 			).toFixed(1)}%)`;
-
-			if (d.group === '10,0') {
-				console.log(d);
-				console.log(html);
-			}
 
 			return html;
 		})

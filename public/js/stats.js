@@ -179,7 +179,7 @@ const getTournaments = (e) => {
 				const evt = new CustomEvent('init', {
 					detail: allData[0].format,
 				});
-				const inits = ['field-usage-field', 'pass-chart'];
+				const inits = ['field-usage-field', 'pass-chart', 'connections'];
 				inits.forEach((i) => {
 					const obj = document.querySelector(`#${i}`);
 					if (obj) obj.dispatchEvent(evt);

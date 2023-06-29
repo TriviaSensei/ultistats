@@ -1,4 +1,19 @@
-#connections.slide.contents.w-100.m-auto.mb-3.d-flex.flex-column.justify-content-center 
+#connections.slide-contents.w-100.m-auto.mb-3.d-flex.flex-column.justify-content-center 
     h5 Connections
-    .graph-container
-    .legend-container
+    .w-100.ratio.ratio-4x3
+        .w-100.h-100.d-flex.flex-column
+            .slide-control-header.d-flex.m-auto
+                .d-flex.flex-column.f-1
+                    .w-100.d-flex
+                        .d-flex.me-1
+                            .m-auto Select line: 
+                        select#node-line-select.f-1
+                            option(value="") All
+                .m-auto.mx-3 or 
+                .d-flex.flex-column.f-1
+                    .w-100.d-flex
+                        .d-flex.me-1
+                            .m-auto Select player: 
+                        select#node-player-select.f-1
+                            option(value="") All
+            .graph-container.f-1

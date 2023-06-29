@@ -1,4 +1,17 @@
 #pass-chart.slide-contents.w-100.m-auto
     h5 Passing Chart
     .w-100.ratio.ratio-4x3
-        .graph-container
+        .graph-container.d-flex.flex-column
+            .slide-control-header.d-flex.m-auto
+                .d-flex.flex-column.f-1
+                    .w-100.d-flex
+                        .d-flex.me-1
+                            .m-auto Select player: 
+                        select#pass-chart-player-select.f-1.m-auto.mx-2
+                            option(value="") All
+                        .setting-container.hidden-radios.m-auto
+                            #toggle-pass-chart.radio-container.d-flex.flex-wrap.justify-content-center
+                                input#pass-chart-pass(type="radio" value="pass" name="pass-chart-show" checked)
+                                label.py-1(for="pass-chart-pass") Pass
+                                input#pass-chart-rec(type="radio" value="rec" name="pass-chart-show")
+                                label.py-1(for="pass-chart-rec") Rec
