@@ -3,7 +3,6 @@ import { createElement } from '../utils/createElementFromSelector.js';
 
 let allData;
 const parent = document.querySelector('#pass-chart');
-const chartArea = parent.querySelector('.graph-container');
 const playerSelect = parent.querySelector('#pass-chart-player-select');
 
 const grid = d3
@@ -177,12 +176,29 @@ parent.addEventListener(
 
 let grp;
 
+const filterData = () => {
+	const pid = playerSelect.value;
+	let type = parent.querySelector(
+		'input[type="radio"][name="pass-chart-show"]:checked'
+	)?.value;
+
+	if (!pid) return update(allData);
+	else if (!type) type = 'thrower';
+
+	const filteredData = allData.filter((p) => p[type] === pid);
+	update(filteredData);
+};
+
+playerSelect.addEventListener('change', filterData);
+getElementArray(parent, `input[type="radio"][name="pass-chart-show"]`).forEach(
+	(el) => el.addEventListener('change', filterData)
+);
+
 parent.addEventListener('data-update', (e) => {
 	allData = e.detail.passes.filter((p) => {
 		return p.thrower;
 	});
 
-	console.log(e.detail);
 	//remove any players that should be gone
 	getElementArray(playerSelect, 'option:not([value=""])').forEach((op) => {
 		if (
