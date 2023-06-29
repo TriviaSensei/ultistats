@@ -1,5 +1,5 @@
 import { getElementArray } from '../utils/getElementArray.js';
-
+import { createElement } from '../utils/createElementFromSelector.js';
 const area = document.querySelector('#field-usage');
 const field = document.querySelector('#field-usage-field');
 let size = {
@@ -12,6 +12,7 @@ let x, y, g;
 const results = ['complete', 'drop', 'throwaway', 'stall'];
 const colors = ['#17becf', '#ffff00', '#e377c2', '#7f7f7f'];
 const color = d3.scaleOrdinal(colors);
+const playerSelect = area.querySelector('#field-usage-player-select');
 
 field.addEventListener(
 	'init',
@@ -122,7 +123,49 @@ field.addEventListener(
 );
 
 field.addEventListener('data-update', (e) => {
-	allData = e.detail
+	//remove any players that should be gone
+	getElementArray(playerSelect, 'option:not([value=""])').forEach((op) => {
+		if (
+			e.detail.tournaments.some((t) => {
+				const id = op.getAttribute('data-id');
+				if (t.games.length === 0) return false;
+				return t.roster.some((p) => {
+					return p.id === id;
+				});
+			})
+		)
+			return;
+		op.remove();
+	});
+
+	//add the player options that should be added
+	let options = [];
+	e.detail.tournaments.forEach((t) => {
+		if (t.games.length > 0)
+			t.roster.forEach((p) => {
+				if (
+					!options.some((pl) => {
+						return pl.id === p.id;
+					})
+				)
+					options.push({ ...p });
+			});
+	});
+	options.sort((a, b) => {
+		return a.name.localeCompare(b.name);
+	});
+	options.forEach((o) => {
+		const op = playerSelect.querySelector(`option[value="${o.id}"]`);
+		if (op) playerSelect.appendChild(op);
+		else {
+			const newOp = createElement('option');
+			newOp.setAttribute('value', o.id);
+			newOp.innerHTML = o.name;
+			playerSelect.appendChild(newOp);
+		}
+	});
+
+	allData = e.detail.passes
 		.filter((p) => {
 			return p.thrower || p.receiver;
 		})
@@ -130,6 +173,8 @@ field.addEventListener('data-update', (e) => {
 			return {
 				id: window.crypto.randomUUID(),
 				result: p.result,
+				thrower: p.thrower,
+				receiver: p.receiver,
 				x: ['complete', 'drop'].includes(p.result) ? p.x1 : p.x0,
 				y: ['complete', 'drop'].includes(p.result) ? p.y1 : p.y0,
 			};
@@ -137,6 +182,13 @@ field.addEventListener('data-update', (e) => {
 
 	update(allData);
 });
+
+const filterData = () => {
+	const pid = playerSelect.value;
+	if (!pid) return update(allData);
+	update(allData.filter((p) => p.thrower === pid || p.receiver === pid));
+};
+playerSelect.addEventListener('change', filterData);
 
 const update = (data) => {
 	if (!data) return;
@@ -162,7 +214,5 @@ const update = (data) => {
 };
 
 getElementArray(area, 'input[type="checkbox"]').forEach((b) => {
-	b.addEventListener('change', () => {
-		update(allData);
-	});
+	b.addEventListener('change', filterData);
 });

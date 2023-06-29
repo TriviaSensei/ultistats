@@ -445,9 +445,9 @@ overview.addEventListener('data-update', (e) => {
 
 	//send the array to the graphical widgets
 	if (e.detail.subscription === 'Plus') {
-		const evt = new CustomEvent('data-update', {
-			detail: passes,
-		});
+		// const evt = new CustomEvent('data-update', {
+		// 	detail: passes,
+		// });
 		const evt2 = new CustomEvent('data-update', {
 			detail: {
 				passes,
@@ -455,7 +455,7 @@ overview.addEventListener('data-update', (e) => {
 			},
 		});
 		//send the array to the graphics widgets
-		if (fieldUsage) fieldUsage.dispatchEvent(evt);
+		if (fieldUsage) fieldUsage.dispatchEvent(evt2);
 		if (passChart) passChart.dispatchEvent(evt2);
 		if (connections) connections.dispatchEvent(evt2);
 

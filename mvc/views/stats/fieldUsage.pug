@@ -1,17 +1,22 @@
 #field-usage.slide-contents.w-100.m-auto
     h5 Field Usage
     .w-100.ratio.ratio-4x3
-        .w-100.h-100.d-flex.flex-column
-            .setting-container.hidden-radios.mb-3
-                #toggle-pass-results.radio-container.d-flex.flex-wrap.justify-content-center
-                    input#passes-complete(type="checkbox" value="complete" name="pass-show" checked)
-                    label(for="passes-complete") Complete
-                    input#passes-drop(type="checkbox" value="drop" name="pass-show" checked)
-                    label(for="passes-drop") Drop
-                    input#passes-throwaway(type="checkbox" value="throwaway" name="pass-show" checked)
-                    label(for="passes-throwaway") Throwaway 
-                    input#passes-stall(type="checkbox" value="stall" name="pass-show" checked)
-                    label(for="passes-stall") Stall 
+        .w-100.h-100
+            .slide-control-header.d-flex.mx-auto
+                .d-flex.me-1
+                    .m-auto Select player: 
+                select#field-usage-player-select.f-1.m-auto.mx-2
+                    option(value="") All
+                .setting-container.hidden-radios.my-auto
+                    #toggle-pass-results.radio-container.d-flex.flex-wrap.justify-content-center
+                        input#passes-complete(type="checkbox" value="complete" name="pass-show" checked)
+                        label.py-1(for="passes-complete" title="Complete") C
+                        input#passes-drop(type="checkbox" value="drop" name="pass-show" checked)
+                        label.py-1(for="passes-drop" title="Drop") D
+                        input#passes-throwaway(type="checkbox" value="throwaway" name="pass-show" checked)
+                        label.py-1(for="passes-throwaway" title="Throwaway") TA
+                        input#passes-stall(type="checkbox" value="stall" name="pass-show" checked)
+                        label.py-1(for="passes-stall" title="Stall") St 
             .field-container.w-100.p-2
                 #field-usage-field.field.ratio
             .legend-container.d-flex.justify-content-evenly
