@@ -392,7 +392,7 @@ const update = (data) => {
 			'link',
 			d3.forceLink(data.links).id((d) => d.id)
 		)
-		.force('charge', d3.forceManyBody().strength(-20))
+		.force('charge', d3.forceManyBody().strength(-50))
 		.force('collide', d3.forceCollide(10).strength(0.9))
 		.force(
 			'center',

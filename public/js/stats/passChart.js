@@ -34,7 +34,7 @@ let x, y;
 let h, w;
 
 const margin = {
-	bottom: 100,
+	bottom: 130,
 	top: 10,
 	x: 80,
 };
@@ -77,7 +77,7 @@ parent.addEventListener(
 			.axisBottom(x)
 			.tickValues([-25, -15, -5, 5, 15, 25])
 			.tickFormat((d, i) => {
-				return ['L21+', 'L11-20', 'L1-10', 'R0-9', 'R10-19', 'R20+'][i];
+				return ['L21+', 'L15', 'L5', 'R5', 'R15', 'R20+'][i];
 			});
 
 		//x-axis
@@ -374,7 +374,10 @@ const update = (data) => {
 		.attr('fill', 'none')
 		.attr('stroke', 'black')
 		.attr('x', dims.width * gradientWidth + legendMargin.x)
-		.attr('y', (d) => legendMargin.y + gradientHeight - (w / 6) * d.sideRatio)
+		.attr(
+			'y',
+			(d) => legendMargin.y + gradientHeight - (w / 6) * d.sideRatio + 10
+		)
 		.attr('width', (d) => (w / 6) * d.sideRatio)
 		.attr('height', (d) => (w / 6) * d.sideRatio);
 
@@ -393,7 +396,10 @@ const update = (data) => {
 			'x1',
 			(d) => dims.width * gradientWidth + (w / 6) * d.sideRatio + legendMargin.x
 		)
-		.attr('y1', (d) => legendMargin.y + gradientHeight - (w / 6) * d.sideRatio)
+		.attr(
+			'y1',
+			(d) => legendMargin.y + gradientHeight - (w / 6) * d.sideRatio + 10
+		)
 		.attr('x2', (d) => {
 			//if 40 px would go off the slide, go as far as we can
 			if (
@@ -411,7 +417,10 @@ const update = (data) => {
 				);
 			}
 		})
-		.attr('y2', (d) => legendMargin.y + gradientHeight - (w / 6) * d.sideRatio);
+		.attr(
+			'y2',
+			(d) => legendMargin.y + gradientHeight - (w / 6) * d.sideRatio + 10
+		);
 
 	const legendLabels = legendRow
 		.selectAll('text.legend-text')
@@ -439,6 +448,9 @@ const update = (data) => {
 				);
 			}
 		})
-		.attr('y', (d) => legendMargin.y + gradientHeight - (w / 6) * d.sideRatio)
+		.attr(
+			'y',
+			(d) => legendMargin.y + gradientHeight - (w / 6) * d.sideRatio + 10
+		)
 		.attr('alignment-baseline', 'middle');
 };
