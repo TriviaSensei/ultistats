@@ -1,6 +1,6 @@
 import { createElement } from './createElementFromSelector.js';
 import { getElementArray } from './getElementArray.js';
-
+import { randomUUID } from './randomUUID.js';
 export const createRosterOption = (p, changeFunc) => {
 	const name = `${p.lastName}, ${p.firstName}`;
 	const op = createElement('.roster-option');
@@ -11,7 +11,7 @@ export const createRosterOption = (p, changeFunc) => {
 	if (p.position && p.position !== '-')
 		op.setAttribute('data-position', p.position);
 	const cb = createElement('input');
-	const newId = window.crypto.randomUUID();
+	const newId = randomUUID();
 	cb.setAttribute('id', newId);
 	cb.setAttribute('data-id', `${p.id}`);
 	cb.setAttribute('type', 'checkbox');

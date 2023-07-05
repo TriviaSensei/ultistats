@@ -11,6 +11,7 @@ let dims;
 let allData, allGraphData, allPasses;
 
 let simulation, link, node;
+
 const ticked = () => {
 	link
 		.attr('x1', function (d) {
@@ -267,11 +268,18 @@ const generateGraphData = (data, filter) => {
 		return toReturn;
 	} else if (filter.line) {
 		const toReturn = {
-			nodes: [...nodes].filter((n) => filter.line.includes(n.id)),
+			nodes: [...nodes].filter(
+				(n) => filter.line.includes(n.id) && n.connections > 0
+			),
 			links: [...links],
 		};
 		return toReturn;
 	} else return null;
+};
+
+const getPasses = (id) => {
+	let passes = allPasses.filter((p) => p.receiver === id || p.thrower === id);
+	console.log(passes);
 };
 
 parent.addEventListener('data-update', (e) => {
@@ -366,7 +374,6 @@ parent.addEventListener('data-update', (e) => {
 
 	allGraphData = data;
 	allPasses = e.detail.passes;
-
 	update(data);
 });
 
@@ -385,9 +392,12 @@ const update = (data) => {
 			'link',
 			d3.forceLink(data.links).id((d) => d.id)
 		)
-		.force('charge', d3.forceManyBody().strength(-150))
+		.force('charge', d3.forceManyBody().strength(-20))
 		.force('collide', d3.forceCollide(10).strength(0.9))
-		.force('center', d3.forceCenter(dims.width / 2, dims.height / 2));
+		.force(
+			'center',
+			d3.forceCenter(dims.width / 2, dims.height / 2).strength(1)
+		);
 
 	const link = chart
 		.append('g')
@@ -463,15 +473,36 @@ const update = (data) => {
 		d3.drag().on('start', dragstarted).on('drag', dragged).on('end', dragended)
 	);
 
+	const nodePadding = 10;
 	function ticked() {
 		node
-			.attr('cx', (d) => (d.x < 0 ? 0 : d.x > dims.width ? dims.width : d.x))
-			.attr('cy', (d) => (d.y < 0 ? 0 : d.y > dims.height ? dims.height : d.y));
+			.attr('cx', (d) =>
+				d.x < nodePadding
+					? nodePadding
+					: d.x > dims.width - nodePadding
+					? dims.width - nodePadding
+					: d.x
+			)
+			.attr('cy', (d) =>
+				d.y < nodePadding
+					? nodePadding
+					: d.y > dims.height - nodePadding
+					? dims.height - nodePadding
+					: d.y
+			);
 		link
-			.attr('x1', (d) => d.source.x)
-			.attr('y1', (d) => d.source.y)
-			.attr('x2', (d) => d.target.x)
-			.attr('y2', (d) => d.target.y);
+			.attr('x1', (d) =>
+				Math.min(Math.max(nodePadding, d.source.x), dims.width - nodePadding)
+			)
+			.attr('y1', (d) =>
+				Math.min(Math.max(nodePadding, d.source.y), dims.height - nodePadding)
+			)
+			.attr('x2', (d) =>
+				Math.min(Math.max(nodePadding, d.target.x), dims.width - nodePadding)
+			)
+			.attr('y2', (d) =>
+				Math.min(Math.max(nodePadding, d.target.y), dims.height - nodePadding)
+			);
 	}
 
 	simulation.on('tick', ticked);
@@ -490,6 +521,8 @@ const update = (data) => {
 		tip.style = `top: ${rect.top + dy}px;left: ${rect.left + dx}px`;
 		event.subject.fx = event.x;
 		event.subject.fy = event.y;
+		event.subject.x = event.x;
+		event.subject.y = event.y;
 	}
 
 	// Restore the target alpha so the simulation cools after dragging ends.

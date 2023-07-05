@@ -3,7 +3,7 @@ import { showMessage } from './utils/messages.js';
 import { getElementArray } from './utils/getElementArray.js';
 import { createElement } from './utils/createElementFromSelector.js';
 import { populateForm } from './utils/populateForm.js';
-
+import { randomUUID } from './utils/randomUUID.js';
 const myId = document.querySelector('#my-id').value;
 
 //team information
@@ -307,7 +307,7 @@ const addPlayerRow = (player) => {
 	if (player.id) {
 		newRow.setAttribute('data-id', player.id);
 	} else {
-		newRow.setAttribute('data-id', window.crypto.randomUUID());
+		newRow.setAttribute('data-id', randomUUID());
 	}
 	const rows = getElementArray(rosterBody, 'tr');
 
@@ -331,7 +331,7 @@ const addPlayer = (player) => {
 	const toPush = {
 		...player,
 		name: `${player.lastName}, ${player.firstName}`,
-		id: window.crypto.randomUUID(),
+		id: randomUUID(),
 	};
 
 	//if we're creating a new team, we need to check client side if we're creating a duplicate player.

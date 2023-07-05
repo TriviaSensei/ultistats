@@ -34,7 +34,7 @@ let x, y;
 let h, w;
 
 const margin = {
-	bottom: 150,
+	bottom: 100,
 	top: 10,
 	x: 80,
 };
@@ -77,7 +77,7 @@ parent.addEventListener(
 			.axisBottom(x)
 			.tickValues([-25, -15, -5, 5, 15, 25])
 			.tickFormat((d, i) => {
-				return ['◀21+', '◀11-20', '◀1-10', '▶0-9', '▶10-19', '▶20+'][i];
+				return ['L21+', 'L11-20', 'L1-10', 'R0-9', 'R10-19', 'R20+'][i];
 			});
 
 		//x-axis
@@ -92,7 +92,7 @@ parent.addEventListener(
 			.append('text')
 			.text('Yards swung')
 			.attr('x', w / 2)
-			.attr('y', h + 40)
+			.attr('y', h + 30)
 			.attr('text-anchor', 'middle');
 
 		const yAxisCall = d3
@@ -119,7 +119,7 @@ parent.addEventListener(
 
 		legendMargin = {
 			x: 30,
-			y: 25,
+			y: 15,
 		};
 		legendWidth = gradientWidth * dims.width - legendMargin.x * 2;
 
@@ -350,13 +350,14 @@ const update = (data) => {
 
 	//box size legend update
 	let valuesToShow = [extent[1]];
-	while (valuesToShow.slice(-1).pop() >= 2 && valuesToShow.length < 3) {
+	while (valuesToShow.slice(-1).pop() >= 2 && valuesToShow.length < 2) {
 		valuesToShow.push(Math.floor(valuesToShow.slice(-1).pop() / 3));
 	}
-	valuesToShow = valuesToShow.map((v) => {
+	valuesToShow = valuesToShow.map((v, i) => {
 		return {
 			value: v,
 			sideRatio: Math.sqrt(v / valuesToShow[0]),
+			index: i,
 		};
 	});
 
@@ -399,9 +400,15 @@ const update = (data) => {
 				dims.width * gradientWidth + w / 6 + legendMargin.x + 40 >
 				dims.width - legendMargin.x
 			) {
-				return dims.width - legendMargin.x - 20;
+				return dims.width - legendMargin.x - 20 - 20 * d.index;
 			} else {
-				return dims.width * gradientWidth + w / 6 + legendMargin.x + 40;
+				return (
+					dims.width * gradientWidth +
+					w / 6 +
+					legendMargin.x +
+					40 -
+					20 * d.index
+				);
 			}
 		})
 		.attr('y2', (d) => legendMargin.y + gradientHeight - (w / 6) * d.sideRatio);
@@ -421,9 +428,15 @@ const update = (data) => {
 				dims.width * gradientWidth + w / 6 + legendMargin.x + 40 >
 				dims.width - legendMargin.x
 			) {
-				return dims.width - legendMargin.x - 15;
+				return dims.width - legendMargin.x - 15 - 20 * d.index;
 			} else {
-				return dims.width * gradientWidth + w / 6 + legendMargin.x + 45;
+				return (
+					dims.width * gradientWidth +
+					w / 6 +
+					legendMargin.x +
+					45 -
+					20 * d.index
+				);
 			}
 		})
 		.attr('y', (d) => legendMargin.y + gradientHeight - (w / 6) * d.sideRatio)

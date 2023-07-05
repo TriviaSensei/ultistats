@@ -129,7 +129,7 @@ body:not(.plus) .plus-only {
 }
 
 #stat-carousel {
-	height: 50vh;
+	max-height: 50vh;
 }
 
 .graph-container {

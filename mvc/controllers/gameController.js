@@ -223,9 +223,34 @@ exports.startPoint = catchAsync(async (req, res, next) => {
 	//if not the first point, look at the last point to initialize the information.
 	const lastPoint = points[points.length - 1];
 
-	//must have finished the last point
-	if (lastPoint.scored !== -1 && lastPoint.scored !== 1)
-		return next(new AppError('You have not finished the last point', 400));
+	//check if the last point is finished
+	if (lastPoint.scored !== -1 && lastPoint.scored !== 1) {
+		//if not, we need to be setting the lineup for this point
+		if (!req.body.lineup)
+			return next(new AppError('You have already started a point.', 400));
+		else {
+			points[points.length - 1] = {
+				...lastPoint,
+				...req.body,
+			};
+			res.locals.game.markModified('period');
+			res.locals.game.markModified('points');
+			const data = await res.locals.game.save();
+			await data.populate([
+				{
+					path: 'format',
+				},
+				{
+					path: 'tournament',
+					select: 'roster',
+				},
+			]);
+			return res.status(200).json({
+				status: 'success',
+				data,
+			});
+		}
+	}
 
 	const score = lastPoint.score + (lastPoint.scored === 1 ? 1 : 0);
 	const oppScore = lastPoint.oppScore + (lastPoint.scored === -1 ? 1 : 0);

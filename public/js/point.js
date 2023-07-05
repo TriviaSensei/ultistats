@@ -243,7 +243,6 @@ const updatePasses = () => {
 const handleTimeout = (e) => {
 	if (!sh) return;
 	const state = sh.getState();
-	console.log(state);
 	if (!state) return;
 	if (
 		!state.timeoutsLeft ||
@@ -394,7 +393,6 @@ const displayEventDescription = (e) => {
 	const state = e.detail;
 	const currentPoint = state.currentPoint;
 	const passes = state.currentPoint?.passes;
-	console.log(state);
 	if (!passes || !Array.isArray(passes)) return showEvent('(No events)');
 
 	if (
@@ -574,7 +572,6 @@ const displayEventDescription = (e) => {
 								`${state.opponent} threw the disc away<br>${state.team} to pick up`
 							);
 						case 'block':
-							console.log('block');
 							return showEvent(
 								`${lastThree[0].player} got a block<br>${state.team} to pick up`
 							);

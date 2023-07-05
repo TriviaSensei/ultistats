@@ -1,5 +1,8 @@
 import { getElementArray } from '../utils/getElementArray.js';
 import { createElement } from '../utils/createElementFromSelector.js';
+import { handleRequest } from '../utils/requestHandler.js';
+import { randomUUID } from '../utils/randomUUID.js';
+
 const area = document.querySelector('#field-usage');
 const field = document.querySelector('#field-usage-field');
 let size = {
@@ -165,32 +168,37 @@ field.addEventListener('data-update', (e) => {
 		}
 	});
 
-	allData = e.detail.passes
-		.filter((p) => {
-			return p.thrower || p.receiver;
-		})
-		.map((p) => {
-			return {
-				id: window.crypto.randomUUID(),
-				result: p.result,
-				thrower: p.thrower,
-				receiver: p.receiver,
-				x: ['complete', 'drop'].includes(p.result) ? p.x1 : p.x0,
-				y: ['complete', 'drop'].includes(p.result) ? p.y1 : p.y0,
-			};
-		});
+	const pre1 = e.detail.passes.filter((p) => {
+		return p.thrower || p.receiver;
+	});
+
+	allData = pre1.map((p) => {
+		return {
+			id: randomUUID(),
+			result: p.result,
+			thrower: p.thrower,
+			receiver: p.receiver,
+			x: ['complete', 'drop'].includes(p.result) ? p.x1 : p.x0,
+			y: ['complete', 'drop'].includes(p.result) ? p.y1 : p.y0,
+		};
+	});
 
 	update(allData);
 });
 
 const filterData = () => {
 	const pid = playerSelect.value;
-	if (!pid) return update(allData);
-	update(allData.filter((p) => p.thrower === pid || p.receiver === pid));
+	if (pid === '') return update(allData);
+
+	const filteredData = allData.filter((p, i) => {
+		return p.thrower === pid || p.receiver === pid;
+	});
+	update(filteredData);
 };
 playerSelect.addEventListener('change', filterData);
 
 const update = (data) => {
+	const a = data.length;
 	if (!data) return;
 	const filter = getElementArray(area, 'input[type="checkbox"]:checked').map(
 		(b) => b.getAttribute('value')

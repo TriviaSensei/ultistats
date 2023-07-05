@@ -4,6 +4,7 @@ const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const AppError = require('./utils/appError');
 const rateLimit = require('express-rate-limit');
+const { v4: uuidV4 } = require('uuid');
 
 const errorHandler = require('./mvc/controllers/errorController');
 
@@ -61,6 +62,28 @@ app.use('/api/v1/teams/', teamRouter);
 app.use('/api/v1/tournaments/', tournamentRouter);
 app.use('/api/v1/users/', userRouter);
 app.use('/api/v1/subscriptions/', subscriptionRouter);
+const queue = [];
+app.post('/api/v1/logger/', (req, res, next) => {
+	const id = uuidV4();
+	queue.push(id);
+	let x = 0;
+	while (queue[0] !== id && x < 10000) {
+		x++;
+	}
+	try {
+		console.log(JSON.parse(req.body));
+		res.status(200).json({
+			status: 'success',
+		});
+	} catch (e) {
+		console.log(req.body);
+		res.status(200).json({
+			status: 'success',
+		});
+	} finally {
+		queue.shift();
+	}
+});
 app.use('/', viewRouter);
 
 app.all('*', (req, res, next) => {

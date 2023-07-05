@@ -4,6 +4,7 @@ import { getElementArray } from './utils/getElementArray.js';
 import { createElement } from './utils/createElementFromSelector.js';
 import { populateForm } from './utils/populateForm.js';
 import { createRosterOption, insertOption } from './utils/rosterOption.js';
+import { randomUUID } from './utils/randomUUID.js';
 
 const teamSelect = document.querySelector('#tourney-team-select');
 const tournamentSelect = document.querySelector('#tournament-select');
@@ -1010,7 +1011,7 @@ const addPlayerRow = (player) => {
 	if (player.id) {
 		newRow.setAttribute('data-id', player.id);
 	} else {
-		newRow.setAttribute('data-id', window.crypto.randomUUID());
+		newRow.setAttribute('data-id', randomUUID());
 	}
 	const rows = getElementArray(rosterBody, 'tr');
 
