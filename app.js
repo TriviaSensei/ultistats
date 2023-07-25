@@ -8,6 +8,8 @@ const { v4: uuidV4 } = require('uuid');
 
 const errorHandler = require('./mvc/controllers/errorController');
 
+const authController = require('./mvc/controllers/authController');
+
 const formatRouter = require('./mvc/routes/formatRoutes');
 const gameRouter = require('./mvc/routes/gameRoutes');
 const teamRouter = require('./mvc/routes/teamRoutes');
@@ -62,34 +64,6 @@ app.use('/api/v1/teams/', teamRouter);
 app.use('/api/v1/tournaments/', tournamentRouter);
 app.use('/api/v1/users/', userRouter);
 app.use('/api/v1/subscriptions/', subscriptionRouter);
-const queue = [];
-app.post('/api/v1/logger/', (req, res, next) => {
-	const id = uuidV4();
-	queue.push(id);
-	let x = 0;
-	while (queue[0] !== id && x < 10000) {
-		x++;
-	}
-	try {
-		console.log(JSON.parse(req.body));
-		res.status(200).json({
-			status: 'success',
-		});
-	} catch (e) {
-		console.log(req.body);
-		res.status(200).json({
-			status: 'success',
-		});
-	} finally {
-		queue.shift();
-	}
-});
-app.use('/', viewRouter);
-
-app.all('*', (req, res, next) => {
-	//any argument passed to a next() function is assumed to be an error; skips all other middleware and goes to the error handler.
-	next(new AppError(`Could not find ${req.originalUrl}.`, 404));
-});
 
 const limiter = rateLimit({
 	max: 3,
@@ -102,16 +76,16 @@ const limiter = rateLimit({
 
 app.use('/api/v1/contact', limiter);
 
-app.post('/api/v1/contact', async (req, res) => {
+app.post('/api/v1/contact', authController.protect, async (req, res) => {
 	const sgMail = require('@sendgrid/mail');
 	sgMail.setApiKey(process.env.SG_API_KEY);
 
 	const msg = {
 		from: process.env.EMAIL_FROM,
 		to: process.env.ADMIN_EMAIL,
-		reply_to: req.body.email,
-		subject: `UltiStats message from ${req.body.name}`,
-		text: req.body.message,
+		reply_to: res.locals.user.email,
+		subject: `UltiStats message from ${res.locals.user.displayName} - ${req.body.subject}`,
+		text: `Message from ${res.locals.user.displayName}\nE-Mail: ${res.locals.user.email}\nSubject: ${req.body.subject}\n\n${req.body.message}`,
 	};
 	try {
 		await sgMail.send(msg);
@@ -126,6 +100,8 @@ app.post('/api/v1/contact', async (req, res) => {
 		message: 'Message sent.',
 	});
 });
+
+app.use('/', viewRouter);
 
 app.all('*', (req, res, next) => {
 	//any argument passed to a next() function is assumed to be an error; skips all other middleware and goes to the error handler.

@@ -53,6 +53,11 @@
 	margin-top: -50px;
 }
 
+.body-section > p {
+	margin: 0 auto 1rem;
+	max-width: min(100%, 600px);
+}
+
 .body-section:nth-child(2n-1) {
 	background-color: var(--white);
 	clip-path: polygon(0 0, 100% 50px, 100% 100%, 0 100%);

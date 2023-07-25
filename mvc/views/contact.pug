@@ -1,0 +1,32 @@
+extends _base
+
+block styles 
+    link(rel='stylesheet' href='/css/contact.css')
+
+block content 
+    section.header-section.navbar-container
+        .container-fluid
+            .container-fill
+                include components/navbar
+    section.profile-body.m-auto
+        h3 Contact 
+        .contact-container.form-container
+            #form-container
+                form#contact-form
+                    .mb-3
+                        label.form-label(for="name") Your name:
+                        h5= user.displayName
+                    .mb-3
+                        label.form-label(for="email") E-mail address
+                        h5= user.email
+                    .mb-3
+                        label.form-label(for="subject") Subject
+                        input.form-control#subject(type="subject" placeholder="Subject" required)
+                    .mb-3
+                        label.form-label(for="message") Your message
+                        textarea#message.w-100(required rows="6" placeholder="Your message")
+                    .mb-3(style="width: 100%; display: flex")
+                        button.btn.btn-primary.m-auto.send-button Send
+
+block scripts 
+    script(src="/js/contact.js" type="module" defer)

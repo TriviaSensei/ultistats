@@ -20,6 +20,7 @@ router.get('/login', viewController.getLoginForm);
 router.use(authController.protect);
 router.get('/me', viewController.getAccount);
 router.get('/mystuff/:id?', viewController.getManagerPage);
+router.get('/contact', viewController.getContact);
 
 router.get(
 	'/mystuff/success/:id',

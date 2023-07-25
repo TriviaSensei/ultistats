@@ -1,0 +1,15 @@
+.navbar-brand {
+	color: black;
+}
+
+.profile-body {
+	width: min(100%, 600px);
+}
+
+h5 {
+	text-align: left;
+	border: 1px solid black;
+	border-radius: 3px;
+	background-color: lightgray;
+	padding: 3px;
+}

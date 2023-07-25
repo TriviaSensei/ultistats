@@ -338,15 +338,14 @@ const update = (data) => {
 			return `translate(${x(d.x) + dt},${y(d.y + 10) + dt})`;
 		});
 
-	const disc = gridChart.select('circle');
-	if (!disc || !disc._groups[0][0])
-		gridChart
-			.append('circle')
-			.attr('stroke', 'black')
-			.attr('fill', 'white')
-			.attr('cx', x(0))
-			.attr('cy', y(0))
-			.attr('r', 5);
+	gridChart.select('circle').remove();
+	gridChart
+		.append('circle')
+		.attr('stroke', 'black')
+		.attr('fill', 'white')
+		.attr('cx', x(0))
+		.attr('cy', y(0))
+		.attr('r', 5);
 
 	//box size legend update
 	let valuesToShow = [extent[1]];

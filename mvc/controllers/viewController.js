@@ -295,6 +295,13 @@ exports.getGame = catchAsync(async (req, res, next) => {
 	});
 });
 
+exports.getContact = catchAsync(async (req, res, next) => {
+	res.status(200).render('contact', {
+		title: 'Contact',
+		user: res.locals.user,
+	});
+});
+
 exports.getTest = (req, res, next) => {
 	res.status(200).render('test', {
 		title: 'Test',
