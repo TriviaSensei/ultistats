@@ -1,0 +1,180 @@
+extends _base
+
+block styles
+    link(rel='stylesheet' href='/css/contact.css')
+
+block content
+    .d-flex.flex-column.w-100.h-100.overflow-hidden
+        section.navbar-container
+            .container-fluid
+                .container-fill
+                    include components/navbar
+        section.f-1.overflow-auto.mb-3
+            .to-top 
+                .link-container
+                    a(href="#top") Top
+            a(name="top")
+            h3 Help
+            p Welcome to UltiStats, a new web-based app that allows you to quickly and easily keep stats for your team! This documentation should help users get started with and use the webapp. To contact the developer with bug reports or feature suggestions, use the #[a(href="/contact") contact] form.
+            ol(type="I")
+                li 
+                    a(href="#signup") Signing up 
+                li
+                    a(href="#logging-in") Logging in 
+                li 
+                    a(href="#profile") User information 
+                li 
+                    a(href="#usage") Using the app
+                    ol(type="A")
+                        li 
+                            a(href="#teams") Teams
+                            ol
+                                li
+                                    a(href="#create-team") Creating a team
+                                    ul 
+                                        li
+                                            a(href="#team-info") Team information 
+                                        li 
+                                            a(href="#roster") Setting a roster
+                                li
+                                    a(href="#edit-team") Editing a team
+                                    ul 
+                                        li 
+                                            a(href="#managers") Adding team managers 
+                                        li 
+                                            a(href="#subscriptions") Subscriptions
+                        li 
+                            a(href="#events") Events 
+                            ol
+                                li 
+                                    a(href="#event-info") Event information 
+                                li 
+                                    a(href="#event-rules") Event rules 
+                                li 
+                                    a(href="#event-roster") Setting event rosters 
+                                li 
+                                    a(href="#event-lines") Setting event lines
+                                li
+                                    a(href="#event-games") Adding games
+                                li 
+                                    a(href="#input-stats") Keeping game stats 
+                                    ul
+                                        li 
+                                            a(href="#stats-1") Setting up a point 
+                                        li 
+                                            a(href="#stats-2") In-point events 
+                                        li 
+                                            a(href="#stats-3") Ending a game
+                                li 
+                                    a(href="#view-report") Viewing stats
+                        li 
+                            a(href="#stats") Stats
+            section.help-section
+                a(name="signup") 
+                h3 Signing up
+                p New users should sign up for an account #[a(href="/signup" target="_blank") here]. 
+                img(src="/img/help/01_signup.png")
+                p Signup form
+                p Provide your name, e-mail, and set a password, and submit the form with the "Sign up" button. You will receive an e-mail from UltiStats at the address provided, with a link to confirm your e-mail address. Be sure to check your spam folder if the e-mail does not appear in your inbox within a few minutes. After clicking the link, you will be able to log in.
+                img(src="/img/help/02_confirm.png")
+                p Confirmation e-mail 
+            section.help-section
+                a(name="logging-in") 
+                h3 Logging in
+                p Use #[a(href="/login") this page] to log in. If you forget your password, #[a(href="/forgotPassword") click here] and follow the directions to reset it.
+            section.help-section
+                a(name="profile") 
+                h3 User profile
+                p Your user profile is your basic information, including your name and e-mail. 
+                p You may also use this page to change your password, if you wish. 
+                img(src="/img/help/03_profile.png")
+                p Your profile
+            section.help-section
+                a(name="usage") 
+                h3 Using the app
+                p This app allows you to create teams, set rosters, and enter stats with just a few touches. 
+            section.help-section
+                a(name="teams") 
+                h4 Teams
+            section.help-section
+                a(name="create-team") 
+                h5 Creating a team
+                p To create a team, go to #[a(href="/mystuff")] and select the "Teams" tab. 
+            section.help-section
+                a(name="team-info") 
+                h6 Team information
+                p Select "Create New" from the team select dropdown (1), and fill in your team's information. All information may be edited later. Take special note of your team's colors (2) - it is recommended that, for each jersey (dark and light), you pick colors that contrast well (e.g. don't pick gray for your light jersey, and a different shade of gray for your light numbers). When you enter games into the database, you will click buttons that look exactly like the jersey previews (3) below the color selectors.
+                img(src="/img/help/04_create_team.png")
+                p Team information
+            section.help-section
+                a(name="roster") 
+                h6 Setting a roster
+                p This step is technically optional, but is highly recommended. Setting your roster allows you to quickly add players to a tournament roster. You may add or remove players at any time, and you may also add players for just a single tournament (which is covered #[a(href="#event-roster") here]). Your team may have up to 50 active players at a time, which allows you to set your main roster along with any practice players you may take to a limited number of events over the course of your season.
+                p Add players to your roster by clicking on the "Roster" section. Set each player's name, display name (e.g. nickname), jersey number, gender (for mixed division teams), primary line (offense/defense), and their position (handler/cutter/hybrid). Click "Add Player" to save the player to your roster. Players may be removed or edited at any time. Removed players may be reinstated by adding a player with the same name and number. You may add players with the same jersey number to your roster, but a warning will be given (as governing bodies tend to disallow duplicate numbers on a roster).
+                img(src="/img/help/05_set_roster.png")
+                p Adding a player to the roster 
+                p Players may be deleted or edited from the roster table after being added.
+                img(src="/img/help/06_roster.png")
+                p Roster table - click the ✏️ icon to edit a player or the ❌ icon to delete.
+            section.help-section
+                a(name="edit-team") 
+                h5 Editing a team
+                p Team information may be edited in the same area as when creating a team. After creating a team, you may also add other users to manage the team, and edit your subscription level.
+            section.help-section
+                a(name="managers") 
+                h5 Adding managers
+                p When you create a team, you are, by default, its only team manager. While anyone who has a specialized link (explained #[a(href="#view-report") here]) may view your team's stats, team managers also have the following abilities: 
+                ul 
+                    li Edit team information 
+                    li Invite other people to be team managers 
+                    li Edit the team roster 
+                    li Add and edit team events 
+                    li Enter team stats 
+                p In order to invite a user to be your team's manager, that person must first have an UltiStats account, which is free and easy to obtain #[a(href="/signup") here]. After that, an existing team manager may request to add a manager by entering their e-mail address into the "Add Manager" field.
+                img(src="/img/help/07_manager.png")
+                p Add a manager 
+                p The requested manager should receive an e-mail to confirm or decline being added as a team manager. Additionally, incoming manager requests will show up in your #[a(href="/me") profile] page.
+                img(src="/img/help/08_request.png")
+                p Team "Wendigo" has requested to add you to their list of managers.
+            section.help-section
+                a(name="subscriptions") 
+                h5 Subscriptions
+            section.help-section
+                a(name="events") 
+                h4 Events
+            section.help-section
+                a(name="event-info") 
+                h5 Event information
+            section.help-section
+                a(name="event-rules") 
+                h5 Event rules
+            section.help-section
+                a(name="event-roster") 
+                h5 Setting event rosters
+            section.help-section
+                a(name="event-lines") 
+                h5 Setting event lines
+            section.help-section
+                a(name="event-games") 
+                h5 Adding games
+            section.help-section
+                a(name="input-stats") 
+                h5 Keeping game stats
+            section.help-section
+                a(name="stats-1") 
+                h6 Setting up a point
+            section.help-section
+                a(name="stats-2") 
+                h6 In-point events
+            section.help-section
+                a(name="stats-3") 
+                h6 Ending a game
+            section.help-section
+                a(name="view-report") 
+                h5 Viewing stats
+        
+
+
+
+                    
+                    

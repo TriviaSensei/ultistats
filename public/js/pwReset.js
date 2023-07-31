@@ -1,16 +1,14 @@
 const pwConfirmSpan = document.querySelector('#pw-confirm-span');
 const pwSpan = document.querySelector('#pw-span');
 const pwConfirmBar = document.querySelector('.pw-confirm-validator');
-const container = document.querySelector('#body-container');
-const signupForm = document.querySelector('#sign-up-form');
 import { handleRequest } from './utils/requestHandler.js';
 import { showMessage } from './utils/messages.js';
 
-const fName = document.querySelector('#first-name');
-const lName = document.querySelector('#last-name');
-const email = document.querySelector('#email');
 const pw = document.querySelector('#password');
 const pwConfirm = document.querySelector('#password-confirm');
+const token = document.querySelector('#token');
+
+const form = document.querySelector('#pw-reset-form');
 
 const checkPasswordMatch = () => {
 	const setInvalid = () => {
@@ -36,36 +34,43 @@ const checkPasswordMatch = () => {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+	if (!token || !token.value) {
+		showMessage('error', 'Invalid or expired reset token', 2000);
+		setTimeout(() => {
+			location.href = '/forgotPassword';
+		}, 2000);
+	}
+
 	pw.addEventListener('keyup', checkPasswordMatch);
 	pwConfirm.addEventListener('keyup', checkPasswordMatch);
 	pw.addEventListener('change', checkPasswordMatch);
 	pwConfirm.addEventListener('change', checkPasswordMatch);
 
-	signupForm.addEventListener('submit', (e) => {
+	form.addEventListener('submit', (e) => {
 		e.preventDefault();
 
 		const handler = (res) => {
 			if (res.status === 'success') {
-				container.innerHTML = '';
-				const p = document.createElement('p');
-				p.innerHTML = res.message;
-				container.appendChild(p);
-				const p2 = document.createElement('p');
-				p2.innerHTMl = `<a href="/login">Click here to login.</a>`;
-				container.appendChild(p2);
+				showMessage('info', 'Password successfully reset.');
+				form.innerHTML = '';
+				setTimeout(() => {
+					location.href = '/me';
+				}, 1000);
 			} else {
 				showMessage('error', res.message);
 			}
 		};
 
 		const body = {
-			firstName: fName.value,
-			lastName: lName.value,
-			email: email.value,
 			password: pw.value,
 			passwordConfirm: pwConfirm.value,
 		};
 
-		handleRequest('/api/v1/users/signup', 'POST', body, handler);
+		handleRequest(
+			`/api/v1/users/resetPassword/${token.value}`,
+			'PATCH',
+			body,
+			handler
+		);
 	});
 });

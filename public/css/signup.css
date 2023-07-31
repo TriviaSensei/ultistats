@@ -15,7 +15,6 @@ html {
 .nav-link,
 .navbar-nav .nav-link.active {
 	color: var(--black);
-	font-size: 1.25rem;
 	font-weight: bold;
 }
 
@@ -87,5 +86,6 @@ input:valid {
 @media (min-width: 992px) {
 	.form-container {
 		width: 40%;
+		margin: auto;
 	}
 }

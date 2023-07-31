@@ -58,6 +58,10 @@
 	max-width: min(100%, 600px);
 }
 
+.body-section p {
+	font-size: 1rem;
+}
+
 .body-section:nth-child(2n-1) {
 	background-color: var(--white);
 	clip-path: polygon(0 0, 100% 50px, 100% 100%, 0 100%);

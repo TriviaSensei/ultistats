@@ -1,8 +1,10 @@
 const AppError = require('../../utils/appError');
 const catchAsync = require('../../utils/catchAsync');
+const { createToken } = require('../../utils/token');
 const Format = require('../models/formatModel');
 const Team = require('../models/teamModel');
 const Game = require('../models/gameModel');
+const User = require('../models/userModel');
 const Tournament = require('../models/tournamentModel');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
@@ -71,6 +73,27 @@ exports.getForgotPasswordForm = catchAsync(async (req, res, next) => {
 exports.getPasswordResetForm = catchAsync(async (req, res, next) => {
 	if (!req.params.token) {
 		return next(new AppError('Invalid or missing reset token', 400));
+	}
+
+	const user = await User.findOne({
+		passwordResetToken: req.params.token,
+		passwordResetExpires: { $gte: new Date() },
+	});
+
+	if (!user) {
+		req.query.alert = {
+			message: 'Invalid reset token',
+			status: 'error',
+			duration: 2000,
+		};
+		res.status(200).render('forgotPassword', {
+			title: 'Forgot password',
+			alert: {
+				message: 'Invalid or expired reset token',
+				status: 'error',
+				duration: 2000,
+			},
+		});
 	}
 
 	res.status(200).render('passwordReset', {
@@ -299,6 +322,48 @@ exports.getContact = catchAsync(async (req, res, next) => {
 	res.status(200).render('contact', {
 		title: 'Contact',
 		user: res.locals.user,
+	});
+});
+
+exports.getHelpPage = catchAsync(async (req, res, next) => {
+	res.status(200).render('help', {
+		title: 'Help',
+		user: res.locals.user,
+	});
+});
+
+exports.getActivation = catchAsync(async (req, res, next) => {
+	const user = await User.findOne({
+		active: false,
+		activationToken: req.params.token,
+		activationTokenExpires: { $gte: Date.now() },
+	});
+
+	if (!user) {
+		return res.status(200).render('activate', {
+			title: 'Activate your account',
+			alert: {
+				status: 'error',
+				message: 'Invalid or expired activation token',
+				duration: 2000,
+				redirect: '/login',
+			},
+		});
+	}
+	user.active = true;
+	user.activationToken = undefined;
+	user.activationTokenExpires = undefined;
+	await user.save({ validateBeforeSave: false });
+	createToken(user, req, res);
+
+	res.status(200).render('activate', {
+		title: 'Activate your account',
+		alert: {
+			status: 'info',
+			message: 'Successfully activated account',
+			duration: 1000,
+			redirect: '/me',
+		},
 	});
 });
 

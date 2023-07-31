@@ -22,7 +22,7 @@ block content
                         tbody
                             each request in requests 
                                 tr 
-                                    td= `${request.name} (${request.season})`
+                                    td= `${request.name}`
                                     td 
                                         button.btn.btn-primary.me-1(data-action="accept" data-id=`${request._id}`) Accept
                                         button.btn.btn-danger(data-action="decline" data-id=`${request._id}`) Decline 

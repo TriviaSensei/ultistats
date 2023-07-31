@@ -6,10 +6,81 @@
 	width: min(100%, 600px);
 }
 
-h5 {
+body {
+	font-size: 1rem;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	color: green;
+	font-weight: bold;
+}
+
+form h5 {
 	text-align: left;
 	border: 1px solid black;
 	border-radius: 3px;
 	background-color: lightgray;
 	padding: 3px;
+}
+
+section {
+	margin: 0 auto;
+	width: min(600px, 100%);
+}
+
+section p {
+	width: min(600px, 100%);
+	text-align: left;
+	margin: auto;
+	padding: 1rem;
+}
+ol,
+ul {
+	padding-left: 1rem;
+}
+li {
+	text-align: left;
+}
+
+.help-section h3,
+.help-section h4,
+.help-section h5,
+.help-section h6 {
+	text-align: left;
+	font-weight: bold;
+}
+
+.help-section > img {
+	margin: auto;
+	margin-bottom: 1px;
+	max-width: min(100%, 400px);
+	max-height: 50vh;
+}
+
+.help-section > img + p {
+	font-size: 0.7rem;
+	font-weight: bold;
+	text-align: center;
+}
+
+.to-top {
+	position: sticky;
+	top: 100%;
+	left: 100%;
+	transform: translate(0, -100%);
+	display: flex;
+	justify-content: flex-end;
+}
+
+.to-top > div {
+	opacity: 0.5;
+	margin-right: 10px;
+}
+
+.to-top > div:hover {
+	opacity: 1;
 }

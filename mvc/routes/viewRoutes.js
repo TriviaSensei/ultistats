@@ -16,6 +16,10 @@ router.get('/test', viewController.getTest);
 
 router.get('/signup', viewController.getSignUpForm);
 router.get('/login', viewController.getLoginForm);
+router.get('/help', viewController.getHelpPage);
+router.get('/forgotPassword', viewController.getForgotPasswordForm);
+router.get('/resetPassword/:token', viewController.getPasswordResetForm);
+router.get('/activate/:token', viewController.getActivation);
 
 router.use(authController.protect);
 router.get('/me', viewController.getAccount);

@@ -13,7 +13,7 @@ html
         meta(name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no')
         script(src="https://kit.fontawesome.com/f1443e2fcf.js" crossorigin="anonymous")
         title UltiStats | #{title}    
-    body(data-alert=`${alert ? alert.message : ''}` data-status=`${alert ? alert.status : ''}` data-duration=`${alert ? alert.duration : ''}`)
+    body(data-alert=`${alert ? alert.message : ''}` data-status=`${alert ? alert.status : ''}` data-duration=`${alert ? alert.duration : ''}` data-redirect=`${alert && alert.redirect ? alert.redirect : ''}`)
         block modals
         .container-all
             #tip.d3-tooltip.d-none

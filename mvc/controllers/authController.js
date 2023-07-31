@@ -1,5 +1,6 @@
-const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
+const { promisify } = require('util');
+const { createAndSendToken } = require('../../utils/token');
 const crypto = require('crypto');
 const User = require('../models/userModel');
 const catchAsync = require('../../utils/catchAsync');
@@ -8,35 +9,6 @@ const Email = require('../../utils/email');
 
 //activation token times out in 10 minutes
 const activationTimeout = 1000 * 60 * 10;
-
-const signToken = (id) => {
-	return jwt.sign({ id }, process.env.JWT_SECRET, {
-		expiresIn: process.env.JWT_EXPIRES_IN,
-	});
-};
-
-const createAndSendToken = (user, statusCode, req, res) => {
-	const token = signToken(user._id);
-
-	res.cookie('jwt', token, {
-		expires: new Date(
-			Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
-		),
-		httpOnly: true,
-		secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
-	});
-
-	//remove password from output
-	user.password = undefined;
-
-	res.status(statusCode).json({
-		status: 'success',
-		token,
-		data: {
-			user,
-		},
-	});
-};
 
 exports.isLoggedIn = catchAsync(async (req, res, next) => {
 	try {
@@ -113,7 +85,7 @@ exports.signup = catchAsync(async (req, res, next) => {
 		firstName: req.body.firstName,
 		lastName: req.body.lastName,
 		email: req.body.email,
-		displayName: req.body.displayName,
+		displayName: req.body.firstName,
 		password: req.body.password,
 		passwordConfirm: req.body.passwordConfirm,
 		passwordChangedAt: req.body.passwordChangedAt
@@ -125,6 +97,7 @@ exports.signup = catchAsync(async (req, res, next) => {
 		teams: [],
 		teamRequests: [],
 	});
+
 	const emailRes = await new Email(
 		newUser,
 		`${url}/${activationToken}`,
@@ -148,7 +121,7 @@ exports.signup = catchAsync(async (req, res, next) => {
 				const activeUser = await User.findById(newUser._id);
 				if (activeUser) {
 					console.log(
-						`User ${activeUser.fName} ${activeUser.lName} has activated their account.`
+						`User ${activeUser.firstName} ${activeUser.lastName} has activated their account.`
 					);
 				}
 			}
@@ -160,6 +133,7 @@ exports.signup = catchAsync(async (req, res, next) => {
 
 	res.status(200).json({
 		status: 'success',
+		message: 'Successfully signed up. Check your e-mail to confirm',
 		result: emailRes,
 	});
 });
@@ -167,6 +141,7 @@ exports.signup = catchAsync(async (req, res, next) => {
 exports.confirmRegistration = catchAsync(async (req, res, next) => {
 	const user = await User.findOne({
 		activationToken: req.params.token,
+		activationTokenExpires: { $gte: Date.now() },
 	});
 	if (!user) {
 		return next(new AppError('Token not found.', 404));
@@ -366,6 +341,8 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 	}
 
 	const resetToken = user.createPasswordResetToken();
+	user.passwordResetToken = resetToken;
+	user.passwordResetExpires = new Date(Date.now() + activationTimeout);
 	//generate a random token, save it to the user's document
 	await user.save({ validateBeforeSave: false });
 
@@ -402,15 +379,9 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 });
 
 exports.resetPassword = catchAsync(async (req, res, next) => {
-	//get user based on token
-	const hashedToken = crypto
-		.createHash('sha256')
-		.update(req.params.token)
-		.digest('hex');
-
 	//check that token has not expired; ensure that the user exists; change the password if so.
 	const user = await User.findOne({
-		passwordResetToken: hashedToken,
+		passwordResetToken: req.params.token,
 		passwordResetExpires: { $gte: new Date() },
 	});
 	if (!user) {
@@ -425,7 +396,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 	user.passwordChangedAt = Date.now();
 
 	//user save and not findOneAndUpdate for passwords - we want to run the validators in these cases.
-	await user.save();
+	await user.save({ runValidators: false });
 	//log the user in, send JWT
 	createAndSendToken(user, 200, req, res);
 });
