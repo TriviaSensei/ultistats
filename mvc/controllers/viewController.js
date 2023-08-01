@@ -172,9 +172,11 @@ exports.getManagerPage = catchAsync(async (req, res) => {
 			};
 		})
 	);
-	memberships = memberships.sort((a, b) => {
-		return a.cost - b.cost;
-	});
+	memberships = memberships
+		.filter((m) => m.active)
+		.sort((a, b) => {
+			return a.cost - b.cost;
+		});
 
 	// console.log(memberships);
 

@@ -44,6 +44,11 @@ const winBy = document.querySelector('#win-by');
 const hardCap = document.querySelector('#hard-cap');
 const timeouts = document.querySelector('#timeouts');
 const genderArea = document.querySelector('#gender-ratio-inputs');
+const genderMatchSelectArea = document.querySelector('#add-gender-match');
+const tournamentRosterGender = document.querySelector(
+	'#tournament-roster-gender-filter'
+);
+const modifyLinesGender = document.querySelector('#edit-lines-gender');
 let maxPlayerCount;
 let genderMax;
 
@@ -184,11 +189,17 @@ const getTeam = (e) => {
 							lineContainer.classList.add('mixed');
 							mixedCount.classList.remove('d-none');
 							genderArea.classList.remove('d-none');
+							genderMatchSelectArea.classList.remove('d-none');
+							tournamentRosterGender.classList.remove('d-none');
+							modifyLinesGender.classList.remove('d-none');
 						} else {
 							rosterTable.classList.remove('mixed');
 							lineContainer.classList.remove('mixed');
 							mixedCount.classList.add('d-none');
 							genderArea.classList.add('d-none');
+							genderMatchSelectArea.classList.add('d-none');
+							tournamentRosterGender.classList.add('d-none');
+							modifyLinesGender.classList.add('d-none');
 						}
 
 						//clear the roster table

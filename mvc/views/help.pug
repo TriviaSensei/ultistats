@@ -139,21 +139,52 @@ block content
             section.help-section
                 a(name="subscriptions") 
                 h5 Subscriptions
+                p You may always use the basic features of UltiStats for free (but #[a(href="https://www.buymeacoffee.com/charlesyu4j") donations are appreciated]). To access some more advanced statistics, and graphical reports, you must have a subscription, which is $20 per team per year. Each team you manage must have a separate subscription. To manage your subscription, go to the subscription section under "Teams" in #[a(href="/mystuff") my stuff].
+                img(src="/img/help/09_subscription.png")
+                p Subscription features
+                p Free subscriptions include stats on points played, goals, assists, turns, blocks, touches, and efficiency.
+                p A Plus subscription grants you access to the following features, along with all features in the free version: 
+                ul 
+                    li #[strong 6 preset lines per event] - along with defaulting all players to offense or defense, you may preset 6 lines per event. Good for setting multiple O or D lines, or universe point lines for both offense and defense.
+                    li #[strong Passing and receiving yards] - track not only which players are touching the disc the most, but also which ones are making the most of their touches.
+                    li #[strong Plus/Minus] - which players, when on the field, are most correlated with the team scoring a point?
+                    li #[strong Graphical reports] - graphical reports of the individual and team performances. See where possessions tend to go, where turnovers are happening, what kind of passes players are attempting and completing (or not completing), and which pairs of players tend to throw to each other.
+                    li #[strong ...and more] - I am always open to suggestions for other reports and stats to include. Use the #[a(href="/contact") contact form] to suggest something. I would like this web app to be useful to you and your team, but this is also a learning experience for me as a developer and a (poor) statistician.
             section.help-section
                 a(name="events") 
                 h4 Events
+                p Normally, events are just individual tournaments, but you can create an event for just about any subset of your season, up to and including the entire thing. Want to keep stats on a scrimmage against your crosstown rivals? You can create an event for it, and just add a single game to it.
+                p Each event is tied to a team. To create an event, select the "Events" tab from #[a(href="/mystuff") my stuff], select a team, and select "[Create new]" from the event selector.
             section.help-section
                 a(name="event-info") 
                 h5 Event information
+                img(src="/img/help/event_info.png")
+                p Event information
+                p Populate the name and dates into the "Info" section. You must specify the event's name and dates.
             section.help-section
                 a(name="event-rules") 
                 h5 Event rules
+                p Set the rules of the event in the "Rules" section:
+                ul 
+                    p #[strong Format] - the format of the event. Currently, only USAU (70-yard field with 20-yard endzones) is supported. WFDF formats can be recorded with this setting as well. In the future, we will look to add the AUDL ruleset, which uses a larger field and allows points to end without a score (at the end of a quarter).
+                    p #[strong Game to] - the point cap of the game. Default 15 for USAU events.
+                    p #[strong Win by] - A game ends if the point cap is reached and the leading team is ahead by at least this many goals. Default is 1.
+                    p #[strong Hard cap] - The hard cap of a game. The game ends if either team reaches this score, regardless of margin of victory. Disabled if "win by" is 1.
+                    p #[strong T/Os] - the number of timeouts allowed. Default is 2/half in USAU events, but you may also set this to 1/game, 1/half, or 1/half + a floater.
             section.help-section
                 a(name="event-roster") 
                 h5 Setting event rosters
+                p You must set an event roster to record stats. This is not necessarily the same as your team's main roster (explained #[a(href="#roster") here]). Your event roster can account for any players from your main roster that are not in attendance for this event. You may also add players to your main roster from this interface.
+                img(src="/img/help/12_event_roster_button.png")
+                p The event roster section 
+                p Click the "Modify Roster" button to add or remove players from your event roster.
+                img(src="/img/help/13_event_roster_window.png")
+                p The event roster window 
+                p Click on the players to add (use the "All" and "None" buttons on either side to select or deselect all players from that side). Use the single arrow (1) to move toggle all checked players between the available and selected boxes. Use the double arrow (2) to move all players in the direction indicated. Use the "New" button to add a new player to your roster. This player will be added both to the tournament roster and to your main roster. The "add player" interface is explained #[a(href="#roster") here].
             section.help-section
                 a(name="event-lines") 
                 h5 Setting event lines
+                p Setting event lines allows you to quickly set up points during the heat of a game. Instead of individually selecting seven players for each point, select a preset line and populate your lineup with as little as two clicks.
             section.help-section
                 a(name="event-games") 
                 h5 Adding games
