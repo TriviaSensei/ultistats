@@ -203,10 +203,13 @@ const getTeam = (e) => {
 						}
 
 						//clear the roster table
-						getElementArray(rosterBody, '.player-row').forEach((r) => {
+						getElementArray(rosterBody, '.tourney-roster-row').forEach((r) => {
 							r.remove();
 						});
-
+						tournamentSelect.selectedIndex = 0;
+						[rosterItem, gamesItem].forEach((item) => {
+							item.classList.add('d-none');
+						});
 						//set the available roster to the roster of the team
 						roster = res2.data.roster.map((p) => {
 							return {

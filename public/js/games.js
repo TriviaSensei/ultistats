@@ -262,7 +262,6 @@ document.addEventListener('DOMContentLoaded', () => {
 	document.addEventListener('load-tourney', (e) => {
 		event = e.detail;
 		games = e.detail.games;
-		console.log(games);
 		createGameTable(e.detail.format.roundNames);
 		populateRoundInfo(e.detail);
 	});
