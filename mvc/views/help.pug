@@ -16,6 +16,7 @@ block content
             a(name="top")
             h3 Help
             p Welcome to UltiStats, a new web-based app that allows you to quickly and easily keep stats for your team! This documentation should help users get started with and use the webapp. To contact the developer with bug reports or feature suggestions, use the #[a(href="/contact") contact] form.
+            p This page details the features of this app. Sections marked with a (➕) denote features that are only available with a Plus subscription.
             ol(type="I")
                 li 
                     a(href="#signup") Signing up 
@@ -65,10 +66,9 @@ block content
                                             a(href="#stats-2") In-point events 
                                         li 
                                             a(href="#stats-3") Ending a game
-                                li 
-                                    a(href="#view-report") Viewing stats
                         li 
-                            a(href="#stats") Stats
+                            a(href="#view-report") Stats
+
             section.help-section
                 a(name="signup") 
                 h3 Signing up
@@ -103,7 +103,7 @@ block content
             section.help-section
                 a(name="team-info") 
                 h6 Team information
-                p Select "Create New" from the team select dropdown (1), and fill in your team's information. All information may be edited later. Take special note of your team's colors (2) - it is recommended that, for each jersey (dark and light), you pick colors that contrast well (e.g. don't pick gray for your light jersey, and a different shade of gray for your light numbers). When you enter games into the database, you will click buttons that look exactly like the jersey previews (3) below the color selectors.
+                p Select "Create New" from the team select dropdown (1), and fill in your team's information. All information may be edited later. Take special note of your team's colors - it is recommended that, for each jersey (dark and light), you pick colors that contrast well (e.g. don't pick gray for your light jersey, and a different shade of gray for your light numbers). When you enter games into the database, you will click buttons that look exactly like the jersey previews (3) below the color selectors.
                 img(src="/img/help/04_create_team.png")
                 p Team information
             section.help-section
@@ -158,13 +158,14 @@ block content
             section.help-section
                 a(name="event-info") 
                 h5 Event information
-                img(src="/img/help/event_info.png")
+                img(src="/img/help/10_event_info.png")
                 p Event information
                 p Populate the name and dates into the "Info" section. You must specify the event's name and dates.
             section.help-section
                 a(name="event-rules") 
                 h5 Event rules
-                p Set the rules of the event in the "Rules" section:
+                p Set the rules of the event in the "Rules" section 
+                img(src="/img/help/11_event_rules.png")
                 ul 
                     p #[strong Format] - the format of the event. Currently, only USAU (70-yard field with 20-yard endzones) is supported. WFDF formats can be recorded with this setting as well. In the future, we will look to add the AUDL ruleset, which uses a larger field and allows points to end without a score (at the end of a quarter).
                     p #[strong Game to] - the point cap of the game. Default 15 for USAU events.
@@ -180,31 +181,146 @@ block content
                 p Click the "Modify Roster" button to add or remove players from your event roster.
                 img(src="/img/help/13_event_roster_window.png")
                 p The event roster window 
-                p Click on the players to add (use the "All" and "None" buttons on either side to select or deselect all players from that side). Use the single arrow (1) to move toggle all checked players between the available and selected boxes. Use the double arrow (2) to move all players in the direction indicated. Use the "New" button to add a new player to your roster. This player will be added both to the tournament roster and to your main roster. The "add player" interface is explained #[a(href="#roster") here].
+                p Click on the players to add (use the "All" and "None" buttons on either side to select or deselect all players from that side). Use the single arrow (1) to move toggle all checked players between the available and selected boxes. Use the double arrow to move all players in the direction indicated. Use the "New" button to add a new player to your roster. This player will be added both to the tournament roster and to your main roster. The "add player" interface is explained #[a(href="#roster") here].
             section.help-section
                 a(name="event-lines") 
-                h5 Setting event lines
-                p Setting event lines allows you to quickly set up points during the heat of a game. Instead of individually selecting seven players for each point, select a preset line and populate your lineup with as little as two clicks.
-                p To create a preset line, click on "Modify Lines". 
+                h5 Setting event lines (➕)
+                p With a Plus subscription, setting event lines allows you to quickly set up points during the heat of a game. Instead of individually selecting seven players for each point, select a preset line and populate your lineup with as little as two clicks.
+                p To create a preset line, click on "Modify Lines". Give your line a name, select players for that line, and click "save". It is recommended that, for mixed teams playing under the USAU or WFDF standard formats, preset lines contain 6 players - 3 male-matching and 3 female-matching. This way, the seventh player may be added manually on each point, depending on the presecribed gender ratio.
+                img(src="/img/help/14_event_line.png")
+                p Creating a preset line
             section.help-section
                 a(name="event-games") 
                 h5 Adding games
+                p Add games to an event using the "Games" section. Select a round, enter the opposing team's name, and set the game rules. Note that these will default to the event rules, but do not have to match exactly. This accounts for the fact that not every event has the same rules for every game. For example, pool play games may be played to 13 while the bracket is played to 15.
+                img(src="/img/help/15_event_game.png")
+                p Adding a game to an event
+                p After adding a game, use the pencil icon (1) to edit the game information, or the X icon to delete it. Click on the "Start" link (3) to start entering game stats.
+                img(src="/img/help/16_edit_event_game.png")
+                p Editing a game
             section.help-section
                 a(name="input-stats") 
                 h5 Keeping game stats
+                p Keeping game stats is a snap. Set up your game, set up each point, and then set the location of each pass. Click a button for events, including timeouts, injuries, any type of turnover, or goals.
+                p At the start of a game, you will be prompted to enter the starting settings for the game - your jersey color (only determines the colors of the buttons), whether your team starts on offense or defense, the starting gender majority (if mixed division), and your starting direction.
+                img(src="/img/help/17_game_start.png")
+                p Game start settings 
             section.help-section
                 a(name="stats-1") 
                 h6 Setting up a point
-            section.help-section
-                a(name="stats-2") 
+                p Before starting a point, you must set it up. Click the "Setup point" button to set your lineup and verify the details of the point.
+                img(src="/img/help/18_point_setup_button.png")
+                p Setup point button
+                img(src="/img/help/19_point_setup.png")
+                p Point-setup interface 
+                p The point-setup interface has several key features.
+                ol 
+                    li Verify whether you are on offense or defense, your direction of attack, and (mixed only) the gender ratio. The tool can usually figure out these things (based on whether you scored the last point, the previous gender ratios, and your previous direction) but you may manually override these settings if necessary (e.g. if your statkeeper decides to move to the other side of the field between points, your direction of attack might change). You may not change these settings once a point starts.
+                    li Your preset line (➕) - You may autopopulate a preset line (described #[a(href="#event-lines") here]) from this dropdown.
+                    li Reset preset line (➕) - You may add or remove players, even after selecting a preset line. If you make a mistake, or want to reset your line to the preset line, click this button 
+                    li Filter players - Filter players based on their primary line (O/D) and position (Handler/Cutter/Hybrid).
+                    li Points off - Check this to highlight any players who have sat for more than 5 points. Uncheck this to hide this information.
+                    li Player information - Player name, gender, line, position, and points played. For example, (M/D/C, 5 PP) indicates that this player is a male defensive cutter who has played 5 points this game.
+            section.help-section 
+                a(name="stats-2")
+                h6 The interface and in-point events
+                img(src="/img/help/20_interface.png")
+                p The data entry interface 
+                ol 
+                    li Scoreboard - displays the game score, who is currently on offense and their attacking direction, the game period, and how many timeouts each team has left.
+                    li Field - used to indicate the location of events on the field.
+                    li Event description - the last recorded event. At the beginning of a point, it simply indicates the pulling and receiving team, but when on offense, will also indicate the last completed pass.
+                    li Players - each of these represents one of the players on the field.
+                    li Pass results - use these buttons to indicate the result of a pass (if something other than a regular completed pass)
+                    li Miscellaneous - use these menus for miscellaneous occurrences. The events menu contains timeouts and injuries. The positioning menu is used when the disc needs to move to a specific location, such as the brick mark, or the goal line.
                 h6 In-point events
+                p In-point events can be described using just a click or two, most of the time. Each event below can be indicated as by specifying the indicated information, in order. Refer to the list above for where to specify these pieces of information.
+                p #[strong Defense]
+                ul 
+                    li #[strong Blocks] - location on field, player. Note that, if your player catches the block, you must enter the event as a block followed by the same player picking up the disc (described below in the "Offense" section).
+                        img(src="/img/help/21_block.png")
+                        p Indicating a block. Note that the possession arrow on the scoreboard has changed as a result.
+                    li #[strong Turnovers] - location on field, stall/drop/throwaway.
+                    li #[strong Opposing goals] - result
+                p #[strong Offense]
+                ul 
+                    li #[strong Starting a possession] - location on field, player catching pull/picking up disc
+                    li #[strong Completed pass] - location on the field, receiver. Entering a string of completed passes is thus very easy - simply touch the location, then the player, and repeat until something else happens.
+                        img(src="/img/help/22_pass.png")
+                        p Completing a pass. The interface indicates where the pass came from and where it went, the thrower and receiver, and the yards gained or lost.
+                    li #[strong Stall] - stall button.
+                    li #[strong Throwaway] - location on field, result. Do not enter an intended receiver.
+                    li #[strong Drop] - location on field, intended receiver, result. Note that this will key in as a completed pass before you indicate that there was a drop. Also note that for some turnovers, you will have to decide whether it was a throwaway (thrower gets the blame) or a drop (receiver gets the blame). Only one player will have a turnover added to their stats.
+                    li #[strong Goal] - location on field, receiver, goal. Note that this will key in as a completed pass before you indicate that there was a goal. If the pass that you keyed in did not go into the endzone, the goal button will be disabled. You will have to undo the pass and make sure that you touch the end zone. If you indicate that a pass was complete in the attacking end zone and then key in another pass, the previous pass will be assumed to have ended up on the goal line (e.g. the receiver caught the pass and ran into the end zone). If a goal is keyed (for either team), the interface will return to the point setup screen. You may use the undo button to undo a pass and return to the point until you set up the next point.
+                p #[strong Miscellaneous]
+                ul 
+                    li #[strong Timeouts] - Events > Our timeout/Their timeout. Either team may call a timeout at the beginning of a point, before any other events are keyed. After any events are keyed, only the team on offense may call a timeout.
+                    li #[strong Injuries] - Events > Sub. Any substitution may be handled through this interface.
+                        img(src="/img/help/23_sub.png")
+                        p The substitution interface 
+                        p Select the player leaving the game and the player entering. You may have fewer than the normal number (7 in most formats) of known players on the field (you may sub out a player without putting a new one in), but you may not have extra players on the field. Additionally, in mixed formats, the player leaving the field must be of the same gender match as the one entering the game. 
             section.help-section
                 a(name="stats-3") 
                 h6 Ending a game
+                p The game will automatically end when the target score is reached. Alternatively, if time cap is reached, or the game ends before the target score for any other reason, you may, in the point setup screen, click the "End Game" button to manually end the game. 
             section.help-section
                 a(name="view-report") 
                 h5 Viewing stats
-        
+                p To view your team's stats, navigate to #[a(href="/mystuff") my stuff] and click the "Stats" tab. Select your team name from the drop down, and the set of tournaments or games you wish to view stats for.
+                h6 Basic stats 
+                p Basic stats such as touches, completion percentage, goals, assists, and turnovers, are available with all memberships - free and paid.
+                img(src="/img/help/24_stats_1.png")
+                p Overview and efficiency 
+                p Efficiency stats 
+                ul 
+                    li #[strong Line] - Whether points were offensive or defensive. This is only determined by whether your team received the pull on that point, and not by the players on the field.
+                    li #[strong Pts] - Total points played 
+                    li #[strong Cmp%] - Completion percentage
+                    li #[strong G/Poss] - Goals/Possessions
+                    li #[strong Eff%] - Efficiency. The percentage of offensive possessions ending in a goal for your team
+                    li #[strong RZ G/Poss] - Red zone goals/possessions. A red zone possession is defined as a possession where your team possessed the disc inside the opposing brick mark.
+                    li #[strong RZ Eff%] - Red zone efficiency - percentage of offensive red zone possessions ending in a goal for your team
+                p Team leaders - view the team's leaders (or a full list) in a particular stat (and related peripheral stats).
+                img(src="/img/help/25_stats_2.png")
+                h6 Team leaders
+                ul 
+                    li Points played (plus point diff, percentage of on-field points scored)
+                    li Goals 
+                    li Assists
+                    li Blocks 
+                    li Completion % (plus points played, completions, and attempts)
+                    li Passing Yards
+                    li Receiving Yards 
+                    li Total Yards (plus passing yards, receiving yards, and swing yards)
+                    li Touches 
+                    li Fewest Turnovers (plus points, touches, and touches/turnover)
+                    li Touches per turnover (plus touches and turnovers)
+                    li +/- (plus goals, assists, blocks, and turovers)
+                    li Point differential (plus O points, D points, total points, and score %)
+                    li Score % (plus points played and point differential)
+                h6 Graphical reports (➕)
+                p Several graphical reports are currently available for plus subscribers, and they are described below. They are all in a single carousel, and you may scroll through them using the arrow buttons on either side. 
+                p As a side note, your developer is not a statistician, but he is a quick study and if you have any suggestions for new reports to incorporate, he is all ears. Use the #[a(href="/contact") contact page] to send him a message to suggest a new feature (or for compliments or complaints).
+                ul 
+                    li 
+                        p Field usage - where touches happen on the field. Use the buttons to toggle viewing completed passes, drops, throwaways, and stalls.
+                        img(src="/img/help/26_graph_1.png")
+                        p Graphical reports. Use the arrows on the sides (1, 2) to scroll through the graphics.
+                    li 
+                        p Passing chart - where players tend to throw the disc (and their success rates), or where players tend to receive the disc. Select a single player to view individual charts.
+                        img(Src="/img/help/27_graph_2.png")
+                        p Passing chart - Chuck Yu tends to throw the disc more to his backhand side.
+                    li 
+                        p Connections - which players tend to connect with each other. Select a single player or a preset line to filter.
+                        img(Src="/img/help/28_graph_3.png")
+                        p Connections graph
+                    
+                
+
+
+
+
+
 
 
 

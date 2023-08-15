@@ -302,23 +302,25 @@ const updateCounts = () => {
 	if (lc <= state.format.players) startPoint.disabled = false;
 	else startPoint.disabled = true;
 
-	//make sure the gender ratio isn't violated - if it is, the line can still be played, but a warning will be displayed next to the start point button.
-	const maxes = genderRatioIndicator.dataset;
-	const evt = new CustomEvent('set-gender-ratio', {
-		detail: maxes,
-	});
-	document.dispatchEvent(evt);
-	if (state.genderRule !== 'A') {
-		genderWarning.classList.add('d-none');
-		return;
-	} else if (
-		lineContainer.querySelectorAll('.roster-option[data-gender="M"]').length >
-			parseInt(maxes.m) ||
-		lineContainer.querySelectorAll('.roster-option[data-gender="F"]').length >
-			parseInt(maxes.f)
-	)
-		genderWarning.classList.remove('d-none');
-	else genderWarning.classList.add('d-none');
+	if (state.division.toLowerCase() === 'mixed') {
+		//make sure the gender ratio isn't violated - if it is, the line can still be played, but a warning will be displayed next to the start point button.
+		const maxes = genderRatioIndicator.dataset;
+		const evt = new CustomEvent('set-gender-ratio', {
+			detail: maxes,
+		});
+		document.dispatchEvent(evt);
+		if (state.genderRule !== 'A') {
+			genderWarning.classList.add('d-none');
+			return;
+		} else if (
+			lineContainer.querySelectorAll('.roster-option[data-gender="M"]').length >
+				parseInt(maxes.m) ||
+			lineContainer.querySelectorAll('.roster-option[data-gender="F"]').length >
+				parseInt(maxes.f)
+		)
+			genderWarning.classList.remove('d-none');
+		else genderWarning.classList.add('d-none');
+	}
 };
 
 const handleMoveOptions = (e) => {
@@ -502,21 +504,24 @@ const handleSetLineup = (e) => {
 
 	const state = sh?.getState();
 	if (!state) return;
-
-	const genderRatio = genderRatioIndicator.dataset;
-	if (genderRatio.m && genderRatio.f) {
-		const currentGR = [
-			getElementArray(lineContainer, `.roster-option[data-gender="M"]`).length,
-			getElementArray(lineContainer, `.roster-option[data-gender="F"]`).length,
-		];
-		if (currentGR[0] > genderRatio.m || currentGR[1] > genderRatio.f) {
-			showMessage(
-				'warning',
-				`This lineup's gender ratio (${currentGR[0]}M/${currentGR[1]}F) violates the prescribed ratio.`
-			);
+	let genderRatio;
+	if (state.division.toLowerCase() === 'mixed') {
+		genderRatio = genderRatioIndicator.dataset;
+		if (genderRatio.m && genderRatio.f) {
+			const currentGR = [
+				getElementArray(lineContainer, `.roster-option[data-gender="M"]`)
+					.length,
+				getElementArray(lineContainer, `.roster-option[data-gender="F"]`)
+					.length,
+			];
+			if (currentGR[0] > genderRatio.m || currentGR[1] > genderRatio.f) {
+				showMessage(
+					'warning',
+					`This lineup's gender ratio (${currentGR[0]}M/${currentGR[1]}F) violates the prescribed ratio.`
+				);
+			}
 		}
 	}
-
 	//no points started, or the current point has been scored, so we're starting a new point
 	if (!state.currentPoint || state.currentPoint.scored !== 0) {
 		const body = {
@@ -619,8 +624,8 @@ const handleStartPoint = (body, genderRatio) => {
 					currentPoint: {
 						...currentPoint,
 						genderRatio: {
-							m: genderRatio.m,
-							f: genderRatio.f,
+							m: genderRatio ? genderRatio.m : 0,
+							f: genderRatio ? genderRatio.f : 0,
 						},
 					},
 				};
@@ -630,8 +635,8 @@ const handleStartPoint = (body, genderRatio) => {
 					currentPoint: {
 						...currentPoint,
 						genderRatio: {
-							m: genderRatio.m,
-							f: genderRatio.f,
+							m: genderRatio ? genderRatio.m : 0,
+							f: genderRatio ? genderRatio.f : 0,
 						},
 					},
 				});

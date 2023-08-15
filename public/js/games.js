@@ -10,6 +10,10 @@ let games = [];
 const editGameModal = new bootstrap.Modal(
 	document.querySelector('#edit-game-modal')
 );
+const deleteGameModal = new bootstrap.Modal(
+	document.querySelector('#confirm-delete-game-modal')
+);
+const deleteGame = document.querySelector('#confirm-delete-game');
 
 const gameBody = document.querySelector('#game-table-body');
 const addGameForm = document.querySelector('#add-game-form');
@@ -64,7 +68,31 @@ const loadGameInfo = (e) => {
 	editGameModal.show();
 };
 
-const promptDeleteGame = (e) => {};
+const promptDeleteGame = (e) => {
+	document.querySelector('#delete-game-id').value =
+		e.target.getAttribute('data-id');
+	deleteGameModal.show();
+};
+
+const handleDeleteGame = () => {
+	const input = document.querySelector('#delete-game-id');
+	if (!input) return;
+	const gameId = input.value;
+	if (!gameId) return;
+	const str = `/api/v1/games/${gameId}`;
+	const handler = (res) => {
+		if (res.status === 'success') {
+			showMessage('info', 'Game deleted');
+			const row = document.querySelector(`.game-row[data-id="${gameId}"]`);
+			if (row) row.remove();
+			deleteGameModal.hide();
+			input.value = '';
+		} else {
+			showMessage('error', res.message);
+		}
+	};
+	handleRequest(str, 'DELETE', null, handler);
+};
 
 const sortGameRows = () => {
 	games = games.sort(compareRounds(roundOrder));
@@ -270,4 +298,5 @@ document.addEventListener('DOMContentLoaded', () => {
 	addGameForm.addEventListener('submit', handleCreateGame);
 
 	editGameForm.addEventListener('submit', handleSaveGame);
+	deleteGame.addEventListener('click', handleDeleteGame);
 });

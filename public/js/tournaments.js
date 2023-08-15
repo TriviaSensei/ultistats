@@ -217,6 +217,8 @@ const getTeam = (e) => {
 								name: `${p.lastName}, ${p.firstName}`,
 							};
 						});
+						const lines = getElementArray(lineSelect, 'option[data-name]');
+						lines.forEach((l) => l.remove());
 
 						const offset = new Date().getTimezoneOffset();
 						const now = Date.parse(new Date());

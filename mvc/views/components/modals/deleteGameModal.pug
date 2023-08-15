@@ -1,0 +1,11 @@
+.modal.fade#confirm-delete-game-modal(tabindex="-1" aria-labelledby="delete-game-label" aria-hidden="true")
+    .modal-dialog.modal-dialog-centered
+        .modal-content#delete-game-modal-content
+            .modal-header
+                h5.modal-title#delete-game-label Delete game?
+            .modal-body
+                p Are you sure you wish to remove this game? This cannot be undone.
+                input#delete-game-id(type="hidden" value='')
+            .modal-footer
+                button.btn.btn-primary#confirm-delete-game(type="button") Yes
+                button.btn.btn-secondary(type="button" data-bs-dismiss="modal") No

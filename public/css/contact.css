@@ -54,14 +54,14 @@ li {
 	font-weight: bold;
 }
 
-.help-section > img {
+.help-section img {
 	margin: auto;
 	margin-bottom: 1px;
-	max-width: min(100%, 400px);
+	max-width: min(90%, 400px);
 	max-height: 50vh;
 }
 
-.help-section > img + p {
+.help-section img + p {
 	font-size: 0.7rem;
 	font-weight: bold;
 	text-align: center;
