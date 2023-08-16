@@ -56,8 +56,8 @@ exports.createCheckoutSession = catchAsync(async (req, res, next) => {
 	// }&user=${res.locals.user._id}&name=${product.name}&price=${
 	// 	price.unit_amount
 	// }`;
-	const successUrl = `${req.protocol}://${req.get('host')}/mystuff/`;
-	const cancelUrl = `${req.protocol}://${req.get('host')}/mystuff/${
+	const successUrl = `https://${req.get('host')}/mystuff/`;
+	const cancelUrl = `https://${req.get('host')}/mystuff/${
 		req.params.id
 	}/?alert=payment-cancel`;
 
@@ -138,6 +138,10 @@ const createSubscriptionCheckout = async (session) => {
 		subscriptionId: session.subscription,
 		name: product.name,
 	});
+
+	const team = await Team.findById(teamId);
+	team.subscription = newSub._id;
+	await team.save();
 };
 
 exports.webhookCheckout = catchAsync(async (req, res, next) => {
