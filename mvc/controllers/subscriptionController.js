@@ -120,7 +120,6 @@ exports.createCheckoutSession = catchAsync(async (req, res, next) => {
 
 const createSubscriptionCheckout = async (session) => {
 	const { team, userEmail } = session;
-	const priceId = session.line_items[0].price;
 
 	console.log(session);
 
@@ -135,7 +134,6 @@ const createSubscriptionCheckout = async (session) => {
 	const product = await stripe.products.retrieve(subscription.product);
 	if (!product) throw new Error('Product not found');
 
-	const price = await stripe.prices.retrieve(priceId);
 	const newSub = await Subscription.create({
 		team,
 		user: user._id,
