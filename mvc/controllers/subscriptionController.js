@@ -3,11 +3,8 @@ const catchAsync = require('../../utils/catchAsync');
 const AppError = require('../../utils/appError');
 const Subscription = require('../models/subscriptionModel');
 const Team = require('../models/teamModel');
+const User = require('../models/userModel');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-
-const createNewSubscription = (data) => {};
-
-const upgradeSubscription = (data) => {};
 
 const cancelMembership = (data) => {};
 
@@ -41,30 +38,31 @@ exports.createCheckoutSession = catchAsync(async (req, res, next) => {
 
 	const existingSub = await Subscription.findOne({
 		team: req.params.id,
-		user: res.locals.user._id,
 		name: product.name,
 		expires: { $gte: Date.now() },
 		active: true,
 	});
 
 	if (existingSub)
-		return next(
-			new AppError('You already have this subscription active.', 400)
-		);
+		return next(new AppError('You already an active subscription.', 400));
 
 	const price = await stripe.prices.retrieve(product.default_price);
 	if (!price) return next(new AppError('Price for product not found', 404));
 
-	const successUrl = `${req.protocol}://${req.get('host')}/mystuff/success/${
-		req.params.id
-	}/?show=subscription-info&alert=payment-success&team=${
-		res.locals.team._id
-	}&user=${res.locals.user._id}&name=${product.name}&price=${
-		price.unit_amount
-	}`;
+	// const successUrl = `${req.protocol}://${req.get('host')}/mystuff/success/${
+	// 	req.params.id
+	// }/?show=subscription-info&alert=payment-success&team=${
+	// 	res.locals.team._id
+	// }&user=${res.locals.user._id}&name=${product.name}&price=${
+	// 	price.unit_amount
+	// }`;
+	const successUrl = `${req.protocol}://${req.get('host')}/mystuff/`;
 	const cancelUrl = `${req.protocol}://${req.get('host')}/mystuff/${
 		req.params.id
 	}/?alert=payment-cancel`;
+
+	console.log(`-----Product info-----`);
+	console.log(product);
 
 	// console.log(`${req.protocol}://${req.server}${req.url}`);
 	const session = await stripe.checkout.sessions.create({
@@ -72,7 +70,14 @@ exports.createCheckoutSession = catchAsync(async (req, res, next) => {
 		cancel_url: cancelUrl,
 		line_items: [{ price: price.id, quantity: 1 }],
 		mode: 'subscription',
-		metadata: { teamId: req.params.id, teamName: res.locals.team.name },
+		metadata: {
+			productId: product.id,
+			name: product.name,
+			teamId: req.params.id,
+			userId: res.locals.user._id,
+			userEmail: res.locals.user.email,
+			teamName: res.locals.team.name,
+		},
 	});
 
 	// res.redirect(303, session.url);
@@ -84,33 +89,80 @@ exports.createCheckoutSession = catchAsync(async (req, res, next) => {
 	});
 });
 
-exports.createSubscriptionCheckout = catchAsync(async (req, res, next) => {
-	//only temporary, as it is not secure
-	let { team, user, name, price } = req.query;
+// exports.createSubscriptionCheckout = catchAsync(async (req, res, next) => {
+// 	//only temporary, as it is not secure
+// 	let { team, user, name, price } = req.query;
 
-	if (!team || !user || !name || !price) return next();
+// 	if (!team || !user || !name || !price) return next();
 
-	price = parseInt(price);
+// 	price = parseInt(price);
 
-	const t = await Team.findById(team);
-	if (!t) return next(new AppError('Team not found', 404));
+// 	const t = await Team.findById(team);
+// 	if (!t) return next(new AppError('Team not found', 404));
 
+// 	const newSub = await Subscription.create({
+// 		team,
+// 		user,
+// 		name,
+// 		price,
+// 		subscriptionId: '',
+// 	});
+
+// 	t.subscription = newSub._id;
+// 	await t.save({ validateBeforeSave: false });
+
+// 	res.redirect(
+// 		`${req.originalUrl.split('?')[0]}?${
+// 			req.originalUrl.split('?')[1].split('&')[0]
+// 		}&${req.originalUrl.split('?')[1].split('&')[1]}`
+// 	);
+// });
+
+const createSubscriptionCheckout = async (session) => {
+	const { team, userEmail } = session;
+	const priceId = session.line_items.price;
+
+	const user = await User.findOne({ email: userEmail });
+	if (!user) throw new Error('User not found');
+
+	const subscription = await stripe.subscriptions.retrieve(
+		session.subscription
+	);
+	if (!subscription) throw new Error('Subscription not found');
+
+	const product = await stripe.products.retrieve(subscription.product);
+	if (!product) throw new Error('Product not found');
+
+	const price = await stripe.prices.retrieve(priceId);
 	const newSub = await Subscription.create({
 		team,
-		user,
-		name,
-		price,
-		subscriptionId: '',
+		user: user._id,
+		subscriptionId: session.subscription,
+		name: product.name,
 	});
+};
 
-	t.subscription = newSub._id;
-	await t.save({ validateBeforeSave: false });
+exports.webhookCheckout = catchAsync(async (req, res, next) => {
+	const signature = req.headers['stripe-signature'];
+	let event;
+	try {
+		event = stripe.webhooks.constructEvent(
+			req.body,
+			signature,
+			process.env.STRIPE_WEBHOOK_SECRET
+		);
+	} catch (e) {
+		return res.status(400).send(`Webhook error: ${err.message}`);
+	}
 
-	res.redirect(
-		`${req.originalUrl.split('?')[0]}?${
-			req.originalUrl.split('?')[1].split('&')[0]
-		}&${req.originalUrl.split('?')[1].split('&')[1]}`
-	);
+	if (event.type === 'checkout.session.completed') {
+		try {
+			createSubscriptionCheckout(event.data.object);
+		} catch (err) {
+			return next(new AppError(400, `Webhook error: ${err.message}`));
+		}
+	}
+	res.status(200).json({ received: true });
 });
 
 exports.getSubscription = factory.getOne(Subscription);

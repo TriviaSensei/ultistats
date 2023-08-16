@@ -7,5 +7,5 @@ exports.freeMembership = {
 	plusMinus: false,
 	yards: false,
 	features:
-		'Offense and defensive groupings for events,Points played,Touches,Goals,Assists,Turns,Blocks',
+		'Offense and defensive groupings for events, Points played, Touches, Goals, Assists, Turns, Blocks',
 };

@@ -10,7 +10,6 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { freeMembership } = require('../../utils/settings');
 
 exports.verifyOwnership = catchAsync(async (req, res, next) => {
-	console.log('verifying ownership');
 	if (!res.locals.user)
 		return next(new AppError('You are not logged in.', 403));
 

@@ -207,7 +207,7 @@
                                     each m in memberships
                                         td= m.maxLines 
                                 tr
-                                    td Cost 
+                                    td Cost (per team)
                                     td Free
                                     each m in memberships
                                         td= `${m.cost === 0 ? 'Free' : '$' + m.cost + '/yr'}` 
@@ -216,30 +216,9 @@
                                     td Free
                                     each m in memberships
                                         td= `${m.cost === 0 ? 'Free' : '$' + (m.cost*0.9).toFixed(0) + '/yr'}`
-                    button#feature-toggle.btn.btn-primary.btn-sm.w-25.mb-3(type="button" data-bs-toggle="collapse" data-bs-target="#mem-features" aria-expanded="false" aria-controls="mem-features") View features
-                    #membership-area.hidden-radios.input-group-f.input-group-1
-                        .form-label.mb-2 Upgrade/extend membership:
-                        .input-group-h.w-100.mb-2
-                            #select-mem-type.selection-container.input-group-f.justify-content-end
-                                .form-label Membership Type 
-                                .radio-container.input-group-h
-                                    - let i = 0;
-                                    each product in productList
-                                        input(id=`${product.id}` type="radio" name="mem-type" value=`${product.id}` data-name=`${product.name}` data-price=`${product.priceData.unit_amount}` checked=i===productList.length-1)
-                                        label(for=`${product.id}`)= product.name 
-                                        - i++;
-                        table 
-                            tr
-                                td.w-50
-                                    .form-label Today's total cost #[a(data-bs-toggle="tooltip" data-bs-title="If you are upgrading an existing paid membership (e.g. Basic to Plus), the cost will be prorated based on how much time is left until your next renewal.") #[img(src="/img/info.svg")]]: 
-                                td.w-50
-                                    .form-label $#[span#total-cost 0.00]
-                            tr#renew-row
-                                td 
-                                    #renew-price.form-label Renewal cost: 
-                                td 
-                                    #renewal-cost.form-label $0.00/year until cancelled
-                        button#checkout.btn.btn-primary(type="submit") Checkout
+                    .d-flex
+                        button#feature-toggle.btn.btn-primary.btn-sm.w-25.mb-3.me-3(type="button" data-bs-toggle="collapse" data-bs-target="#mem-features" aria-expanded="false" aria-controls="mem-features") View features
+                        button#checkout.btn.btn-primary.btn-sm.w-25.mb-3(type="button" data-value="prod_NRQFAs9j6FCt9w") Upgrade ($20.00)
                                     
 
 .w-100.d-grid.gap-2.my-3

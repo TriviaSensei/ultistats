@@ -12,7 +12,6 @@ const subscriptionSchema = new mongoose.Schema({
 	//stripe sub ID
 	subscriptionId: String,
 	name: String,
-	price: Number,
 	createdAt: {
 		type: Date,
 		default: Date.now(),

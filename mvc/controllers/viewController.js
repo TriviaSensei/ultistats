@@ -153,7 +153,7 @@ exports.getManagerPage = catchAsync(async (req, res) => {
 			};
 		})
 		.filter((p) => {
-			return p.priceData;
+			return p.priceData && p.active;
 		})
 		.sort((a, b) => {
 			return a.priceData.unit_amount - b.priceData.unit_amount;
@@ -177,8 +177,6 @@ exports.getManagerPage = catchAsync(async (req, res) => {
 		.sort((a, b) => {
 			return a.cost - b.cost;
 		});
-
-	// console.log(memberships);
 
 	const user = await req.user.populate('teams');
 	res.status(200).render('myStuff', {

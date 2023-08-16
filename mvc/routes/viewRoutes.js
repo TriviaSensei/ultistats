@@ -28,7 +28,7 @@ router.get('/contact', viewController.getContact);
 
 router.get(
 	'/mystuff/success/:id',
-	subscriptionController.createSubscriptionCheckout,
+	// subscriptionController.createSubscriptionCheckout,
 	viewController.getManagerPage
 );
 router.get('/mystuff/cancel/:id', viewController.getManagerPage);

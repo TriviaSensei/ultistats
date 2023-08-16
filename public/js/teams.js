@@ -546,7 +546,6 @@ const getTeam = (e) => {
 	//get the team info
 	const str = `/api/v1/teams/${teamSelect.value}`;
 	const handler = (res) => {
-		console.log(res);
 		if (res.status === 'success') {
 			populateForm(teamForm, res.data);
 			handleColorChange({ target: color1 });
@@ -595,6 +594,7 @@ const getTeam = (e) => {
 				addManagerRow(m, true);
 			});
 			//handle the subscription area
+			console.log(res.data);
 			const subEvent = new CustomEvent('set-sub-level', {
 				detail: {
 					subscription: res.data.subscription,
