@@ -13,9 +13,9 @@ const { rosterLimit } = require('../../utils/settings');
 exports.handleAlert = (req, res, next) => {
 	if (req.url.search('/success/') > 0) {
 		res.locals.alert = {
-			status: 'warning',
-			message: 'Payment cancelled',
-			duration: 1000,
+			status: 'info',
+			message: 'Payment successful',
+			duration: 2000,
 		};
 	} else if (req.url.search('/cancel/') > 0) {
 		res.locals.alert = {

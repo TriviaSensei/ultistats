@@ -40,7 +40,7 @@ const handleSubscriptionArea = (e) => {
 	if (!e.detail.subscription) {
 		currentMembership = undefined;
 		memLevel.innerHTML = 'Free';
-		memEnd.innerHTML = 'Renews';
+		memEnd.innerHTML = 'Expires';
 		expires.innerHTML = 'Never';
 		manager.innerHTML = 'N/A';
 	} else {
