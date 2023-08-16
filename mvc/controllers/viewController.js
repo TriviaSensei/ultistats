@@ -11,27 +11,20 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { rosterLimit } = require('../../utils/settings');
 
 exports.handleAlert = (req, res, next) => {
-	if (!req.query.alert) {
-		return next();
+	if (req.url.search('/success/') > 0) {
+		res.locals.alert = {
+			status: 'warning',
+			message: 'Payment cancelled',
+			duration: 1000,
+		};
+	} else if (req.url.search('/cancel/') > 0) {
+		res.locals.alert = {
+			status: 'warning',
+			message: 'Payment cancelled',
+			duration: 1000,
+		};
 	}
-	switch (req.query.alert) {
-		case 'payment-cancel':
-			res.locals.alert = {
-				status: 'warning',
-				message: 'Payment cancelled',
-				duration: 1000,
-			};
-			break;
-		case 'payment-success':
-			res.locals.alert = {
-				status: 'info',
-				message:
-					'Payment successful. If the subscription area does not reflect your purchase, please refresh the page or come back later.',
-				duration: 3000,
-			};
-			break;
-		default:
-	}
+
 	next();
 };
 
@@ -193,7 +186,7 @@ exports.getManagerPage = catchAsync(async (req, res) => {
 				: req.url.search('/cancel/') > 0
 				? 'cancel'
 				: undefined,
-		show: req.query.show,
+		show: req.params.id || null,
 		alert: res.locals.alert,
 	});
 });

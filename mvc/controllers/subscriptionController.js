@@ -56,13 +56,12 @@ exports.createCheckoutSession = catchAsync(async (req, res, next) => {
 	// }&user=${res.locals.user._id}&name=${product.name}&price=${
 	// 	price.unit_amount
 	// }`;
-	const successUrl = `https://${req.get('host')}/mystuff/`;
-	const cancelUrl = `https://${req.get('host')}/mystuff/${
+	const successUrl = `https://${req.get('host')}/mystuff/success/${
 		req.params.id
-	}/?alert=payment-cancel`;
-
-	console.log(`-----Product info-----`);
-	console.log(product);
+	}`;
+	const cancelUrl = `https://${req.get('host')}/mystuff/cancel/${
+		req.params.id
+	}`;
 
 	// console.log(`${req.protocol}://${req.server}${req.url}`);
 	const session = await stripe.checkout.sessions.create({
@@ -88,35 +87,6 @@ exports.createCheckoutSession = catchAsync(async (req, res, next) => {
 		},
 	});
 });
-
-// exports.createSubscriptionCheckout = catchAsync(async (req, res, next) => {
-// 	//only temporary, as it is not secure
-// 	let { team, user, name, price } = req.query;
-
-// 	if (!team || !user || !name || !price) return next();
-
-// 	price = parseInt(price);
-
-// 	const t = await Team.findById(team);
-// 	if (!t) return next(new AppError('Team not found', 404));
-
-// 	const newSub = await Subscription.create({
-// 		team,
-// 		user,
-// 		name,
-// 		price,
-// 		subscriptionId: '',
-// 	});
-
-// 	t.subscription = newSub._id;
-// 	await t.save({ validateBeforeSave: false });
-
-// 	res.redirect(
-// 		`${req.originalUrl.split('?')[0]}?${
-// 			req.originalUrl.split('?')[1].split('&')[0]
-// 		}&${req.originalUrl.split('?')[1].split('&')[1]}`
-// 	);
-// });
 
 const createSubscriptionCheckout = async (session) => {
 	const { teamId, userEmail } = session.metadata;
