@@ -129,9 +129,7 @@ const createSubscriptionCheckout = async (session) => {
 	);
 	if (!subscription) throw new Error('Subscription not found');
 
-	console.log(subscription);
-
-	const product = await stripe.products.retrieve(subscription.product);
+	const product = await stripe.products.retrieve(subscription.plan.product);
 	if (!product) throw new Error('Product not found');
 
 	const newSub = await Subscription.create({
