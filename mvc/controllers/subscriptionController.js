@@ -133,7 +133,7 @@ const createSubscriptionCheckout = async (session) => {
 	if (!product) throw new Error('Product not found');
 
 	const newSub = await Subscription.create({
-		team,
+		team: teamId,
 		user: user._id,
 		subscriptionId: session.subscription,
 		name: product.name,
