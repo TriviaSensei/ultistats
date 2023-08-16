@@ -120,7 +120,9 @@ exports.createCheckoutSession = catchAsync(async (req, res, next) => {
 
 const createSubscriptionCheckout = async (session) => {
 	const { team, userEmail } = session;
-	const priceId = session.line_items.price;
+	const priceId = session.line_items[0].price;
+
+	console.log(session);
 
 	const user = await User.findOne({ email: userEmail });
 	if (!user) throw new Error('User not found');
