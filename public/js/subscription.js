@@ -45,7 +45,7 @@ const handleSubscriptionArea = (e) => {
 		manager.innerHTML = 'N/A';
 	} else {
 		memLevel.innerHTML = currentMembership.name;
-		memEnd.innerHTML = 'Renews';
+		memEnd.innerHTML = currentMembership.active ? 'Renews' : 'Expires';
 		manager.innerHTML = e.detail.isMe ? 'Me' : e.detail.currentManager;
 		const newDate = new Date(Date.parse(currentMembership.createdAt));
 		newDate.setFullYear(newDate.getFullYear() + 1);
