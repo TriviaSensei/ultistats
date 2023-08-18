@@ -44,7 +44,7 @@ exports.createCheckoutSession = catchAsync(async (req, res, next) => {
 	});
 
 	if (existingSub)
-		return next(new AppError('You already an active subscription.', 400));
+		return next(new AppError('You already have an active subscription.', 400));
 
 	const price = await stripe.prices.retrieve(product.default_price);
 	if (!price) return next(new AppError('Price for product not found', 404));
@@ -135,6 +135,94 @@ exports.webhookCheckout = catchAsync(async (req, res, next) => {
 		}
 	}
 	res.status(200).json({ received: true });
+});
+
+exports.cancelSubscription = catchAsync(async (req, res, next) => {
+	const team = await Team.findById(req.params.id).populate('subscription');
+	if (!team) return next(new AppError('Team not found', 404));
+
+	if (!team.subscription || !team.subscription.active)
+		return next(
+			new AppError('You do not have an active subscription to cancel.', 400)
+		);
+
+	const sub = await stripe.subscriptions.update(
+		team.subscription.subscriptionId,
+		{
+			cancel_at_period_end: true,
+		}
+	);
+
+	if (!sub)
+		return next(
+			new AppError(
+				'Something went wrong updating your subscription with Stripe. Try again later or contact the site administrator.',
+				500
+			)
+		);
+
+	const mySub = await Subscription.findById(team.subscription._id);
+
+	if (!mySub)
+		return next(
+			new AppError(
+				'Something went wrong updating your subscription in the database. Try again later or contact the site administrator.',
+				500
+			)
+		);
+
+	mySub.active = false;
+	await mySub.save();
+
+	res.status(200).json({
+		status: 'success',
+		message:
+			'Your subscription will cancel at the end of the billing period. All features will remain active until then.',
+		data: mySub,
+	});
+});
+
+exports.reactivateSubscription = catchAsync(async (req, res, next) => {
+	const team = await Team.findById(req.params.id).populate('subscription');
+	if (!team) return next(new AppError('Team not found', 404));
+
+	if (!team.subscription || team.subscription.active)
+		return next(new AppError('You already have an active subscription.', 400));
+
+	const sub = await stripe.subscriptions.update(
+		team.subscription.subscriptionId,
+		{
+			cancel_at_period_end: false,
+		}
+	);
+
+	if (!sub)
+		return next(
+			new AppError(
+				'Something went wrong updating your subscription with Stripe. Try again later or contact the site administrator.',
+				500
+			)
+		);
+
+	const mySub = await Subscription.findById(team.subscription._id);
+
+	if (!mySub)
+		return next(
+			new AppError(
+				'Something went wrong updating your subscription in the database. Try again later or contact the site administrator.',
+				500
+			)
+		);
+
+	mySub.active = true;
+	await mySub.save();
+
+	res.status(200).json({
+		status: 'success',
+		message:
+			'Your subscription has been reactivated. You will be billed at the end of the billing period.',
+		data: mySub,
+	});
 });
 
 exports.getSubscription = factory.getOne(Subscription);

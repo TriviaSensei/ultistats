@@ -16,7 +16,10 @@ router.use('/*/:id', teamController.verifyOwnership);
 router
 	.route('/create-checkout-session/:id')
 	.post(subscriptionController.createCheckoutSession);
+router.route('/cancel/:id').patch(subscriptionController.cancelSubscription);
+router
+	.route('/reactivate/:id')
+	.patch(subscriptionController.reactivateSubscription);
 
 router.use('/:id', teamController.verifyOwnership);
-
 module.exports = router;

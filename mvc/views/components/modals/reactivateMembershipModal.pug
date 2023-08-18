@@ -1,0 +1,11 @@
+.modal.fade#confirm-reactivate-membership-modal(tabindex="-1" aria-labelledby="reactivate-membership-label" aria-hidden="true")
+    .modal-dialog.modal-dialog-centered
+        .modal-content#reactivate-membership-modal-content
+            .modal-header
+                h5.modal-title#reactivate-membership-label Reactivate membership?
+            .modal-body
+                input#reactivate-membership-id(type="hidden" value='')
+                p Are you sure you want to reactivate your membership? You will be automatically billed at the end of the billing period.
+            .modal-footer
+                button.btn.btn-primary#confirm-reactivate-membership(type="button" data-bs-dismiss="modal") Yes
+                button.btn.btn-secondary(type="button" data-bs-dismiss="modal") No

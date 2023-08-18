@@ -1,0 +1,11 @@
+.modal.fade#confirm-cancel-membership-modal(tabindex="-1" aria-labelledby="cancel-membership-label" aria-hidden="true")
+    .modal-dialog.modal-dialog-centered
+        .modal-content#cancel-membership-modal-content
+            .modal-header
+                h5.modal-title#cancel-membership-label Cancel membership?
+            .modal-body
+                input#cancel-membership-id(type="hidden" value='')
+                p Are you sure you want to cancel your membership?
+            .modal-footer
+                button.btn.btn-primary#confirm-cancel-membership(type="button" data-bs-dismiss="modal") Yes
+                button.btn.btn-secondary(type="button" data-bs-dismiss="modal") No

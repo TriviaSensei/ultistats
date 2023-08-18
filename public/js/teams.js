@@ -594,7 +594,6 @@ const getTeam = (e) => {
 				addManagerRow(m, true);
 			});
 			//handle the subscription area
-			console.log(res.data);
 			const subEvent = new CustomEvent('set-sub-level', {
 				detail: {
 					subscription: res.data.subscription,
