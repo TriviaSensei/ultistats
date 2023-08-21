@@ -4,10 +4,12 @@ const AppError = require('../../utils/appError');
 const Team = require('../models/teamModel');
 const User = require('../models/userModel');
 const Tournament = require('../models/tournamentModel');
+const Subscription = require('../models/subscriptionModel');
 const Email = require('../../utils/email');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { v4: uuidV4 } = require('uuid');
 const { rosterLimit } = require('../../utils/settings');
+const Subscriptions = require('../models/subscriptionModel');
 
 const validateNewPlayer = (player) => {
 	if (!player.firstName) return 'First name not specified.';
@@ -458,14 +460,15 @@ exports.getTournamentDetails = catchAsync(async (req, res, next) => {
 			startDate: 1,
 		});
 
-	const team = await Team.findById(req.params.id).populate([
-		{ path: 'subscription' },
-	]);
+	const sub = await Subscription.find({
+		team: req.params.id,
+		expires: { $gte: Date.now() },
+	});
 
 	res.status(200).json({
 		status: 'success',
 		data,
-		subscription: team.subscription?.name || null,
+		subscription: sub.length === 0 ? null : sub[1].name,
 	});
 });
 
