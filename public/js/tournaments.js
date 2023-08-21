@@ -124,6 +124,49 @@ const editLinesModal = new bootstrap.Modal(
 	document.querySelector('#edit-lines-modal')
 );
 
+let isMobile = false;
+const dblTouchTime = 500;
+
+let tap = {
+	target: undefined,
+	timeout: undefined,
+};
+const clearTap = () => {
+	tap.target = undefined;
+	clearTimeout(tap.timeout);
+	tap.timeout = undefined;
+};
+const handleDoubleTap = (e) => {
+	if (!e.target || e.target.tagName.toLowerCase() === 'label' || !isMobile)
+		return;
+	let dblTapEvent = new CustomEvent('dbltap');
+	//if the target still exists and it's the same as the last touch, dispatch the dbltap event
+	const op = e.target.closest('.roster-option');
+	if (!op) {
+		clearTap();
+		return;
+	}
+	if (tap.target === op) {
+		console.log('handling double tap');
+
+		op.dispatchEvent(dblTapEvent);
+		tap.target = undefined;
+		clearTimeout(tap.timeout);
+	}
+	//otherwise, set the target to the thing we just touched
+	else {
+		tap.target = op;
+		clearTimeout(tap.timeout);
+		tap.timeout = setTimeout(() => {
+			tap.target = undefined;
+		}, dblTouchTime);
+	}
+};
+
+const handleMoveOption = (e) => {
+	handleMoveOne(e.target);
+};
+
 const removeTourneys = () => {
 	getElementArray(tournamentSelect, 'option').forEach((o, i) => {
 		if (i !== 0) o.remove();
@@ -307,7 +350,9 @@ const getTournament = (e) => {
 		let count = 0;
 		roster.forEach((p) => {
 			const op = createRosterOption(p, handleArrows);
-
+			op.addEventListener('dblclick', handleMoveOption);
+			op.addEventListener('click', handleDoubleTap);
+			op.addEventListener('dbltap', handleMoveOption);
 			if (
 				tourney.roster.some((p2) => {
 					return p2.id === p.id;
@@ -316,6 +361,9 @@ const getTournament = (e) => {
 				if (!rosterSelect.querySelector(`.roster-option[data-id="${p.id}"]`))
 					rosterSelect.appendChild(op);
 				const op2 = createRosterOption(p, handleArrows);
+				op2.addEventListener('dblclick', handleMoveOption);
+				op2.addEventListener('click', handleDoubleTap);
+				op2.addEventListener('dbltap', handleMoveOption);
 				if (
 					!availableContainer.querySelector(`.roster-option[data-id="${p.id}"]`)
 				)
@@ -450,6 +498,9 @@ const handleSaveTournament = (e) => {
 
 				roster.forEach((p) => {
 					const op = createRosterOption(p, handleArrows);
+					op.addEventListener('dblclick', handleMoveOption);
+					op.addEventListener('click', handleDoubleTap);
+					op.addEventListener('dbltap', handleMoveOption);
 					insertOption(op, nonRosterSelect);
 				});
 			} else {
@@ -520,7 +571,7 @@ const handleDates = () => {
 
 const handleMoveOne = (box) => {
 	const style = getComputedStyle(box);
-	if (style.display !== 'block') return;
+	if (style.display === 'none') return;
 
 	//get the parent container and the target (other) container
 	const parent = box.closest('.player-container');
@@ -766,6 +817,9 @@ const saveRoster = (msg, after) => {
 				);
 				if (!op) {
 					const newOpt = createRosterOption(p, handleArrows);
+					newOpt.addEventListener('dblclick', handleMoveOption);
+					newOpt.addEventListener('click', handleDoubleTap);
+					newOpt.addEventListener('dbltap', handleMoveOption);
 					if (
 						!ops.some((o) => {
 							if (p.name.localeCompare(o.getAttribute('data-name')) < 0) {
@@ -1063,6 +1117,9 @@ const handleAddPlayer = (e) => {
 			showMessage(res.status, res.message);
 			roster.push(res.newPlayer);
 			const op = createRosterOption(res.newPlayer, handleArrows);
+			op.addEventListener('dblclick', handleMoveOption);
+			op.addEventListener('click', handleDoubleTap);
+			op.addEventListener('dbltap', handleMoveOption);
 			if (!rosterSelect.querySelector(`.roster-option[data-id="${p.id}"]`))
 				insertOption(op, rosterSelect);
 			rosterCount.innerHTML =
@@ -1389,11 +1446,22 @@ const handleNewPlayer = (e) => {
 			name: `${e.detail.player.lastName}, ${e.detail.player.firstName}`,
 		});
 		const op = createRosterOption(e.detail.player, handleArrows);
+		op.addEventListener('dblclick', handleMoveOption);
+		op.addEventListener('click', handleDoubleTap);
+		op.addEventListener('dbltap', handleMoveOption);
 		insertOption(op, nonRosterSelect);
 	}
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+	document.addEventListener(
+		'touchstart',
+		(e) => {
+			isMobile = true;
+		},
+		{ once: true }
+	);
+
 	teamSelect.addEventListener('change', getTeam);
 	tournamentSelect.addEventListener('change', getTournament);
 	tournamentForm.addEventListener('submit', handleSaveTournament);
