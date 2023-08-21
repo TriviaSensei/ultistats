@@ -468,7 +468,7 @@ exports.getTournamentDetails = catchAsync(async (req, res, next) => {
 	res.status(200).json({
 		status: 'success',
 		data,
-		subscription: sub.length === 0 ? null : sub[1].name,
+		subscription: sub.length === 0 ? null : sub[0].name,
 	});
 });
 
