@@ -24,6 +24,7 @@
 		"html-to-text": "^9.0.3",
 		"http": "^0.0.1-security",
 		"jsonwebtoken": "^9.0.0",
+		"jszip": "^3.10.1",
 		"mongoose": "^6.9.0",
 		"morgan": "^1.10.0",
 		"path": "^0.12.7",

@@ -3,6 +3,8 @@ import { showMessage } from './utils/messages.js';
 import { getElementArray } from './utils/getElementArray.js';
 import { createElement } from './utils/createElementFromSelector.js';
 import { StateHandler } from './utils/stateHandler.js';
+import { saveAs } from './utils/jszip/saveAs.js';
+import { dataDictionary } from './utils/dataDictionary.js';
 const msInDay = 24 * 60 * 60 * 1000;
 const offset = new Date().getTimezoneOffset() * 60000;
 
@@ -16,6 +18,7 @@ const gameDropdown = document.querySelector('#game-dropdown');
 const gameDropDownCollapse = new bootstrap.Collapse('#game-dropdown');
 
 const reportArea = document.querySelector('#report-area');
+const download = document.querySelector('#download');
 
 let data = {
 	all: null,
@@ -295,6 +298,106 @@ const handleSelectGames = () => {
 		});
 };
 
+const handleReportData = () => {
+	const zip = new JSZip();
+
+	let tournamentData =
+		'id,name,start_date,format,endzone,length,width,cap,hard_cap';
+	const players = [];
+	let playerData = 'id,first_name,last_name,gender_match,line,position,number';
+	let games = 0;
+	let gameData =
+		'id,tournament,game_number,round,opponent,cap,hard_cap,win_by,score,opp_score,result';
+	let pointData = `game,point_number,score,opp_score,scored,lineup,injuries`;
+	let passData =
+		'game,point_number,event_index,offense,event,event_team,player_in,player_out,goal,player,result,turnover,x,y';
+
+	data.reportData.forEach((t, ti) => {
+		//tournament data
+		tournamentData += `\n`;
+		tournamentData += `${ti + 1},${t.name},${t.startDate},${t.format.name},${
+			t.format.endzone
+		},${t.format.length},${t.format.width},${t.cap},${t.hardCap}`;
+		//player data
+		t.roster.forEach((p) => {
+			if (
+				!players.some((pl) => {
+					return pl.id === p.id;
+				})
+			) {
+				players.push({ ...p });
+				playerData += `\n`;
+				playerData += `${players.length},${p.firstName},${p.lastName},${p.gender},${p.line},${p.position},${p.number}`;
+			}
+		});
+
+		const findById = (p) => {
+			return (
+				players.findIndex((p2) => {
+					return p2.id === p;
+				}) + 1
+			);
+		};
+
+		//game data
+		t.games.forEach((g, gi) => {
+			games++;
+			gameData += `\n`;
+			gameData += `${games},${ti + 1},${gi + 1},${g.round},${g.opponent},${
+				g.cap
+			},${g.hardCap},${g.winBy},${g.score},${g.oppScore},${g.result}`;
+			//point data
+			g.points.forEach((p, pi) => {
+				pointData += `\n`;
+				pointData += `${games},${pi + 1},${p.score},${p.oppScore},${
+					p.scored
+				},"${p.lineup.map(findById).join(',')}","${p.injuries
+					.map(findById)
+					.join(',')}"`;
+
+				//pass data
+				p.passes.forEach((ps, psi) => {
+					passData += `\n`;
+					passData += `${games},${pi + 1},${psi + 1},${ps.offense},${
+						ps.event
+					},${ps.eventDesc.team},${ps.eventDesc.in || ''},${
+						ps.eventDesc.out || ''
+					},${ps.goal},${
+						players.findIndex((p2) => {
+							return p2.id === ps.player;
+						}) + 1
+					},${ps.result},${ps.turnover},${ps.x || ''},${ps.y || ''}`;
+				});
+			});
+		});
+	});
+	let dd = '';
+	dataDictionary.forEach((d) => {
+		dd += `${d.table}\n`;
+		d.columns.forEach((c) => {
+			dd += `${c.name} - ${c.description}\n`;
+		});
+		dd += `\n----------\n\n`;
+	});
+
+	zip.file('tournaments.csv', tournamentData);
+	zip.file('players.csv', playerData);
+	zip.file('games.csv', gameData);
+	zip.file('points.csv', pointData);
+	zip.file('passes.csv', passData);
+	zip.file('dataDictionary.txt', dd);
+
+	zip.generateAsync({ type: 'blob' }).then(
+		(blob) => {
+			saveAs(blob, 'data.zip');
+		},
+		(err) => {
+			console.log(`Error`);
+			console.log(err);
+		}
+	);
+};
+
 document.addEventListener('DOMContentLoaded', () => {
 	teamSelect.addEventListener('change', getTournaments);
 	$(function () {
@@ -335,6 +438,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	});
 
 	tourneySelect.addEventListener('change', handleSelectTourney);
+	download.addEventListener('click', handleReportData);
 
 	const reportSections = ['overview', 'eff', 'leaders'];
 	sh.addWatcher(null, (state) => {
