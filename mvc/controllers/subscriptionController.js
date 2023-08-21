@@ -63,7 +63,6 @@ exports.createCheckoutSession = catchAsync(async (req, res, next) => {
 		req.params.id
 	}`;
 
-	// console.log(`${req.protocol}://${req.server}${req.url}`);
 	const session = await stripe.checkout.sessions.create({
 		success_url: successUrl,
 		cancel_url: cancelUrl,
@@ -172,6 +171,16 @@ exports.cancelSubscription = catchAsync(async (req, res, next) => {
 		);
 
 	mySub.active = false;
+
+	const now = new Date();
+	const d1 = new Date(mySub.expires);
+	d1.setFullYear(now.getFullYear());
+	if (d1 > now) mySub.expires = d1;
+	else {
+		d1.setFullYear(now.getFullYear() + 1);
+		mySub.expires = d1;
+	}
+
 	await mySub.save();
 
 	res.status(200).json({
@@ -186,7 +195,9 @@ exports.reactivateSubscription = catchAsync(async (req, res, next) => {
 	const team = await Team.findById(req.params.id).populate('subscription');
 	if (!team) return next(new AppError('Team not found', 404));
 
-	if (!team.subscription || team.subscription.active)
+	if (!team.subscription)
+		return next(new AppError('You do not have a subscription.', 400));
+	else if (team.subscription.active)
 		return next(new AppError('You already have an active subscription.', 400));
 
 	const sub = await stripe.subscriptions.update(
@@ -215,6 +226,9 @@ exports.reactivateSubscription = catchAsync(async (req, res, next) => {
 		);
 
 	mySub.active = true;
+	const d1 = new Date(mySub.expires);
+	d1.setFullYear(9999);
+	mySub.expires = d1;
 	await mySub.save();
 
 	res.status(200).json({

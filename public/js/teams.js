@@ -441,7 +441,6 @@ const handleEditPlayer = (e) => {
 				showMessage('error', res.message);
 			} else {
 				showMessage(res.status, res.message);
-				console.log(res);
 				const row = rosterTable.querySelector(
 					`tr[data-id="${res.modifiedPlayer.id}"]`
 				);
@@ -620,7 +619,6 @@ const getTeam = (e) => {
 		} else {
 			showMessage('error', res.message);
 		}
-		// 63dd4c563968f111e026e6d3
 	};
 	handleRequest(str, 'GET', null, handler);
 };

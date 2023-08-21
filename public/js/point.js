@@ -218,14 +218,12 @@ const updatePasses = () => {
 					if (res.data.period === state.format.periods) {
 						pdNo = 'the';
 						pdName = 'game';
-						console.log(state);
 					}
 
 					showMessage(`info`, `End of ${pdNo} ${pdName}`, 2000);
 
 					//at halftime, reset the timeouts
 					if (res.data.period === state.format.periods / 2) {
-						console.log(state);
 						state.timeoutsLeft = state.timeoutsLeft.map((t) => {
 							if (state.timeouts % 2 === 0) return state.timeouts / 2;
 							else if (state.timeouts === 1) return Math.min(t, 1);
@@ -404,7 +402,6 @@ const displayEventDescription = (e) => {
 				passes[0].x === null ||
 				passes[0].y === null))
 	) {
-		console.log(currentPoint);
 		if (passes.length === 1) {
 			if (passes[0].goal === -1) {
 				return showEvent(`${state.opponent} scored`);
@@ -888,7 +885,6 @@ const handleReturnToPoint = () => {
 	const str = `/api/v1/games/returnToPoint/${state._id}`;
 	const handler = (res) => {
 		if (res.status === 'success') {
-			console.log(res.data);
 			state = {
 				...state,
 				...res.data,
@@ -903,7 +899,6 @@ const handleReturnToPoint = () => {
 				discIn: true,
 			};
 			sh.setState(state);
-			console.log(state);
 			if (state.currentPoint) {
 				const evt = new CustomEvent('update-info', {
 					detail: state,
@@ -974,7 +969,6 @@ const redoPass = (e) => {
 	const toRedo = state.poppedPasses.pop();
 	if (!toRedo) return;
 	if (toRedo.event) {
-		console.log(toRedo);
 		if (toRedo.event === 'timeout') {
 			if (Math.abs(toRedo.eventDesc?.team) !== 1)
 				return showMessage('error', 'Invalid event');
@@ -1146,7 +1140,6 @@ const updateCurrentPass = (data, ...opts) => {
 			...blankPass,
 			offense: currentPass.offense,
 		});
-		console.log(passes);
 	}
 
 	state = {
@@ -1330,7 +1323,6 @@ const setDiscPosition = (e) => {
 		);
 	} else if (isMobile) {
 		if (e.target !== field && e.target !== disc) return;
-		console.log(e.type);
 		//if we are on mobile and it's a touchend event, the location is the changed touch
 		if (e.type === 'touchend') {
 			({ pageX, pageY } = e.changedTouches[0]);
@@ -1858,7 +1850,6 @@ const handleSub = (e) => {
 	};
 	const handler = (res) => {
 		if (res.status === 'success') {
-			console.log(res.data.points.slice(-1).pop());
 			sh.setState({
 				...state,
 				points: res.data.points,
@@ -1869,7 +1860,6 @@ const handleSub = (e) => {
 				},
 			});
 			state = sh.getState();
-			console.log(state.currentPoint);
 			subModal.hide();
 			handleSubFilter(null);
 			updateCurrentPass({
@@ -1895,8 +1885,6 @@ const handleSub = (e) => {
 					currentGR[0] > state.currentPoint.genderRatio.m ||
 					currentGR[1] > state.currentPoint.genderRatio.f
 				) {
-					console.log(state.currentPoint.lineup);
-					console.log(currentGR, state.currentPoint.genderRatio);
 					return showMessage(
 						'warning',
 						`This lineup's gender ratio (${currentGR[0]}M/${currentGR[1]}F) violates the prescribed ratio.`

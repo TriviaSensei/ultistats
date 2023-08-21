@@ -402,13 +402,11 @@ const handleSaveTournament = (e) => {
 	}`;
 	const handler = (res) => {
 		if (res.status === 'success') {
-			console.log(res.data);
 			populateForm(tournamentForm, res.data);
 			const offset = new Date().getTimezoneOffset();
 			const d = new Date(Date.parse(res.data.startDate) + offset * 60000);
 
 			if (!tournamentSelect.value) {
-				console.log(roster);
 				const op = createElement('option');
 				op.setAttribute('value', res.data._id);
 				op.innerHTML = `${res.data.name} (${d.toLocaleDateString()})`;
@@ -906,7 +904,6 @@ const confirmDeletePlayer = (e) => {
 				`input[type="checkbox"][data-id="${p.id}"]`
 			);
 			if (box) handleMoveOne(box);
-			else console.log('did not move box');
 
 			return false;
 		}
@@ -1290,7 +1287,6 @@ const handleSaveLine = (e) => {
 	 * }
 	 */
 	const handler = (res) => {
-		console.log(res);
 		if (res.status === 'success') {
 			if (
 				res.data.id &&
@@ -1387,15 +1383,12 @@ const handleDeleteLine = (e) => {
 };
 
 const handleNewPlayer = (e) => {
-	console.log(e.detail);
 	if (teamSelect.value === e.detail.team) {
-		console.log(roster);
 		roster.push({
 			...e.detail.player,
 			name: `${e.detail.player.lastName}, ${e.detail.player.firstName}`,
 		});
 		const op = createRosterOption(e.detail.player, handleArrows);
-		console.log(op);
 		insertOption(op, nonRosterSelect);
 	}
 };

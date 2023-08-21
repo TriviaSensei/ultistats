@@ -377,8 +377,6 @@ exports.setPasses = catchAsync(async (req, res, next) => {
 		else periodEnds.push(Math.floor(a) + 1);
 	}
 
-	// console.log(periodEnds);
-
 	res.locals.game.points.forEach((p) => {
 		if (p.scored === 1) {
 			res.locals.game.score++;

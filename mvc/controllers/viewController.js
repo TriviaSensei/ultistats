@@ -112,7 +112,6 @@ exports.confirmRegistration = catchAsync(async (req, res, next) => {
 });
 
 exports.getAccount = (req, res) => {
-	// console.log(res.locals.user);
 	res.status(200).render('myAccount', {
 		title: 'My Account',
 		user: res.locals.user,
@@ -157,7 +156,6 @@ exports.getManagerPage = catchAsync(async (req, res) => {
 	let memberships = await Promise.all(
 		mems.data.map(async (m) => {
 			const priceData = await stripe.prices.retrieve(m.default_price);
-			// console.log(m.metadata);
 			return {
 				...m,
 				...m.metadata,
@@ -208,7 +206,6 @@ exports.handleManagerRequest = catchAsync(async (req, res, next) => {
 			await t.save({ validateBeforeSave: false });
 
 			res.locals.user.teams.push(t._id);
-			console.log(`team: ${t._id.toString()}`);
 			res.locals.user.teamRequests = res.locals.user.teamRequests.filter(
 				(r) => {
 					return r._id.toString() !== t._id.toString();

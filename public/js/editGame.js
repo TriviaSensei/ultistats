@@ -608,7 +608,6 @@ const handleStartPoint = (body, genderRatio) => {
 	if (!state) return;
 
 	const str = `/api/v1/games/startPoint/${state._id}`;
-	console.log(body);
 	const handler = (res) => {
 		if (res.status === 'success') {
 			pointModal.hide();
@@ -665,7 +664,6 @@ const handleNewPoint = (e) => {
 	if (!state) return;
 
 	let newDirection, newOD;
-	// console.log(state);
 	if (!state.currentPoint) {
 		newDirection = state.startSettings.direction;
 		newOD = state.startSettings.offense;
@@ -713,7 +711,6 @@ const handleNewPoint = (e) => {
 					];
 				}
 			}
-			// console.log(m, f);
 			setGenderRatio(m, f);
 		} else if (state.genderRule === 'B') {
 			let pointsSincePeriodEnd = 0;

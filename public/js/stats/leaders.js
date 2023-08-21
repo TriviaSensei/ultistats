@@ -466,17 +466,4 @@ overview.addEventListener('data-update', (e) => {
 			if (carouselItems.length > i) carouselItems[i].appendChild(s);
 		});
 	}
-
-	// const testid = '07875982-8ee5-4e14-970d-83e1632629ef';
-
-	// e.detail[0].games.forEach((g) => {
-	// 	g.points.forEach((pt) => {
-	// 		if (pt.lineup.includes(testid) || pt.injuries.includes(testid))
-	// 			console.log(pt);
-	// 	});
-	// });
-
-	// passes.forEach((p) => {
-	// 	if (p.receiver === testid) console.log(p);
-	// });
 });

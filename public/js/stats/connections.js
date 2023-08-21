@@ -277,11 +277,6 @@ const generateGraphData = (data, filter) => {
 	} else return null;
 };
 
-const getPasses = (id) => {
-	let passes = allPasses.filter((p) => p.receiver === id || p.thrower === id);
-	console.log(passes);
-};
-
 parent.addEventListener('data-update', (e) => {
 	//remove any players that should be gone
 	getElementArray(playerSelect, 'option:not([value=""])').forEach((op) => {

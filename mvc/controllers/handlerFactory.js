@@ -232,10 +232,19 @@ exports.getOne = (Model, popOptions) =>
 					},
 				},
 			]);
+
 			// .populate({
 			// 	path: 'requestedManagers',
 			// 	select: 'firstName lastName displayName _id',
 			// });
+
+			const currentSub = await Subscription.find({
+				team: req.params.id,
+				expires: { $gte: Date.now() },
+			});
+
+			if (currentSub.length === 0) doc.subscription = null;
+			else doc.subscription = currentSub[0];
 
 			if (
 				doc &&

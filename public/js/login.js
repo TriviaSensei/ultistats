@@ -6,7 +6,6 @@ const email = document.querySelector('#email');
 const password = document.querySelector('#password');
 
 const handleLogin = (e) => {
-	console.log('logging in');
 	if (e.target !== loginForm) return;
 	e.preventDefault();
 
@@ -16,7 +15,6 @@ const handleLogin = (e) => {
 		password: password.value,
 	};
 	const handler = (res) => {
-		console.log(res);
 		if (res.status === 'success') {
 			showMessage('info', 'Successfully logged in');
 			setTimeout(() => {

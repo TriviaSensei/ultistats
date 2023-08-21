@@ -80,7 +80,6 @@ module.exports = class Email {
 		} catch (err) {
 			console.log('error:');
 			console.log(err);
-			console.log('---');
 			err.response.body.errors.forEach((e) => {
 				console.log(e);
 			});
