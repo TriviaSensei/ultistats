@@ -135,7 +135,7 @@ const createSubscriptionCheckout = async (session) => {
 		createdAt: now,
 		expires:
 			now < new Date('December 29, 2023 00:00:00')
-				? new Date('December 31, 9999 00:00:00')
+				? new Date('January 1, 9999 00:00:00')
 				: now.setFullYear(9999),
 	});
 
