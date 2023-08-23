@@ -82,7 +82,6 @@ exports.createCheckoutSession = catchAsync(async (req, res, next) => {
 			subscription_data: {
 				description: 'Free trial until 12/31/2023, then $20/year',
 				trial_end: new Date('January 1, 2024 00:00:00'),
-				billing_cycle_anchor: new Date('January 1, 2024 00:00:00'),
 			},
 		});
 	} else {
