@@ -168,7 +168,6 @@ exports.getManagerPage = catchAsync(async (req, res) => {
 		.sort((a, b) => {
 			return a.cost - b.cost;
 		});
-	console.log(memberships);
 
 	const user = await req.user.populate('teams');
 	res.status(200).render('myStuff', {

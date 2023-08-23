@@ -411,6 +411,44 @@ const handleEditPlayer = (e) => {
 	if (e.target !== editPlayerForm) return;
 	e.preventDefault();
 	if (teamSelect.value === '') {
+		roster.some((p) => {
+			if (p.id === editPlayerId.value) {
+				p.firstName = editFirstName.value;
+				p.lastName = editLastName.value;
+				p.displayName = editDisplayName.value;
+				p.number = editNumber.value;
+				p.position = editPosition.value;
+				p.gender = document.querySelector(
+					'input[type="radio"][name="edit-gender-match"]:checked'
+				)
+					? document.querySelector(
+							'input[type="radio"][name="edit-gender-match"]:checked'
+					  ).value
+					: '';
+				p.line = document.querySelector(
+					'input[type="radio"][name="edit-line"]:checked'
+				)
+					? document.querySelector(
+							'input[type="radio"][name="edit-line"]:checked'
+					  ).value
+					: '';
+				p.position = editPosition.value;
+				const row = rosterTable.querySelector(`tr[data-id="${p.id}"]`);
+				if (!row) return;
+				const cells = getElementArray(row, `td`);
+				row.setAttribute('data-number', p.number);
+				cells[0].innerHTML = p.number;
+				cells[1].innerHTML = `${p.lastName}, ${p.firstName}`;
+				cells[2].innerHTML = p.gender;
+				cells[3].innerHTML = p.line;
+				cells[4].innerHTML = p.position;
+
+				sortRosterTable();
+
+				return true;
+			}
+		});
+		showMessage('info', 'Successfully edited player.', 1000);
 	} else {
 		const str = `/api/v1/teams/editPlayer/${teamSelect.value}`;
 		const body = {
