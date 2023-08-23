@@ -63,20 +63,45 @@ exports.createCheckoutSession = catchAsync(async (req, res, next) => {
 		req.params.id
 	}`;
 
-	const session = await stripe.checkout.sessions.create({
-		success_url: successUrl,
-		cancel_url: cancelUrl,
-		line_items: [{ price: price.id, quantity: 1 }],
-		mode: 'subscription',
-		metadata: {
-			productId: product.id,
-			name: product.name,
-			teamId: req.params.id,
-			userId: res.locals.user._id,
-			userEmail: res.locals.user.email,
-			teamName: res.locals.team.name,
-		},
-	});
+	let session;
+	if (Date.now() < new Date('December 29, 2023 00:00:00')) {
+		console.log('Creating checkout session for free trial');
+		session = await stripe.checkout.sessions.create({
+			success_url: successUrl,
+			cancel_url: cancelUrl,
+			line_items: [{ price: price.id, quantity: 1 }],
+			mode: 'subscription',
+			metadata: {
+				productId: product.id,
+				name: product.name,
+				teamId: req.params.id,
+				userId: res.locals.user._id,
+				userEmail: res.locals.user.email,
+				teamName: res.locals.team.name,
+			},
+			subscription_data: {
+				description: 'Free trial until 12/31/2023, then $20/year',
+				trial_end: new Date('January 1, 2024 00:00:00'),
+				billing_cycle_anchor: new Date('January 1, 2024 00:00:00'),
+			},
+		});
+	} else {
+		console.log('Creating checkout session for subscription');
+		session = await stripe.checkout.sessions.create({
+			success_url: successUrl,
+			cancel_url: cancelUrl,
+			line_items: [{ price: price.id, quantity: 1 }],
+			mode: 'subscription',
+			metadata: {
+				productId: product.id,
+				name: product.name,
+				teamId: req.params.id,
+				userId: res.locals.user._id,
+				userEmail: res.locals.user.email,
+				teamName: res.locals.team.name,
+			},
+		});
+	}
 
 	// res.redirect(303, session.url);
 	res.status(200).json({
@@ -101,11 +126,18 @@ const createSubscriptionCheckout = async (session) => {
 	const product = await stripe.products.retrieve(subscription.plan.product);
 	if (!product) throw new Error('Product not found');
 
+	const now = Date.now();
+
 	const newSub = await Subscription.create({
 		team: teamId,
 		user: user._id,
 		subscriptionId: session.subscription,
 		name: product.name,
+		createdAt: now,
+		expires:
+			now < new Date('December 29, 2023 00:00:00')
+				? new Date('December 31, 9999 00:00:00')
+				: now.setFullYear(9999),
 	});
 
 	const team = await Team.findById(teamId);
