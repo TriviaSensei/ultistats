@@ -65,7 +65,6 @@ exports.createCheckoutSession = catchAsync(async (req, res, next) => {
 
 	let session;
 	if (Date.now() < new Date('December 29, 2023 00:00:00')) {
-		console.log('Creating checkout session for free trial');
 		session = await stripe.checkout.sessions.create({
 			success_url: successUrl,
 			cancel_url: cancelUrl,
@@ -85,7 +84,6 @@ exports.createCheckoutSession = catchAsync(async (req, res, next) => {
 			},
 		});
 	} else {
-		console.log('Creating checkout session for subscription');
 		session = await stripe.checkout.sessions.create({
 			success_url: successUrl,
 			cancel_url: cancelUrl,
