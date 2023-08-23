@@ -57,6 +57,7 @@ const brick = document.querySelector('#brick');
 const ownGoal = document.querySelector('#own-goal');
 const attackingGoal = document.querySelector('#attack-goal');
 const revBrick = document.querySelector('#reverse-brick');
+const attackBrick = document.querySelector('#attack-brick');
 const midfield = document.querySelector('#midfield');
 const centerDisc = document.querySelector('#center');
 
@@ -1271,7 +1272,6 @@ const drawLine = (x0, y0, x1, y1) => {
 const setDiscPosition = (e) => {
 	const state = sh.getState();
 	if (!state) return;
-
 	//don't do anything if the disc isn't movable
 	if (!disc || !state.discIn) return;
 
@@ -1304,6 +1304,10 @@ const setDiscPosition = (e) => {
 			parseFloat(e.target.getAttribute('data-x')),
 			parseFloat(e.target.getAttribute('data-y')),
 		];
+		//if we're on defense, reverse the X coordinate
+		if (!state.currentPoint.offense)
+			x = state.format.length + 2 * state.format.endzone - x;
+
 		let cp = {
 			x: undefined,
 			y: undefined,
@@ -1940,12 +1944,9 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ once: true }
 	);
 
-	brick.addEventListener('click', setDiscPosition);
-	ownGoal.addEventListener('click', setDiscPosition);
-	attackingGoal.addEventListener('click', setDiscPosition);
-	revBrick.addEventListener('click', setDiscPosition);
-	midfield.addEventListener('click', setDiscPosition);
-	centerDisc.addEventListener('click', setDiscPosition);
+	getElementArray(document, '.positioning.dropdown-item').forEach((el) => {
+		el.addEventListener('click', setDiscPosition);
+	});
 
 	subForm.addEventListener('submit', handleSub);
 	clearSubs.addEventListener('click', handleClearSubs);
