@@ -393,9 +393,15 @@ const handleAddPlayer = (e) => {
 					?.value || '?',
 			position: position.value,
 			gender:
-				document.querySelector(
-					`input[type="radio"][name="gender-match"]:checked`
-				)?.value || '?',
+				division.value === 'Mixed'
+					? document.querySelector(
+							`input[type="radio"][name="gender-match"]:checked`
+					  )?.value || '?'
+					: division.value === 'Men'
+					? 'M'
+					: division.value === 'Women'
+					? 'F'
+					: '?',
 		});
 
 		firstName.value = '';
