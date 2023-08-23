@@ -53,8 +53,9 @@ const handleSubscriptionArea = (e) => {
 		memLevel.innerHTML = currentMembership.name;
 		memEnd.innerHTML = currentMembership.active ? 'Renews' : 'Expires';
 		manager.innerHTML = e.detail.isMe ? 'Me' : e.detail.currentManager;
-		const newDate = new Date(Date.parse(currentMembership.createdAt));
-		newDate.setFullYear(newDate.getFullYear() + 1);
+		const newDate = new Date(Date.parse(currentMembership.expires));
+		newDate.setFullYear(new Date().getFullYear());
+		if (newDate < Date.now()) newDate.setFullYear(new Date().getFullYear() + 1);
 		expires.innerHTML = newDate.toLocaleDateString();
 		//right now, everything is showing.
 	}
