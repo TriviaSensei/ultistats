@@ -66,7 +66,7 @@ exports.signup = catchAsync(async (req, res, next) => {
 	if (res.locals.user)
 		return next(new AppError('You are already logged in.', 400));
 
-	const url = `https://${req.get('host')}/activate`;
+	const url = `${req.protocol}://${req.get('host')}/activate`;
 
 	const playerExists = await User.findOne({ email: req.body.email });
 	if (playerExists) {

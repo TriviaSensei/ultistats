@@ -56,7 +56,6 @@ module.exports = class Email {
 	async sendWelcome() {
 		try {
 			//1. render html for email, based on pug template
-			console.log(this.url);
 			const html = pug.renderFile(
 				`${__dirname}/../mvc/views/email/welcome.pug`,
 				{
