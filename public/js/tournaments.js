@@ -468,12 +468,14 @@ const handleSaveTournament = (e) => {
 								.getAttribute('data-date')
 								.localeCompare(o.getAttribute('data-date')) <= 0
 						) {
+							console.log(i);
 							tournamentSelect.insertBefore(op, o);
-							tournamentSelect.selectIndex = i;
+							tournamentSelect.selectedIndex = i;
 							return true;
 						}
 					})
 				) {
+					console.log(ops.length);
 					tournamentSelect.appendChild(op);
 					tournamentSelect.selectedIndex = ops.length;
 				}
@@ -512,6 +514,8 @@ const handleSaveTournament = (e) => {
 
 			rosterItem.classList.remove('d-none');
 			gamesItem.classList.remove('d-none');
+			const evt = new CustomEvent('load-tourney', { detail: res.data });
+			document.dispatchEvent(evt);
 
 			showMessage('info', 'Successfully saved tournament.');
 		} else {

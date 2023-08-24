@@ -181,8 +181,16 @@ exports.createOne = (Model) =>
 			if (!fmt) return next(new AppError('Format not found', 404));
 		}
 
-		let doc = await Model.create(req.body);
+		let doc;
 
+		if (loc === 'tournaments') {
+			doc = await Model.create(req.body);
+			await doc.populate({
+				path: 'format',
+			});
+		} else {
+			doc = await Model.create(req.body);
+		}
 		//if creating a team, the user creating it starts as the manager
 		if (loc === 'teams') {
 			res.locals.user.teams.push(doc._id);
