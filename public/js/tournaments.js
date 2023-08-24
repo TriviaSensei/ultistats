@@ -468,14 +468,12 @@ const handleSaveTournament = (e) => {
 								.getAttribute('data-date')
 								.localeCompare(o.getAttribute('data-date')) <= 0
 						) {
-							console.log(i);
 							tournamentSelect.insertBefore(op, o);
 							tournamentSelect.selectedIndex = i;
 							return true;
 						}
 					})
 				) {
-					console.log(ops.length);
 					tournamentSelect.appendChild(op);
 					tournamentSelect.selectedIndex = ops.length;
 				}
