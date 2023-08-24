@@ -167,6 +167,12 @@ const handleMoveOption = (e) => {
 	handleMoveOne(e.target);
 };
 
+const getDivision = () => {
+	return teamSelect.options[teamSelect.selectedIndex]
+		.getAttribute('data-division')
+		.toLowerCase();
+};
+
 const removeTourneys = () => {
 	getElementArray(tournamentSelect, 'option').forEach((o, i) => {
 		if (i !== 0) o.remove();
@@ -348,8 +354,9 @@ const getTournament = (e) => {
 		});
 
 		let count = 0;
+		const div = getDivision();
 		roster.forEach((p) => {
-			const op = createRosterOption(p, handleArrows);
+			const op = createRosterOption(p, div === 'mixed', handleArrows);
 			op.addEventListener('dblclick', handleMoveOption);
 			op.addEventListener('click', handleDoubleTap);
 			op.addEventListener('dbltap', handleMoveOption);
@@ -360,7 +367,7 @@ const getTournament = (e) => {
 			) {
 				if (!rosterSelect.querySelector(`.roster-option[data-id="${p.id}"]`))
 					rosterSelect.appendChild(op);
-				const op2 = createRosterOption(p, handleArrows);
+				const op2 = createRosterOption(p, div === 'mixed', handleArrows);
 				op2.addEventListener('dblclick', handleMoveOption);
 				op2.addEventListener('click', handleDoubleTap);
 				op2.addEventListener('dbltap', handleMoveOption);
@@ -453,7 +460,7 @@ const handleSaveTournament = (e) => {
 			populateForm(tournamentForm, res.data);
 			const offset = new Date().getTimezoneOffset();
 			const d = new Date(Date.parse(res.data.startDate) + offset * 60000);
-
+			const div = getDivision();
 			if (!tournamentSelect.value) {
 				const op = createElement('option');
 				op.setAttribute('value', res.data._id);
@@ -497,7 +504,7 @@ const handleSaveTournament = (e) => {
 				timeouts.selectedIndex = res.data.timeouts;
 
 				roster.forEach((p) => {
-					const op = createRosterOption(p, handleArrows);
+					const op = createRosterOption(p, div === 'mixed', handleArrows);
 					op.addEventListener('dblclick', handleMoveOption);
 					op.addEventListener('click', handleDoubleTap);
 					op.addEventListener('dbltap', handleMoveOption);
@@ -818,7 +825,11 @@ const saveRoster = (msg, after) => {
 					`.roster-option[data-id="${p.id}"]`
 				);
 				if (!op) {
-					const newOpt = createRosterOption(p, handleArrows);
+					const newOpt = createRosterOption(
+						p,
+						getDivision() === 'mixed',
+						handleArrows
+					);
 					newOpt.addEventListener('dblclick', handleMoveOption);
 					newOpt.addEventListener('click', handleDoubleTap);
 					newOpt.addEventListener('dbltap', handleMoveOption);
@@ -1118,7 +1129,11 @@ const handleAddPlayer = (e) => {
 		if (res.status !== 'fail') {
 			showMessage(res.status, res.message);
 			roster.push(res.newPlayer);
-			const op = createRosterOption(res.newPlayer, handleArrows);
+			const op = createRosterOption(
+				res.newPlayer,
+				getDivision() === 'mixed',
+				handleArrows
+			);
 			op.addEventListener('dblclick', handleMoveOption);
 			op.addEventListener('click', handleDoubleTap);
 			op.addEventListener('dbltap', handleMoveOption);
@@ -1447,7 +1462,11 @@ const handleNewPlayer = (e) => {
 			...e.detail.player,
 			name: `${e.detail.player.lastName}, ${e.detail.player.firstName}`,
 		});
-		const op = createRosterOption(e.detail.player, handleArrows);
+		const op = createRosterOption(
+			e.detail.player,
+			getDivision() === 'mixed',
+			handleArrows
+		);
 		op.addEventListener('dblclick', handleMoveOption);
 		op.addEventListener('click', handleDoubleTap);
 		op.addEventListener('dbltap', handleMoveOption);

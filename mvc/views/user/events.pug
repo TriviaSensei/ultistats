@@ -5,7 +5,7 @@
             select#tourney-team-select
                 option(value="") [Select a team]
                 each team in user.teams 
-                    option(value=`${team.id}`)= `${team.name}`
+                    option(value=`${team.id}` data-division=`${team.division}`)= `${team.name}`
         .input-group-f.input-group-1.px-2.overflow-hidden
             label.form-label(for="tournament-select") Select event: 
             select#tournament-select(disabled)

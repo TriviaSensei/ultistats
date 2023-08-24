@@ -1053,13 +1053,16 @@ document.addEventListener('DOMContentLoaded', () => {
 	showMessage(`info`, `Entering game ${state.team} vs. ${state.opponent}`);
 
 	sh = new StateHandler(state);
-
 	state.roster.forEach((p) => {
 		const pointsPlayed = state.points.reduce((prev, c) => {
 			if (c.lineup.includes(p.id) || c.injuries.includes(p.id)) return prev + 1;
 			return prev;
 		}, 0);
-		const op = createRosterOption({ ...p, pointsPlayed }, handleArrows);
+		const op = createRosterOption(
+			{ ...p, pointsPlayed },
+			state.division.toLowerCase() === 'mixed',
+			handleArrows
+		);
 		op.addEventListener('dblclick', handleMoveOne);
 		op.addEventListener('click', handleDoubleTap);
 		op.addEventListener('dbltap', handleMoveOne);

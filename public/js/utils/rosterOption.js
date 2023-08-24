@@ -1,7 +1,7 @@
 import { createElement } from './createElementFromSelector.js';
 import { getElementArray } from './getElementArray.js';
 import { randomUUID } from './randomUUID.js';
-export const createRosterOption = (p, changeFunc) => {
+export const createRosterOption = (p, showGender, changeFunc) => {
 	const name = `${p.lastName}, ${p.firstName}`;
 	const op = createElement('.roster-option');
 	op.setAttribute('data-id', p.id);
@@ -18,7 +18,7 @@ export const createRosterOption = (p, changeFunc) => {
 	cb.addEventListener('change', changeFunc);
 	const lbl = createElement('label');
 	lbl.setAttribute('for', cb.id);
-	lbl.innerHTML = `${name} (${p.gender ? p.gender + '/' : ''}${
+	lbl.innerHTML = `${name} (${p.gender && showGender ? p.gender + '/' : ''}${
 		p.line ? p.line + '/' : ''
 	}${p.position || '-'}${
 		p.pointsPlayed >= 0
