@@ -6,7 +6,11 @@ const Team = require('../models/teamModel');
 const Game = require('../models/gameModel');
 const Format = require('../models/formatModel');
 const { v4: uuidV4 } = require('uuid');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = require('stripe')(
+	process.env.NODE_ENV === 'dev'
+		? process.env.STRIPE_SECRET_TEST_KEY
+		: process.env.STRIPE_SECRET_KEY
+);
 const { freeMembership } = require('../../utils/settings');
 
 exports.verifyOwnership = catchAsync(async (req, res, next) => {

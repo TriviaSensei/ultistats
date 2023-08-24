@@ -4,7 +4,11 @@ const AppError = require('../../utils/appError');
 const Subscription = require('../models/subscriptionModel');
 const Team = require('../models/teamModel');
 const User = require('../models/userModel');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = require('stripe')(
+	process.env.NODE_ENV === 'dev'
+		? process.env.STRIPE_SECRET_TEST_KEY
+		: process.env.STRIPE_SECRET_KEY
+);
 
 const cancelMembership = (data) => {};
 

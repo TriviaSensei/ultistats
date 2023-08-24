@@ -6,7 +6,11 @@ const User = require('../models/userModel');
 const Tournament = require('../models/tournamentModel');
 const Subscription = require('../models/subscriptionModel');
 const Email = require('../../utils/email');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = require('stripe')(
+	process.env.NODE_ENV === 'dev'
+		? process.env.STRIPE_SECRET_TEST_KEY
+		: process.env.STRIPE_SECRET_KEY
+);
 const { v4: uuidV4 } = require('uuid');
 const { rosterLimit } = require('../../utils/settings');
 const Subscriptions = require('../models/subscriptionModel');

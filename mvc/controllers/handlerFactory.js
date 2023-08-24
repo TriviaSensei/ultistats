@@ -8,7 +8,11 @@ const Team = require('../models/teamModel');
 const Game = require('../models/gameModel');
 const Format = require('../models/formatModel');
 const Subscription = require('../models/subscriptionModel');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = require('stripe')(
+	process.env.NODE_ENV === 'dev'
+		? process.env.STRIPE_SECRET_TEST_KEY
+		: process.env.STRIPE_SECRET_KEY
+);
 
 //this will delete one of any document, depending on what gets passed to it.
 exports.deleteOne = (Model) =>

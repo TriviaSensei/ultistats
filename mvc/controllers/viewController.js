@@ -6,7 +6,11 @@ const Team = require('../models/teamModel');
 const Game = require('../models/gameModel');
 const User = require('../models/userModel');
 const Tournament = require('../models/tournamentModel');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = require('stripe')(
+	process.env.NODE_ENV === 'dev'
+		? process.env.STRIPE_SECRET_TEST_KEY
+		: process.env.STRIPE_SECRET_KEY
+);
 
 const { rosterLimit } = require('../../utils/settings');
 
