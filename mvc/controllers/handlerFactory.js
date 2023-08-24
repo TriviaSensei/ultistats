@@ -38,6 +38,10 @@ exports.deleteOne = (Model) =>
 				tourney.markModified('games');
 				await tourney.save();
 			}
+		} else if (loc === 'tournaments') {
+			const games = await Game.deleteMany({
+				tournament: req.params.id,
+			});
 		}
 
 		res.status(204).json({

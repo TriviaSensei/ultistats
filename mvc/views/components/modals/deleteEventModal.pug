@@ -1,0 +1,11 @@
+.modal.fade#confirm-delete-event-modal(tabindex="-1" aria-labelledby="delete-event-label" aria-hidden="true")
+    .modal-dialog.modal-dialog-centered
+        .modal-content#delete-event-modal-content
+            .modal-header
+                h5.modal-title#delete-event-label Delete event?
+            .modal-body
+                p Are you sure you wish to remove this event and all games under it? This cannot be undone.
+                input#delete-event-id(type="hidden" value='')
+            .modal-footer
+                button.btn.btn-primary#confirm-delete-event(type="button") Yes
+                button.btn.btn-secondary(type="button" data-bs-dismiss="modal") No

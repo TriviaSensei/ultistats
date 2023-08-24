@@ -17,16 +17,13 @@ const tooltipList = [...tooltipTriggerList].map(
 );
 
 //accordion stuff
-const accordion = document.querySelector('#tournament-accordion');
-const rulesItem = document.querySelector('#rules-item');
 const rulesButton = document.querySelector('#rules-button');
-const infoItem = document.querySelector('#info-item');
 const infoButton = document.querySelector('#info-button');
 const rosterItem = document.querySelector('#roster-item');
-const rosterButton = document.querySelector('#roster-button');
 const gamesItem = document.querySelector('#games-item');
-const gamesButton = document.querySelector('#games-button');
-
+const deleteButton = document.querySelector('#delete-event');
+const confirmDeleteButton = document.querySelector('#confirm-delete-event');
+const deleteEventId = document.querySelector('#delete-event-id');
 //tournament info
 const tournamentInfo = new bootstrap.Collapse(`#tournament-info`, {
 	toggle: false,
@@ -34,6 +31,10 @@ const tournamentInfo = new bootstrap.Collapse(`#tournament-info`, {
 const tournamentRules = new bootstrap.Collapse('#tournament-rules', {
 	toggle: false,
 });
+const confirmDeleteModal = new bootstrap.Modal(
+	document.querySelector('#confirm-delete-event-modal')
+);
+
 const tournamentForm = document.querySelector('#tournament-form');
 const tournamentName = document.querySelector('#tournament-name');
 const startDate = document.querySelector('#start-date');
@@ -389,13 +390,16 @@ const getTournament = (e) => {
 			addPlayerRow(p);
 		});
 		sortTournamentRosterTable();
-
 		tournamentInfo.show();
+		deleteButton.classList.remove('d-none');
+		deleteEventId.value = tourney._id;
 	} else {
 		clearForm();
 		clearTourneyRosterTable();
 		rosterItem.classList.add('d-none');
 		gamesItem.classList.add('d-none');
+		deleteButton.classList.add('d-none');
+		deleteEventId.value = '';
 		tournamentInfo.hide();
 		tournamentRules.hide();
 		tourneyRoster = [];
@@ -458,6 +462,8 @@ const handleSaveTournament = (e) => {
 	const handler = (res) => {
 		if (res.status === 'success') {
 			populateForm(tournamentForm, res.data);
+			tournaments.push(res.data);
+			deleteEventId.value = res.data._id;
 			const offset = new Date().getTimezoneOffset();
 			const d = new Date(Date.parse(res.data.startDate) + offset * 60000);
 			const div = getDivision();
@@ -483,6 +489,7 @@ const handleSaveTournament = (e) => {
 				) {
 					tournamentSelect.appendChild(op);
 					tournamentSelect.selectedIndex = ops.length;
+					deleteButton.classList.remove('d-none');
 				}
 				const d1 = new Date(Date.parse(res.data.startDate) + offset * 60000)
 					.toISOString()
@@ -1474,6 +1481,39 @@ const handleNewPlayer = (e) => {
 	}
 };
 
+const handleDeleteEvent = (e) => {
+	if (e.target !== confirmDeleteButton) return;
+
+	const str = `/api/v1/tournaments/${deleteEventId.value}`;
+	const handler = (res) => {
+		if (res.status === 'success')
+			showMessage('info', 'Successfully deleted event');
+		else return showMessage('error', res.message);
+
+		deleteEventId.value = '';
+		tournamentSelect.options[tournamentSelect.selectedIndex].remove();
+		tournamentSelect.selectedIndex = 0;
+
+		const statSelect = document.querySelector('#stats-team-select');
+		if (statSelect.value === teamSelect.value) statSelect.selectedIndex = 0;
+
+		clearForm();
+		clearTourneyRosterTable();
+		rosterItem.classList.add('d-none');
+		gamesItem.classList.add('d-none');
+		deleteButton.classList.add('d-none');
+		deleteEventId.value = '';
+		tournamentInfo.hide();
+		tournamentRules.hide();
+		tourneyRoster = [];
+		tourneyLines = [];
+		deleteButton.classList.add('d-none');
+
+		confirmDeleteModal.hide();
+	};
+	handleRequest(str, 'DELETE', null, handler);
+};
+
 document.addEventListener('DOMContentLoaded', () => {
 	document.addEventListener(
 		'touchstart',
@@ -1520,6 +1560,8 @@ document.addEventListener('DOMContentLoaded', () => {
 	editLinesForm.addEventListener('submit', handleSaveLine);
 	lineSelect.addEventListener('change', loadLine);
 	confirmDeleteLine.addEventListener('click', handleDeleteLine);
+
+	confirmDeleteButton.addEventListener('click', handleDeleteEvent);
 
 	document.addEventListener('new-player', handleNewPlayer);
 });
