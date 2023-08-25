@@ -37,7 +37,7 @@ module.exports = class Email {
 			const msg = {
 				from: this.from,
 				to:
-					this.sendRealMail && process.env.NODE_ENV === 'prod'
+					this.sendRealMail && process.env.NODE_ENV === 'production'
 						? this.to
 						: this.testEmail,
 				subject,
@@ -101,7 +101,7 @@ module.exports = class Email {
 			const msg = {
 				from: process.env.EMAIL_FROM,
 				to:
-					this.sendRealMail && process.env.NODE_ENV === 'prod'
+					this.sendRealMail && process.env.NODE_ENV === 'production'
 						? this.to
 						: this.testEmail,
 				reply_to: process.env.EMAIL_FROM,
@@ -135,7 +135,7 @@ module.exports = class Email {
 			const msg = {
 				from: process.env.EMAIL_FROM,
 				to:
-					this.sendRealMail && process.env.NODE_ENV === 'prod'
+					this.sendRealMail && process.env.NODE_ENV === 'production'
 						? this.to
 						: this.testEmail,
 				reply_to: process.env.EMAIL_FROM,

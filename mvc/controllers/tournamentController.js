@@ -33,7 +33,6 @@ exports.verifyOwnership = catchAsync(async (req, res, next) => {
 		},
 		{
 			path: 'subscription',
-			select: 'subscriptionId expires',
 		},
 	]);
 
