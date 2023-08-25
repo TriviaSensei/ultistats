@@ -32,9 +32,7 @@ app.set('views', path.join(__dirname, 'mvc/views'));
 app.use(express.static(path.join(__dirname, 'public')));
 
 //development logging
-// if (process.env.NODE_ENV === 'development') {
 app.use(morgan('dev'));
-// }
 
 app.post(
 	'/webhook-checkout',

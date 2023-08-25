@@ -85,9 +85,9 @@ module.exports = (err, req, res, next) => {
 	err.statusCode = err.statusCode || 500;
 	err.status = err.status || 'Error';
 
-	if (process.env.NODE_ENV === 'development') {
+	if (process.env.NODE_ENV === 'dev') {
 		sendErrorDev(err, req, res);
-	} else if (process.env.NODE_ENV === 'production') {
+	} else if (process.env.NODE_ENV === 'prod') {
 		// eslint-disable-next-line node/no-unsupported-features/es-syntax
 		let error = { ...err, message: err.message };
 		if (error.name === 'CastError') error = handleCastErrorDB(error);

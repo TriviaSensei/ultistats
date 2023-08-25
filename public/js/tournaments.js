@@ -530,6 +530,7 @@ const handleSaveTournament = (e) => {
 			document.dispatchEvent(evt);
 
 			showMessage('info', 'Successfully saved tournament.');
+			deleteButton.classList.remove('d-none');
 		} else {
 			showMessage('error', res.message);
 		}
