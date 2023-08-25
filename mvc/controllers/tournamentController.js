@@ -51,9 +51,13 @@ exports.verifyOwnership = catchAsync(async (req, res, next) => {
 	res.locals.membership = freeMembership;
 	const subObj = res.locals.team.subscription;
 	if (subObj) {
-		const stripeSub = await stripe.subscriptions.retrieve(
-			subObj.subscriptionId
-		);
+		let stripeSub;
+		if (subObj.test) {
+			const stripe2 = require('stripe')(process.env.STRIPE_SECRET_TEST_KEY);
+			stripeSub = await stripe2.subscriptions.retrieve(subObj.subscriptionId);
+		} else {
+			stripeSub = await stripe.subscriptions.retrieve(subObj.subscriptionId);
+		}
 		if (stripeSub) {
 			const product = await stripe.products.retrieve(
 				stripeSub.items.data[0].price.product
