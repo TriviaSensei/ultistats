@@ -9,3 +9,12 @@ exports.freeMembership = {
 	features:
 		'Offense and defensive groupings for events, Points played, Touches, Goals, Assists, Turns, Blocks',
 };
+exports.plusMembership = {
+	description: 'Plus membership with all features',
+	efficiency: true,
+	heatmaps: true,
+	maxLines: 6,
+	plusMinus: true,
+	yards: true,
+	features: 'Full membership',
+};
