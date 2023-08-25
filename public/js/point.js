@@ -1917,8 +1917,8 @@ const handleClearSubs = (e) => {
 };
 
 const updateSettings = (settings) => {
-	console.log(settings);
-	buttonRowContainer.className = `display-${settings.nameDisplay}`;
+	if (settings.nameDisplay)
+		buttonRowContainer.className = `display-${settings.nameDisplay}`;
 };
 
 const handleSettings = (e) => {
