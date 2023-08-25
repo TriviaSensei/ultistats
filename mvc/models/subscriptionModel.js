@@ -24,6 +24,10 @@ const subscriptionSchema = new mongoose.Schema({
 		type: Boolean,
 		default: true,
 	},
+	testMode: {
+		type: Boolean,
+		default: false,
+	},
 });
 
 const Subscriptions = mongoose.model(
