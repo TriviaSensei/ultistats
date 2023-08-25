@@ -52,6 +52,7 @@ exports.verifyOwnership = catchAsync(async (req, res, next) => {
 	const subObj = res.locals.team.subscription;
 	if (subObj) {
 		let stripeSub;
+		console.log(subObj);
 		if (subObj.test) {
 			const stripe2 = require('stripe')(process.env.STRIPE_SECRET_TEST_KEY);
 			stripeSub = await stripe2.subscriptions.retrieve(subObj.subscriptionId);
