@@ -287,6 +287,9 @@ exports.getGame = catchAsync(async (req, res, next) => {
 		brick: ((fmt.endzone + fmt.brick) / (fmt.endzone * 2 + fmt.length)).toFixed(
 			4
 		),
+		tickMarks: fmt.tickMarks.map((t) => {
+			return ((fmt.endzone + t) / (fmt.endzone * 2 + fmt.length)).toFixed(4);
+		}),
 		ratio: ((100 * fmt.width) / (fmt.endzone * 2 + fmt.length)).toFixed(2),
 		team: teamName,
 		division,

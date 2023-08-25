@@ -21,6 +21,10 @@ const formatSchema = new mongoose.Schema({
 		type: Number,
 		required: [true, 'Brick marker is required.'],
 	},
+	tickMarks: {
+		type: [Number],
+		default: [],
+	},
 	players: {
 		type: Number,
 		required: [true, 'Players per team is required.'],

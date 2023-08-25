@@ -120,10 +120,11 @@ block scripts
 
         const ez = parseFloat(#{endZone});
         const brick = parseFloat(#{brick});
+        const revBrick = ez/2;
         //draw the left end zone line
         const x1 = toNearestHalf(ez * parseFloat(rect.width));
         const x2 = toNearestHalf((1-ez) * parseFloat(rect.width));
-        const xSize = 3;
+        let xSize = 3;
         const ctx = can.getContext('2d');
         ctx.strokeStyle = "white";
         ctx.lineWidth = 1;
@@ -133,6 +134,8 @@ block scripts
         ctx.moveTo(x2,0);
         ctx.lineTo(x2,rect.height);
         ctx.stroke();
+
+        //midfield line
         ctx.beginPath();
         ctx.setLineDash([5,5]);
         const mid = toNearestHalf((x1+x2)/2); 
@@ -140,6 +143,7 @@ block scripts
         ctx.lineTo(mid,rect.height);
         ctx.stroke();
 
+        //brick marks
         const b1 = toNearestHalf(brick * parseFloat(rect.width));
         const b2 = toNearestHalf((1-brick) * parseFloat(rect.width));
         ctx.lineWidth = 1;
@@ -158,6 +162,38 @@ block scripts
         ctx.lineTo(b2-xSize,toNearestHalf(rect.height/2)+xSize);
         ctx.stroke();
         
+        //reverse brick marks
+        const rb1 = toNearestHalf(ez/2 * parseFloat(rect.width));
+        const rb2 = toNearestHalf((1-ez/2) * parseFloat(rect.width));
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.setLineDash([]);
+        ctx.moveTo(rb1-xSize,toNearestHalf(rect.height/2)-xSize);
+        ctx.lineTo(rb1+xSize,toNearestHalf(rect.height/2)+xSize);
+        ctx.moveTo(rb1+xSize,toNearestHalf(rect.height/2)-xSize);
+        ctx.lineTo(rb1-xSize,toNearestHalf(rect.height/2)+xSize);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.setLineDash([]);
+        ctx.moveTo(rb2-xSize,toNearestHalf(rect.height/2)-xSize);
+        ctx.lineTo(rb2+xSize,toNearestHalf(rect.height/2)+xSize);
+        ctx.moveTo(rb2+xSize,toNearestHalf(rect.height/2)-xSize);
+        ctx.lineTo(rb2-xSize,toNearestHalf(rect.height/2)+xSize);
+        ctx.stroke();
+
+        //tick marks
+        const ticks = [#{tickMarks}];
+        const tickSize = 5;
+        ctx.lineWidth = 1;
+        ticks.forEach(t=> {
+            const x = toNearestHalf(t*parseFloat(rect.width));
+            ctx.beginPath();
+            ctx.setLineDash([]);
+            ctx.moveTo(x, toNearestHalf(rect.height/2)-tickSize);
+            ctx.lineTo(x,toNearestHalf(rect.height/2)+tickSize);
+            ctx.stroke();
+        })
+
     script(src="/js/point.js" type="module" defer)
     script(src="/js/editGame.js" type="module" defer)
     
