@@ -176,6 +176,28 @@ exports.getUser = catchAsync(async (req, res, next) => {
 	});
 });
 
+exports.updateSettings = catchAsync(async (req, res, next) => {
+	const allowedSettings = ['nameDisplay'];
+
+	const modifiedBody = {};
+	for (const key of allowedSettings) {
+		if (req.body[key]) modifiedBody[key] = req.body[key];
+	}
+
+	res.locals.user.settings = {
+		...res.locals.user.settings,
+		...modifiedBody,
+	};
+
+	res.locals.user.markModified('settings');
+	await res.locals.user.save({ validateBeforeSave: false });
+	res.status(200).json({
+		status: 'success',
+		message: 'Settings updated',
+		data: res.locals.user.settings,
+	});
+});
+
 //standard routes
 exports.getAllUsers = catchAsync(async (req, res, next) => {
 	let users = await User.find().sort({

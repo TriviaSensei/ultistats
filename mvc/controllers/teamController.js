@@ -43,6 +43,10 @@ const validateNewPlayer = (player) => {
 		return 'Invalid gender match specified.';
 	}
 
+	if (player.displayName && player.displayName.length > 15) {
+		return 'Display name has a maximum of 15 characters.';
+	}
+
 	return null;
 };
 

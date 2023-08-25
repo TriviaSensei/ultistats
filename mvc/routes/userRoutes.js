@@ -14,6 +14,7 @@ router.get('/activateAccount/:token', authController.activateAccount);
 
 router.use(authController.protect);
 
+router.patch('/updateSettings', userController.updateSettings);
 router.patch('/changePassword', authController.updatePassword);
 router.patch('/updateMe', userController.updateMe);
 router.patch('/handleRequest/:id', userController.handleManagerRequest);

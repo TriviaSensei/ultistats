@@ -113,6 +113,7 @@ exports.changeTeam = catchAsync(async (req, res, next) => {
 	});
 });
 
+//add players from roster to tourney roster
 exports.addPlayers = catchAsync(async (req, res, next) => {
 	const tourney = await Tournament.findById(req.params.id);
 	if (!tourney) return next(new AppError('Tournament not found', 404));
@@ -159,6 +160,7 @@ exports.addPlayers = catchAsync(async (req, res, next) => {
 	});
 });
 
+//remove player from tourney roster
 exports.removePlayers = catchAsync(async (req, res, next) => {
 	//req.body.players should be an array of IDs to remove
 	if (!Array.isArray(req.body.players))

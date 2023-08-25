@@ -6,6 +6,7 @@ import { showDiv } from './utils/showDiv.js';
 import { StateHandler } from './utils/stateHandler.js';
 import { propCase } from './utils/propCase.js';
 import { showEvent } from './utils/showEvent.js';
+
 let sh;
 
 const blankPass = {
@@ -52,17 +53,11 @@ const drop = document.querySelector('#drop');
 const throwaway = document.querySelector('#throwaway');
 const goal = document.querySelector('#goal');
 
-//positioning buttons
-const brick = document.querySelector('#brick');
-const ownGoal = document.querySelector('#own-goal');
-const attackingGoal = document.querySelector('#attack-goal');
-const revBrick = document.querySelector('#reverse-brick');
-const attackBrick = document.querySelector('#attack-brick');
-const midfield = document.querySelector('#midfield');
-const centerDisc = document.querySelector('#center');
-
 //point setup
 const pointSetupButton = document.querySelector('#toggle-point-setup');
+
+//display settings
+const settingsForm = document.querySelector('#display-settings-form');
 
 let moving = false;
 
@@ -1414,12 +1409,20 @@ const addPlayerButton = (p, color) => {
 			p ? p.id : 'Unknown'
 		}"]`
 	);
-	const nm = createElement('.jersey-name');
-	nm.innerHTML = p ? p.initials : '??';
+	const contents = createElement('.button-contents');
+	const inits = createElement('.jersey-initials');
+	inits.innerHTML = p ? p.initials : '??';
+	const name = createElement('p.jersey-name');
+	name.innerHTML = p.displayName || p.firstName;
+	const fullName = createElement('p.jersey-full-name');
+	fullName.innerHTML = p.name;
 	const num = createElement('.jersey-number');
-	num.innerHTML = p ? p.number : 'XX';
-	b.appendChild(nm);
-	b.appendChild(num);
+	num.innerHTML = p ? p.number : '--';
+	contents.appendChild(inits);
+	contents.appendChild(name);
+	contents.appendChild(fullName);
+	contents.appendChild(num);
+	b.appendChild(contents);
 	b.addEventListener('click', setPlayer);
 
 	//get all the existing rows
@@ -1913,6 +1916,27 @@ const handleClearSubs = (e) => {
 	handleSubFilter(null);
 };
 
+const updateSettings = (settings) => {
+	console.log(settings);
+	buttonRowContainer.className = `display-${settings.nameDisplay}`;
+};
+
+const handleSettings = (e) => {
+	const str = `/api/v1/users/updateSettings`;
+	const handler = (res) => {
+		if (res.status !== 'success') {
+			showMessage('error', 'Something went wrong');
+			updateSettings(body);
+		} else updateSettings(res.data);
+	};
+	const body = {
+		nameDisplay:
+			document.querySelector('input[type="radio"][name="nameDisplay"]:checked')
+				?.value || 'initials',
+	};
+	handleRequest(str, 'PATCH', body, handler);
+};
+
 document.addEventListener('DOMContentLoaded', () => {
 	sh = new StateHandler(null);
 	document.addEventListener('load-point', handleLoadPoint);
@@ -1993,6 +2017,8 @@ document.addEventListener('DOMContentLoaded', () => {
 	});
 	window.addEventListener('beforeunload', (e) => {
 		e.preventDefault();
-		// updatePasses();
+		updatePasses();
 	});
+
+	settingsForm.addEventListener('change', handleSettings);
 });

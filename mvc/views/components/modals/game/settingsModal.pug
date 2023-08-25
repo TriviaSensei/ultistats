@@ -1,0 +1,28 @@
+.modal.fade#settings-modal(tabindex="-1" aria-labelledby="settings-label" aria-hidden="true")
+    .modal-dialog.modal-dialog-centered
+        .modal-content#settings-modal-content
+            .modal-header
+                h5.modal-title#settings-label Display settings
+            .modal-body
+                form#display-settings-form
+                    .settings-row.d-flex.w-100.mb-3
+                        .setting-label.form-label.my-auto Name display
+                        .setting-container.hidden-radios
+                            .radio-container.d-flex 
+                                - if (settings.nameDisplay === 'initials')
+                                    input#display-initials(type="radio" value="initials" name="nameDisplay" data-field="nameDisplay" checked)
+                                - else 
+                                    input#display-initials(type="radio" value="initials" name="nameDisplay" data-field="nameDisplay")
+                                label(for="display-initials") Initials
+                                - if (settings.nameDisplay === 'name')
+                                    input#display-name(type="radio" value="name" name="nameDisplay" data-field="nameDisplay" checked)
+                                - else
+                                    input#display-name(type="radio" value="name" name="nameDisplay" data-field="nameDisplay")
+                                label(for="display-name") Display Name
+                                - if (settings.nameDisplay === 'fullName')
+                                    input#display-full-name(type="radio" value="full-name" name="nameDisplay" data-field="nameDisplay" checked)
+                                - else 
+                                    input#display-full-name(type="radio" value="full-name" name="nameDisplay" data-field="nameDisplay" )
+                                label(for="display-full-name") Full Name
+            .modal-footer 
+                button.btn.btn-secondary.mx-1(type="button" data-bs-dismiss="modal" aria-label="Close") Close

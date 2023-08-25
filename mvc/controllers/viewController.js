@@ -257,6 +257,13 @@ exports.getGame = catchAsync(async (req, res, next) => {
 	const tm = res.locals.team;
 	const fmt = res.locals.format;
 
+	if (!res.locals.user.settings) {
+		res.locals.user.settings = {
+			nameDisplay: 'initials',
+		};
+		res.locals.user.markModified('settings');
+		await res.locals.user.save({ validateBeforeSave: false });
+	}
 	const game = await Game.findById(req.params.id).populate([
 		{
 			path: 'tournament',
@@ -312,6 +319,7 @@ exports.getGame = catchAsync(async (req, res, next) => {
 			gameData.points.length > 0
 				? gameData.points[gameData.points.length - 1]
 				: undefined,
+		settings: res.locals.user.settings,
 	});
 });
 

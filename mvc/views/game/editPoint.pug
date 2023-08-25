@@ -1,4 +1,4 @@
-#button-row-container.d-flex.flex-column.w-100 
+#button-row-container(class=`display-${settings.nameDisplay}`)
 hr.separator
 .action-container.d-flex.align-items-center.justify-content-center.w-100
     button#stall.btn.btn-sm.btn-light.mx-1(type="button") Stall 
@@ -37,6 +37,8 @@ hr.separator
             li
                 a#midfield.positioning.dropdown-item(role="button" data-x=`${gameData.format.endzone + gameData.format.length/2}` data-y=`${gameData.format.width/2}`) Midfield
 hr.separator
+.action-container.d-flex.align-items-center.justify-content-center.w-100
+    button#settings.btn.btn-sm.btn-primary.mx-1(type="button" data-bs-toggle="modal" data-bs-target="#settings-modal") Settings
 //- .d-flex.w-100
     //- button#end-game-2.btn.btn-sm.btn-dark.m-auto(type="button") End Game
     //- button#reset-point.btn.btn-sm.btn-dark.m-auto(type="button") Reset Point

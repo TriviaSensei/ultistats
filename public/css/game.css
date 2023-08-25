@@ -156,12 +156,18 @@ input[name='jersey']:checked + label {
 }
 
 .settings-row > .setting-container {
-	flex: 1;
+	flex: 2;
 	display: flex;
 	margin-left: 1rem;
 }
 
-.button-row {
+#button-row-container {
+	display: flex;
+	width: 100%;
+	flex-direction: column;
+}
+
+#button-row-container.display-initials > .button-row {
 	width: 100%;
 	display: flex;
 	justify-content: center;
@@ -169,15 +175,57 @@ input[name='jersey']:checked + label {
 	margin-bottom: 0.5rem;
 }
 
+#button-row-container.display-name,
+#button-row-container.display-full-name {
+	flex-direction: row;
+}
+
+#button-row-container.display-name > .button-row,
+#button-row-container.display-full-name > .button-row {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+}
+
 .button-row > div {
 	min-width: 24%;
 }
 
 .player-button {
+	font-weight: bold;
+}
+
+#button-row-container.display-initials .player-button {
 	min-width: 3rem;
 	border: 3px solid var(--light-gray);
 	margin: auto 1rem;
-	font-weight: bold;
+}
+
+#button-row-container.display-name .player-button,
+#button-row-container.display-full-name .player-button {
+	margin: 3px;
+}
+
+#button-row-container.display-name .player-button > .button-contents,
+#button-row-container.display-full-name .player-button > .button-contents {
+	width: 100%;
+	display: flex;
+	flex-direction: row-reverse;
+	justify-content: flex-end;
+}
+
+#button-row-container.display-name .jersey-number,
+#button-row-container.display-full-name .jersey-number {
+	margin-right: 5px;
+	width: 1.5rem;
+	text-align: right;
+}
+
+#button-row-container:not(.display-name) .jersey-name,
+#button-row-container:not(.display-initials) .jersey-initials,
+#button-row-container:not(.display-full-name) .jersey-full-name {
+	display: none;
 }
 
 .action-container button {
@@ -192,8 +240,18 @@ button[selected]:hover {
 .jersey-number {
 	font-size: 1.2rem;
 }
+
 .jersey-name {
+	font-size: 1rem;
+}
+.jersey-initials,
+.jersey-full-name {
 	font-size: 0.8rem;
+}
+
+.jersey-full-name,
+.jersey-name {
+	margin: auto 0;
 }
 
 hr.separator {
