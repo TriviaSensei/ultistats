@@ -148,9 +148,9 @@ const createSubscriptionCheckout = async (session) => {
 
 exports.webhookCheckout = catchAsync(async (req, res, next) => {
 	const signature = req.headers['stripe-signature'];
-	console.log('----Headers----');
-	console.log(req.headers);
-	console.log('----End Headers----');
+	console.log('----signature----');
+	console.log(signature);
+	console.log('----End signature----');
 	let event;
 	try {
 		event = stripe.webhooks.constructEvent(
