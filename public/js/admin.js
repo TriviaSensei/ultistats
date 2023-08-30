@@ -72,7 +72,6 @@ const createUserCard = (user) => {
 				c1.innerHTML = t.name;
 				c2.innerHTML = '<div></div>';
 
-				console.log(t);
 				if (t.subscription && Date.parse(t.subscription.expires) > Date.now()) {
 					const newDate = new Date(Date.parse(t.subscription.expires));
 					newDate.setFullYear(new Date().getFullYear());
