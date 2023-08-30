@@ -1,0 +1,74 @@
+input[type='checkbox'] {
+	width: 1.5rem;
+	height: 1.5rem;
+}
+
+.user-card {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	font-size: 1rem;
+	margin-bottom: 1rem;
+	border: 1px solid var(--gray);
+	padding: 10px;
+}
+
+.user-card:hover {
+	background-color: var(--light-gray);
+}
+
+.user-card > div:not(:first-child) {
+	margin-left: 2rem;
+	text-align: left;
+}
+
+.user-card .user-name {
+	font-size: 1.2rem;
+	font-weight: bold;
+}
+
+.user-card.active .inactive {
+	display: none;
+}
+
+.inactive:before {
+	content: 'Not activated';
+	color: red;
+	font-weight: bold;
+}
+
+.team-table {
+	width: 100%;
+}
+
+.team-table tr:not(:last-child) {
+	border-bottom: 1px solid var(--black);
+}
+
+.team-table tr > td:nth-child(1) {
+	width: 50%;
+}
+
+.team-table tr > td:nth-child(2) {
+	width: 25%;
+}
+.team-table tr > td:nth-child(3) {
+	width: 25%;
+}
+
+.team-table tr > td:nth-child(2) > div {
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	font-weight: bold;
+	display: flex;
+	border: 1px solid black;
+}
+
+td.subscription > div {
+	background-color: var(--color-1);
+}
+
+td:not(.subscription) > div {
+	background-color: var(--gray);
+}

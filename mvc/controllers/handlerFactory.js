@@ -136,6 +136,7 @@ exports.createOne = (Model) =>
 			// req.body.membershipLevel = 'Free';
 			req.body.managers = [res.locals.user._id];
 			req.body.requestedManagers = [];
+			req.body.subscription = null;
 			if (!req.body.roster) req.body.roster = [];
 			else {
 				req.body.roster.forEach((p) => {
@@ -242,6 +243,7 @@ exports.getOne = (Model, popOptions) =>
 				},
 				{
 					path: 'subscription',
+					match: { active: true },
 					populate: {
 						path: 'user',
 						select: '_id firstName lastName',

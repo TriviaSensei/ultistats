@@ -84,3 +84,8 @@ li {
 .to-top > div:hover {
 	opacity: 1;
 }
+
+input[type='checkbox'] {
+	width: 1.5rem;
+	height: 1.5rem;
+}

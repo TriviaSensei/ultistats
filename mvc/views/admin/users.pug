@@ -1,0 +1,20 @@
+h3 Search Users
+.d-flex.w-100.mb-3
+    .f-1.d-flex.flex-column.mx-1
+        label.form-label(for="name") Name:
+        input#user-name(type="text" placeholder="Name")
+    .f-1.d-flex.flex-column.mx-1
+        label.form-label(for="name") E-mail:
+        input#user-email(type="text" placeholder="E-mail")
+.d-flex.w-100.mb-3
+    .me-5.d-flex 
+        label.form-label.me-1(for="has-teams") Must have created team: 
+        input#has-teams(type="checkbox")
+    .me-5.d-flex 
+        label.form-label.me-1(for="has-sub") Must have subscription: 
+        input#has-sub(type="checkbox")
+.d-flex.w-100.mb-3
+    .m-auto
+        button#search-users.mx-1.btn.btn-sm.btn-primary(type="button") Search 
+        button#browse-all-users.mx-1.btn.btn-sm.btn-secondary(type="button") Browse All
+#search-results.d-flex.flex-column.f-1.overflow-auto

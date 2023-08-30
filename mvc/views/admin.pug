@@ -1,0 +1,18 @@
+extends _base
+
+block styles
+    link(rel='stylesheet' href='/css/styles.css')
+    link(rel='stylesheet' href='/css/user.css')
+    link(rel='stylesheet' href='/css/admin.css')
+
+block content 
+    .d-flex.flex-column.w-100.h-100.align-items-center.overflow-hidden
+        section.navbar-container
+            .container-fluid
+                .container-fill
+                    include components/navbar
+        section.profile-body
+            include admin/users
+                
+block scripts 
+    script(src="/js/admin.js" type="module")

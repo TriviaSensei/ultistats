@@ -823,10 +823,14 @@ const handleLeaveTeam = () => {
 
 	const str = `/api/v1/teams/leaveTeam/${teamSelect.value}`;
 	const handler = (res) => {
-		showMessage('info', res.message);
+		showMessage('info', res.message, 2000);
 		if (res.status === 'success') {
 			teamSelect.querySelector(`option[value="${teamSelect.value}"]`).remove();
 			teamSelect.selectedIndex = 0;
+			tourneyTeamSelect
+				.querySelector(`option[value="${teamSelect.value}"]`)
+				.remove();
+			tourneyTeamSelect.selectedIndex = 0;
 			getTeam({ target: teamSelect });
 		}
 	};

@@ -10,9 +10,13 @@ const router = express.Router();
 router.use(authController.isLoggedIn);
 router.use(viewController.handleAlert);
 
-router.get('/', viewController.getHome);
+router.get(
+	'/admin',
+	authController.restrictTo('admin'),
+	viewController.getAdmin
+);
 
-router.get('/test', viewController.getTest);
+router.get('/', viewController.getHome);
 
 router.get('/signup', viewController.getSignUpForm);
 router.get('/login', viewController.getLoginForm);
@@ -25,7 +29,6 @@ router.use(authController.protect);
 router.get('/me', viewController.getAccount);
 router.get('/mystuff/:id?', viewController.getManagerPage);
 router.get('/contact', viewController.getContact);
-
 router.get(
 	'/mystuff/success/:id',
 	// subscriptionController.createSubscriptionCheckout,

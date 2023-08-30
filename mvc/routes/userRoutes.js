@@ -18,7 +18,11 @@ router.patch('/updateSettings', userController.updateSettings);
 router.patch('/changePassword', authController.updatePassword);
 router.patch('/updateMe', userController.updateMe);
 router.patch('/handleRequest/:id', userController.handleManagerRequest);
-router.patch('/leaveTeam/:id', userController.leaveTeam);
+router.post(
+	'/search',
+	authController.restrictTo('admin'),
+	userController.searchUsers
+);
 router.get('/:id', userController.getMe);
 
 module.exports = router;

@@ -14,6 +14,12 @@ const stripe = require('stripe')(
 
 const { rosterLimit } = require('../../utils/settings');
 
+exports.getAdmin = catchAsync(async (req, res, next) => {
+	res.status(200).render('admin', {
+		title: 'Admin',
+	});
+});
+
 exports.handleAlert = (req, res, next) => {
 	if (req.url.search('/success/') > 0) {
 		res.locals.alert = {
@@ -221,7 +227,7 @@ exports.handleManagerRequest = catchAsync(async (req, res, next) => {
 
 			return res.status(200).render('handleManagerRequest', {
 				title: 'Manager request',
-				msg: `You are now a manager of ${t.name} (${t.season}).`,
+				msg: `You are now a manager of ${t.name}.`,
 			});
 		} else if (req.url.startsWith('/declineManager')) {
 			t.requestedManagers = t.requestedManagers.filter((m) => {
@@ -240,7 +246,7 @@ exports.handleManagerRequest = catchAsync(async (req, res, next) => {
 
 			return res.status(200).render('handleManagerRequest', {
 				title: 'Manager request',
-				msg: `Request from ${t.name} (${t.season}) deleted.`,
+				msg: `Request from ${t.name} deleted.`,
 			});
 		}
 
@@ -371,9 +377,3 @@ exports.getActivation = catchAsync(async (req, res, next) => {
 		},
 	});
 });
-
-exports.getTest = (req, res, next) => {
-	res.status(200).render('test', {
-		title: 'Test',
-	});
-};

@@ -10,10 +10,6 @@ const stripe = require('stripe')(
 		: process.env.STRIPE_SECRET_KEY
 );
 
-const cancelMembership = (data) => {};
-
-const resumeMembership = (data) => {};
-
 /**
  * TODO:
  * This only creates a checkout session, as if this is a new sub.

@@ -33,6 +33,7 @@ exports.verifyOwnership = catchAsync(async (req, res, next) => {
 		},
 		{
 			path: 'subscription',
+			match: { active: true },
 		},
 	]);
 

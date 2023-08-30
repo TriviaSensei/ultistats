@@ -19,6 +19,76 @@ exports.sortByName = (req, res, next) => {
 	next();
 };
 
+exports.searchUsers = catchAsync(async (req, res, next) => {
+	if (req.body.name === undefined) {
+		const users = await User.find().populate({
+			path: 'teams',
+			populate: {
+				path: 'subscription',
+				match: { active: true },
+			},
+		});
+		users.sort((a, b) => {
+			if (a.lastName !== b.lastName)
+				return a.lastName.localeCompare(b.lastName);
+			else return a.firstName.localeCompare(b.firstName);
+		});
+		return res.status(200).json({
+			status: 'success',
+			data: users,
+		});
+	} else {
+		let arr = [];
+		if (req.body.name) {
+			const names = req.body.name.split(',');
+			if (names.length === 1) {
+				arr.push({
+					$or: [
+						{ firstName: { $regex: req.body.name.trim(), $options: 'i' } },
+						{ lastName: { $regex: req.body.name.trim(), $options: 'i' } },
+					],
+				});
+			} else {
+				arr.push({ firstName: { $regex: names[1].trim(), $options: 'i' } });
+				arr.push({ lastName: { $regex: names[0].trim(), $options: 'i' } });
+			}
+		}
+		if (req.body.email) {
+			arr.push({ email: { $regex: req.body.email, $options: 'i' } });
+		}
+
+		let users = await User.find({ $and: arr }).populate({
+			path: 'teams',
+			populate: {
+				path: 'subscription',
+				match: { active: true },
+			},
+		});
+
+		if (req.body.hasTeam) {
+			users = users.filter((u) => {
+				return u.teams.length > 0;
+			});
+		}
+		if (req.body.hasSub) {
+			users = users.filter((u) => {
+				return u.teams.some((t) => {
+					if (!t.subscription) return false;
+					if (t.subscription.expires > Date.now()) return true;
+				});
+			});
+		}
+
+		users.sort((a, b) => {
+			if (a.lastName !== b.lastName)
+				return a.lastName.localeCompare(b.lastName);
+			else return a.firstName.localeCompare(b.firstName);
+		});
+
+		res.status(200).json({ status: 'success', data: users });
+	}
+});
+
 exports.handleManagerRequest = catchAsync(async (req, res, next) => {
 	const team = await Team.findById(req.params.id);
 	if (!team) return next(new AppError('Team ID not found.', 404));
@@ -70,40 +140,8 @@ exports.handleManagerRequest = catchAsync(async (req, res, next) => {
 	res.status(200).json({
 		status: 'success',
 		message: req.body.accept
-			? `You are now a manager of ${team.name} (${team.season}).`
+			? `You are now a manager of ${team.name}.`
 			: `Request deleted.`,
-	});
-});
-
-exports.leaveTeam = catchAsync(async (req, res, next) => {
-	const team = await Team.findOne({
-		_id: req.params.id,
-		managers: res.locals.user._id,
-	});
-	if (!team) return next(new AppError('Team not found', 404));
-
-	res.locals.user.teams = res.locals.user.teams.filter((t) => {
-		return t.toString() !== req.params.id;
-	});
-
-	team.managers = team.managers.filter((m) => {
-		return m.toString() !== res.locals.user._id.toString();
-	});
-
-	await res.locals.user.save({ validateBeforeSave: false });
-	await team.save();
-
-	if (team.managers.length === 0) {
-		await Team.findByIdAndDelete(req.params.id);
-		return res.status(200).json({
-			status: 'success',
-			message: `You have left as manager of ${team.name} (${team.season}). The team has been deleted due to having no manager.`,
-		});
-	}
-
-	res.status(200).json({
-		status: 'success',
-		message: `You have left as manager of ${team.name} (${team.season}).`,
 	});
 });
 

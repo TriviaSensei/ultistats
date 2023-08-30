@@ -351,8 +351,8 @@ exports.requestAddManager = catchAsync(async (req, res, next) => {
 			`${url}/me`,
 		],
 		process.env.EMAIL_FROM,
-		`${team.name} (${team.season}) would like to add you as a manager`,
-		`${res.locals.user.firstName} ${res.locals.user.lastName} has requested to add you as a manager of ${team.name} (${team.season}).`,
+		`${team.name} would like to add you as a manager`,
+		`${res.locals.user.firstName} ${res.locals.user.lastName} has requested to add you as a manager of ${team.name}.`,
 		`You may accept or decline the request, or review your requests with one of the links below:`
 	).sendManagerRequest();
 
@@ -415,16 +415,17 @@ exports.leaveTeam = catchAsync(async (req, res, next) => {
 
 	team.markModified('managers');
 	res.locals.user.markModified('teams');
-
+	let msg = `You are no longer a manager of ${team.name}`;
 	if (team.managers.length === 0) {
 		await team.delete();
+		msg = `${msg}. Team ${team.name} has been deleted due to having no remaining managers.`;
 	} else await team.save();
 
 	await res.locals.user.save({ validateBeforeSave: false });
 
 	res.status(200).json({
 		status: 'success',
-		message: `You are no longer a manager of ${team.name} (${team.season})`,
+		message: msg,
 	});
 });
 
