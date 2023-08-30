@@ -148,8 +148,6 @@ const handleDoubleTap = (e) => {
 		return;
 	}
 	if (tap.target === op) {
-		console.log('handling double tap');
-
 		op.dispatchEvent(dblTapEvent);
 		tap.target = undefined;
 		clearTimeout(tap.timeout);
