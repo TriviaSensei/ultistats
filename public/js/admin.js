@@ -52,7 +52,6 @@ const createUserCard = (user) => {
 		headerRow.appendChild(h2);
 		headerRow.appendChild(h3);
 		teamTable.appendChild(headerRow);
-		console.log(user);
 		if (user.teams.length === 0) {
 			const row = createElement('tr');
 			const cell = createElement('td');

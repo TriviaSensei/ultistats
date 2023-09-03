@@ -49,6 +49,7 @@ const playerIn = document.querySelector('#player-in');
 const playerOut = document.querySelector('#player-out');
 
 const actionArea = document.querySelector('#action-div');
+const stall = document.querySelector('#stall');
 const drop = document.querySelector('#drop');
 const throwaway = document.querySelector('#throwaway');
 const goal = document.querySelector('#goal');
@@ -947,6 +948,9 @@ const undoPass = (e) => {
 			offense: lastPass.offense,
 		});
 
+	if (lastPass.turnover)
+		state.currentPoint.possession = !state.currentPoint.possession;
+
 	if (lastPass.event === 'timeout') {
 		if (lastPass.eventDesc.team === 1) {
 			state.timeoutsLeft[0]++;
@@ -1660,6 +1664,7 @@ const handleResultButtons = (state) => {
 	drop.disabled = true;
 	throwaway.disabled = true;
 	goal.disabled = true;
+	stall.disabled = true;
 
 	if (!state) return;
 	if (!state.currentPoint) return;
@@ -1669,6 +1674,7 @@ const handleResultButtons = (state) => {
 		drop.disabled = false;
 		throwaway.disabled = false;
 		goal.disabled = false;
+		stall.disabled = false;
 		return;
 	}
 
@@ -1937,6 +1943,10 @@ const handleSettings = (e) => {
 	handleRequest(str, 'PATCH', body, handler);
 };
 
+const showState = (state) => {
+	console.log(state);
+};
+
 document.addEventListener('DOMContentLoaded', () => {
 	sh = new StateHandler(null);
 	document.addEventListener('load-point', handleLoadPoint);
@@ -2015,6 +2025,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		if (!tgt || !det) return;
 		e.target.disabled = e.detail.result !== '';
 	});
+	// sh.addWatcher(null, showState);
 	window.addEventListener('beforeunload', (e) => {
 		e.preventDefault();
 		updatePasses();
