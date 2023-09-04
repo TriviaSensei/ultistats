@@ -101,14 +101,17 @@ const setGenderRatio = (m, f) => {
 			},
 		});
 	}
-
-	genderRatioDisplay.innerHTML = `${m}M / ${f}F`;
-	genderRatioDisplay.setAttribute(
-		'data-majority',
-		m > f ? 'M' : f > m ? 'F' : ''
-	);
-	genderRatioIndicator.setAttribute('data-m', m);
-	genderRatioIndicator.setAttribute('data-f', f);
+	if (genderRatioDisplay) {
+		genderRatioDisplay.innerHTML = `${m}M / ${f}F`;
+		genderRatioDisplay.setAttribute(
+			'data-majority',
+			m > f ? 'M' : f > m ? 'F' : ''
+		);
+	}
+	if (genderRatioIndicator) {
+		genderRatioIndicator.setAttribute('data-m', m);
+		genderRatioIndicator.setAttribute('data-f', f);
+	}
 };
 
 const populatePointStart = (dir, off, gen) => {
@@ -141,12 +144,6 @@ const populatePointStart = (dir, off, gen) => {
 		//gender rule B - first half is one endzone dictating, second half is other endzone dictating
 		if (gen && genderRatioIndicator) {
 			genderRatioIndicator.innerHTML = `${gen} decide`;
-		}
-	} else if (state.genderRule === 'X') {
-		if (off) {
-			genderRatioIndicator.innerHTML = `You decide`;
-		} else {
-			genderRatioIndicator.innerHTML = `They decide`;
 		}
 	} else if (genderRatioIndicator) {
 		genderRatioIndicator.innerHTML = '';
