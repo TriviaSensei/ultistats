@@ -1250,54 +1250,55 @@ const handleMoveLine = (e) => {
 	});
 
 	//if we are adding to the line, we need to check if the ratios (default 4:3 either direction), or total line size (default 7) are being violated
-	if (first === availableContainer) {
-		if (
-			lineContainer.querySelectorAll('.roster-option').length + opts.length >
-			maxPlayerCount
-		) {
-			return showMessage(
-				'error',
-				`The maximum size of this line is ${maxPlayerCount}`
-			);
-		}
-		//mixed ratio check
-		if (lineContainer.classList.contains('mixed')) {
-			const males = lineContainer.querySelectorAll(
-				'.roster-option[data-gender="M"]'
-			);
-			const females = lineContainer.querySelectorAll(
-				'.roster-option[data-gender="F"]'
-			);
+	// 2023-10-10: By request from En Sabah Nur - allow present lines to violate gender or line size rules
+	// if (first === availableContainer) {
+	// 	if (
+	// 		lineContainer.querySelectorAll('.roster-option').length + opts.length >
+	// 		maxPlayerCount
+	// 	) {
+	// 		return showMessage(
+	// 			'error',
+	// 			`The maximum size of this line is ${maxPlayerCount}`
+	// 		);
+	// 	}
+	// 	//mixed ratio check
+	// 	if (lineContainer.classList.contains('mixed')) {
+	// 		const males = lineContainer.querySelectorAll(
+	// 			'.roster-option[data-gender="M"]'
+	// 		);
+	// 		const females = lineContainer.querySelectorAll(
+	// 			'.roster-option[data-gender="F"]'
+	// 		);
 
-			if (
-				males.length +
-					opts.filter((o) => {
-						return o.getAttribute('data-gender') === 'M';
-					}).length >
-				genderMax[0]
-			) {
-				return showMessage(
-					'error',
-					`You may have a maximum of ${Math.floor(
-						genderMax[0]
-					)} male-matching players on this line.`
-				);
-			} else if (
-				females.length +
-					opts.filter((o) => {
-						return o.getAttribute('data-gender') === 'F';
-					}).length >
-				genderMax[1]
-			) {
-				return showMessage(
-					'error',
-					`You may have a maximum of ${Math.floor(
-						genderMax[1]
-					)} female-matching players on this line.`
-				);
-			}
-		}
-	}
+	// 		if (
+	// 			males.length +
+	// 				opts.filter((o) => {
+	// 					return o.getAttribute('data-gender') === 'M';
+	// 				}).length >
+	// 			genderMax[0]
+	// 		) {
+	// 			return showMessage(
+	// 				'error',
+	// 				`You may have a maximum of ${Math.floor(
+	// 					genderMax[0]
+	// 				)} male-matching players on this line.`
+	// 			);
+	// 		} else if (
+	// 			females.length +
+	// 				opts.filter((o) => {
+	// 					return o.getAttribute('data-gender') === 'F';
+	// 				}).length >
+	// 			genderMax[1]
+	// 		) {
+	// 			return showMessage(
+	// 				'error',
+	// 				`You may have a maximum of ${Math.floor(
+	// 					genderMax[1]
+	// 				)} female-matching players on this line.`
+	// 			);
+	// 		}
+	// 	}
+	// }
 
 	//for every checked option, move it over to the other container
 	opts.forEach((o) => {

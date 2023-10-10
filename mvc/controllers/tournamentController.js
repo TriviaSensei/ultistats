@@ -278,36 +278,38 @@ exports.modifyLine = catchAsync(async (req, res, next) => {
 				400
 			)
 		);
-	}
-	//verify that gender ratio (if mixed division) and total line size aren't violated
-	else if (
-		res.locals.team.division === 'Mixed' &&
-		(m > tournament.format.genderMax[0] ||
-			f > tournament.format.genderMax[1] ||
-			req.body.players.length > lineSize)
-	) {
-		if (m > tournament.format.genderMax[0])
-			return next(
-				new AppError(
-					`There is a maximum of ${tournament.format.genderMax[0]} male-matching players on a line.`,
-					400
-				)
-			);
-		else if (f > tournament.format.genderMax[1])
-			return next(
-				new AppError(
-					`There is a maximum of ${tournament.format.genderMax[1]} female-matching players on a line.`,
-					400
-				)
-			);
-		else if (req.body.players.length > lineSize) {
-			return next(
-				new AppError(
-					`There is a maximum of ${tournament.format.players} players on a line.`,
-					400
-				)
-			);
-		}
+		// }
+		//verify that gender ratio (if mixed division) and total line size aren't violated
+		// 2023-10-10: By request from En Sabah Nur - allow preset lines to violate gender or line size rules so that
+		// managers can choose a line and then remove players
+		// else if (
+		// 	res.locals.team.division === 'Mixed' &&
+		// 	(m > tournament.format.genderMax[0] ||
+		// 		f > tournament.format.genderMax[1] ||
+		// 		req.body.players.length > lineSize)
+		// ) {
+		// 	if (m > tournament.format.genderMax[0])
+		// 		return next(
+		// 			new AppError(
+		// 				`There is a maximum of ${tournament.format.genderMax[0]} male-matching players on a line.`,
+		// 				400
+		// 			)
+		// 		);
+		// 	else if (f > tournament.format.genderMax[1])
+		// 		return next(
+		// 			new AppError(
+		// 				`There is a maximum of ${tournament.format.genderMax[1]} female-matching players on a line.`,
+		// 				400
+		// 			)
+		// 		);
+		// 	else if (req.body.players.length > lineSize) {
+		// 		return next(
+		// 			new AppError(
+		// 				`There is a maximum of ${tournament.format.players} players on a line.`,
+		// 				400
+		// 			)
+		// 		);
+		// 	}
 	} else {
 		//generate an ID for the line, and push it to the tournament lines. Return the line and the tournament to the user
 		const data = {
