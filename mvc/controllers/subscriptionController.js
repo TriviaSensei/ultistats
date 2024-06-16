@@ -125,7 +125,7 @@ const createSubscriptionCheckout = async (session) => {
 
 	const now = Date.now();
 
-	const newSub = await Subscription.create({
+	const newData = {
 		team: teamId,
 		user: user._id,
 		subscriptionId: session.subscription,
@@ -135,7 +135,13 @@ const createSubscriptionCheckout = async (session) => {
 			now < new Date('December 29, 2023 00:00:00')
 				? new Date('January 1, 9999 00:00:00')
 				: now.setFullYear(9999),
-	});
+	};
+
+	console.log(`------New Sub------`);
+	console.log(newData);
+	console.log(`-------------------`);
+
+	const newSub = await Subscription.create(newData);
 
 	const team = await Team.findById(teamId);
 	team.subscription = newSub._id;
@@ -157,7 +163,12 @@ exports.webhookCheckout = catchAsync(async (req, res, next) => {
 		return res.status(400).send(`Webhook error: ${err.message}`);
 	}
 
+	console.log(`----WEBHOOK RECEIVED ${event.type}----`);
+	console.log(event);
+
 	if (event.type === 'checkout.session.completed') {
+		console.log(`-----data object------`);
+		console.log(event.data.object);
 		try {
 			createSubscriptionCheckout(event.data.object);
 		} catch (err) {
