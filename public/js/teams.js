@@ -1,4 +1,4 @@
-import { handleRequest } from './utils/requestHandler.js';
+import { handleMultiRequest, handleRequest } from './utils/requestHandler.js';
 import { showMessage } from './utils/messages.js';
 import { getElementArray } from './utils/getElementArray.js';
 import { createElement } from './utils/createElementFromSelector.js';
@@ -39,6 +39,24 @@ const pre1 = document.querySelector('#preview-1');
 const pre2 = document.querySelector('#preview-2');
 
 let roster = [];
+
+const dlMW = document.querySelector('#download-template-mw');
+const dlX = document.querySelector('#download-template-x');
+const uploadForm = document.querySelector('#upload-roster-form');
+const csvUpload = document.querySelector('#csv-upload');
+const uploadModal = new bootstrap.Modal(
+	document.getElementById('upload-result-modal')
+);
+const rowsRead = document.querySelector('#rows-processed');
+const playersAdded = document.querySelector('#players-added');
+const playersModified = document.querySelector('#players-modified');
+const playersUnchanged = document.querySelector('#players-unchanged');
+const errorArea = document.querySelector('#upload-errors');
+const errorCount = document.querySelector('#upload-error-count');
+const errorList = document.querySelector('#upload-error-list');
+const warningArea = document.querySelector('#upload-warnings');
+const warningCount = document.querySelector('#upload-warning-count');
+const warningList = document.querySelector('#upload-warning-list');
 
 //roster table
 const rosterTable = document.querySelector('#main-roster-table');
@@ -145,11 +163,9 @@ const updateRosterSize = () => {
 const sortRosterTable = () => {
 	const sortByHeader = rosterHeader.querySelector('.active-sort');
 	if (!sortByHeader) return;
-
 	const sortBy = sortByHeader.getAttribute('data-attr');
 	if (!sortBy) return;
 	const asc = sortByHeader.classList.contains('sort-asc');
-
 	roster = roster.sort((a, b) => {
 		return (
 			(asc ? 1 : -1) *
@@ -175,6 +191,12 @@ const handleSortRoster = (e) => {
 		e.target.classList.add('active-sort', 'sort-asc');
 	}
 	sortRosterTable();
+};
+
+const removeAllPlayerRows = (id) => {
+	getElementArray(document, 'tr.player-row').forEach((r) => {
+		r.remove();
+	});
 };
 
 const removePlayerRow = (id) => {
@@ -262,7 +284,6 @@ const openEditModal = (e) => {
 
 const addPlayerRow = (player) => {
 	if (!player) return;
-
 	const info = [
 		player.number,
 		`${player.lastName}, ${player.firstName}`,
@@ -321,7 +342,7 @@ const addPlayerRow = (player) => {
 	) {
 		rosterBody.appendChild(newRow);
 	}
-	sortRosterTable();
+	//sortRosterTable();
 };
 
 const addPlayer = (player) => {
@@ -548,6 +569,7 @@ const addManagerRow = (manager, pending) => {
 
 const getTeam = (e) => {
 	if (e.target !== teamSelect) return;
+	csvUpload.value = '';
 
 	//if "create new team" is selected
 	if (!teamSelect.value) {
@@ -636,6 +658,16 @@ const getTeam = (e) => {
 			res.data.requestedManagers.forEach((m) => {
 				addManagerRow(m, true);
 			});
+
+			//handle the template download links
+			if (res.data.division === 'Mixed') {
+				dlMW.classList.add('d-none');
+				dlX.classList.remove('d-none');
+			} else {
+				dlMW.classList.remove('d-none');
+				dlX.classList.add('d-none');
+			}
+
 			//handle the subscription area
 			const subEvent = new CustomEvent('set-sub-level', {
 				detail: {
@@ -749,16 +781,21 @@ const setDisplayName = (e) => {
 };
 
 const handleDivisionChange = (e) => {
+	if (!e) return;
 	const gm = document.querySelector('#gender-match');
 	const egm = document.querySelector('#edit-gender-match');
 	if (division.value === 'Mixed') {
 		gm.classList.remove('d-none');
 		egm.classList.remove('d-none');
 		rosterTable.classList.add('mixed');
+		dlMW.classList.add('d-none');
+		dlX.classList.remove('d-none');
 	} else {
 		gm.classList.add('d-none');
 		egm.classList.add('d-none');
 		rosterTable.classList.remove('mixed');
+		dlMW.classList.remove('d-none');
+		dlX.classList.add('d-none');
 		const r = getElementArray(
 			document,
 			'input[type="radio"][name="gender-match"], input[type="radio"][name="edit-gender-match"]'
@@ -768,6 +805,7 @@ const handleDivisionChange = (e) => {
 			el.checked = el.value === checkedGen;
 		});
 	}
+	saveTeam();
 };
 
 const handleRequestManager = () => {
@@ -842,6 +880,97 @@ const handleTabChange = (e) => {
 	getTeam({ target: teamSelect });
 };
 
+const handleUploadRoster = (e) => {
+	e.preventDefault();
+	if (e.target !== uploadForm || e.type !== 'submit') return;
+
+	const formData = new FormData(uploadForm);
+	const files = csvUpload.files;
+	if (files.length === 0) return showMessage('error', 'No file selected');
+	else if (files.length > 1)
+		return showMessage('error', 'Only one file may be uploaded at a time');
+	else formData.append('file', files[0]);
+
+	showMessage('info', 'Uploading...', 10000);
+
+	const createError = (name, message) => {
+		const newDiv = createElement('.upload-result');
+		const nm = createElement('.name');
+		const desc = createElement('.description');
+		newDiv.appendChild(nm);
+		newDiv.appendChild(desc);
+		nm.innerHTML = name;
+		if (Array.isArray(message)) {
+			const list = createElement('ul');
+			message.forEach((m) => {
+				const li = createElement('li');
+				li.innerHTML = m;
+				list.appendChild(li);
+			});
+			desc.appendChild(list);
+		} else desc.innerHTML = message;
+		return newDiv;
+	};
+	const handler = (res) => {
+		if (res.status === 'success') {
+			csvUpload.value = '';
+			showMessage('info', 'Successfully uploaded roster');
+			rowsRead.innerHTML = res.result.rowsRead;
+			playersAdded.innerHTML = res.result.added;
+			playersModified.innerHTML = res.result.modified;
+			playersUnchanged.innerHTML = res.result.noChange;
+			if (res.result.errors.length === 0) errorArea.classList.add('d-none');
+			else {
+				errorArea.classList.remove('d-none');
+				errorCount.innerHTML = res.result.errors.length;
+				errorList.innerHTML = '';
+				res.result.errors.forEach((err) => {
+					const newDiv = createError(
+						`Line ${err.row} - ${
+							err.line.trim.length <= 70
+								? err.line
+								: `${err.line.substring(0, 67)}...`
+						}`,
+						err.message
+					);
+					errorList.appendChild(newDiv);
+				});
+			}
+
+			if (res.result.warnings.length === 0) warningArea.classList.add('d-none');
+			else {
+				warningArea.classList.remove('d-none');
+				warningCount.innerHTML = res.result.warnings.length;
+				warningList.innerHTML = '';
+				res.result.warnings.forEach((w) => {
+					const newDiv = createError(
+						`${w.player.lastName}, ${w.player.firstName}`,
+						w.warnings
+					);
+					warningList.appendChild(newDiv);
+				});
+			}
+
+			uploadModal.show();
+			removeAllPlayerRows();
+			roster = res.result.roster;
+			roster.forEach((p) => {
+				addPlayerRow(p);
+			});
+		}
+	};
+	const teamId = teamSelect.value;
+	if (!teamId) return showMessage('error', 'No team selected');
+	handleMultiRequest(
+		`/api/v1/teams/upload/${teamId}`,
+		'PATCH',
+		formData,
+		handler
+	);
+
+	return false;
+};
+
 document.addEventListener('DOMContentLoaded', (e) => {
 	teamSelect.addEventListener('change', getTeam);
 
@@ -868,6 +997,8 @@ document.addEventListener('DOMContentLoaded', (e) => {
 	addManagerButton.addEventListener('click', handleRequestManager);
 	confirmCancelRequest.addEventListener('click', cancelManagerRequest);
 	confirmLeaveButton.addEventListener('click', handleLeaveTeam);
+
+	uploadForm.addEventListener('submit', handleUploadRoster);
 
 	document.addEventListener('show.bs.tab', handleTabChange);
 

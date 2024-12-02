@@ -6,6 +6,8 @@ const User = require('../models/userModel');
 const Tournament = require('../models/tournamentModel');
 const Subscription = require('../models/subscriptionModel');
 const Email = require('../../utils/email');
+
+const multer = require('multer');
 const stripe = require('stripe')(
 	process.env.NODE_ENV === 'dev'
 		? process.env.STRIPE_SECRET_TEST_KEY
@@ -26,29 +28,58 @@ const validateNewPlayer = (player) => {
 				return isNaN(parseInt(c));
 			}))
 	)
-		return 'Invalid number';
+		return `Invalid number (${player.number})`;
+
 	if (
 		player.number &&
 		(parseInt(player.number) < 0 ||
 			parseInt(player.number) > 99 ||
 			parseFloat(player.number) !== parseInt(player.number))
 	)
-		return 'Number must be an integer from 00-99, inclusive';
+		return `Number must be an integer from 00-99, inclusive (${player.number})`;
 
 	if (
 		player.gender &&
 		player.gender.toUpperCase() !== 'M' &&
 		player.gender.toUpperCase() !== 'F'
 	) {
-		return 'Invalid gender match specified.';
+		return `Invalid gender match specified (${player.gender}).`;
 	}
 
-	if (player.displayName && player.displayName.length > 15) {
-		return 'Display name has a maximum of 15 characters.';
+	if (player.line && !['D', 'O'].includes(player.line.toUpperCase()))
+		return `Invalid line specified (${player.line})`;
+
+	if (
+		player.position &&
+		player.position !== 'Hy' &&
+		!['C', 'H'].includes(player.position.toUpperCase())
+	)
+		return `Invalid position specified (${player.position})`;
+
+	if (player.displayName && player.displayName.trim().length > 15) {
+		return `Display name has a maximum of 15 characters (${player.displayName} has length ${player.displayName.length})`;
 	}
 
 	return null;
 };
+
+const multerStorage = multer.memoryStorage();
+
+const multerFilter = (req, file, cb) => {
+	if (file.mimetype.toLowerCase() === 'text/csv') {
+		cb(null, true);
+	} else {
+		cb(new AppError('Only .csv files are accepted.', 400), false);
+	}
+};
+
+const upload = multer({
+	storage: multerStorage,
+	fileFilter: multerFilter,
+	limits: { fileSize: 10 * 1024 * 1024 },
+});
+
+exports.handleUpload = upload.fields([{ name: 'file', maxCount: 1 }]);
 
 exports.verifyOwnership = catchAsync(async (req, res, next) => {
 	res.locals.team = await Team.findById(req.params.id).populate({
@@ -107,9 +138,9 @@ exports.addPlayer = catchAsync(async (req, res, next) => {
 		) {
 			message = `Player ${p.firstName} ${p.lastName} has been reinstated to the roster.`;
 			p.active = true;
-			p.firstName = req.body.firstName;
-			p.lastName = req.body.lastName;
-			p.displayName = req.body.displayName;
+			p.firstName = req.body.firstName.trim();
+			p.lastName = req.body.lastName.trim();
+			p.displayName = req.body.displayName.trim();
 			p.number = req.body.number;
 			team.roster.some((p2, j) => {
 				if (
@@ -138,6 +169,7 @@ exports.addPlayer = catchAsync(async (req, res, next) => {
 			return true;
 		}
 	});
+
 	if (status === 'fail') {
 		return next(new AppError(message, 400));
 	}
@@ -149,9 +181,9 @@ exports.addPlayer = catchAsync(async (req, res, next) => {
 		const id = uuidV4();
 
 		toPush = {
-			firstName,
-			lastName,
-			displayName,
+			firstName: firstName.trim(),
+			lastName: lastName.trim(),
+			displayName: displayName.trim(),
 			number,
 			line,
 			position,
@@ -173,6 +205,163 @@ exports.addPlayer = catchAsync(async (req, res, next) => {
 		message,
 		newPlayer: toPush,
 		rosterLimit,
+	});
+});
+
+exports.uploadRoster = catchAsync(async (req, res, next) => {
+	const buffer = req.files.file[0].buffer.toString();
+	const rows = buffer.split('\r\n').filter((r) => {
+		return r.length > 0;
+	});
+
+	const division = res.locals.team.division;
+	const attributes = [
+		'firstName',
+		'lastName',
+		'displayName',
+		'number',
+		'line',
+		'position',
+		'gender',
+	];
+	const players = [];
+	const result = {
+		rowsRead: 0,
+		added: 0,
+		modified: 0,
+		noChange: 0,
+		warnings: [],
+		errors: [],
+		roster: [],
+	};
+
+	const addWarning = (player, warning) => {
+		if (
+			!result.warnings.some((w) => {
+				if (w.player.id === player.id) {
+					w.warnings.push(warning);
+					return true;
+				}
+			})
+		) {
+			result.warnings.push({
+				player,
+				warnings: [warning],
+			});
+		}
+	};
+
+	rows.forEach((r, i) => {
+		if (i === 0 && req.body.hasHeader === 'on') return;
+		result.rowsRead++;
+		const data = r.split(',');
+		//create the player data
+		const player = {};
+		attributes.forEach((a, j) => {
+			if (data.length > j) {
+				player[a] = data[j].trim();
+			} else if (a === 'gender')
+				player.gender =
+					division === 'Mixed' ? '' : division === 'Women' ? 'F' : 'M';
+		});
+		//make sure everything is valid
+		if (player.position && player.position.trim().toUpperCase() === 'HY')
+			player.position = 'Hy';
+
+		const val = validateNewPlayer(player);
+		const existingPlayer = res.locals.team.roster.find((p) => {
+			return (
+				p.firstName.trim().toLowerCase() ===
+					player.firstName.trim().toLowerCase() &&
+				p.lastName.trim().toLowerCase() === player.lastName.trim().toLowerCase()
+			);
+		});
+		const rowNumber = (req.body.hasHeader === 'on' ? 0 : 1) + i;
+		if (val)
+			result.errors.push({
+				row: rowNumber,
+				player,
+				line: r,
+				message: `${val} (player was not ${existing ? 'modified' : 'added'})`,
+			});
+		else {
+			//see if this is a new or existing player
+			const existing = res.locals.team.roster.find((p, j) => {
+				//if we find a player with the same name...
+				if (
+					p.firstName.trim().toLowerCase() ===
+						player.firstName.trim().toLowerCase() &&
+					p.lastName.trim().toLowerCase() ===
+						player.lastName.trim().toLowerCase()
+				) {
+					let edited = false;
+					attributes.forEach((a) => {
+						//see if any attribute is not the same
+						if ((player[a] || p[a]) && player[a].trim() !== p[a].trim()) {
+							//if we changed numbers, make sure no one else has that number
+							if (a === 'number') {
+								const other = res.locals.team.roster.find((p2, k) => {
+									return (
+										player.number &&
+										p2.active &&
+										p2.number === player.number &&
+										j !== k
+									);
+								});
+								if (other)
+									addWarning(
+										p,
+										`Number ${player.number} is already taken by ${other.firstName} ${other.lastName}`
+									);
+							}
+							p[a] = player[a];
+							edited = true;
+						}
+					});
+					if (edited) result.modified++;
+					else result.noChange++;
+					return true;
+				}
+			});
+			if (!existing) {
+				if (
+					res.locals.team.roster.reduce((p, c) => {
+						if (c.active) return p + 1;
+						return p;
+					}, 0) >= rosterLimit
+				) {
+					result.errors.push({
+						row: rowNumber,
+						player,
+						message: `The roster limit has been reached. Player was not added.`,
+					});
+				} else {
+					player.id = uuidV4();
+					//check to make sure no one else has the player's number
+					if (player.number) {
+						res.locals.team.roster.some((p) => {
+							if (Number(p.number) === Number(player.number))
+								addWarning(
+									player,
+									`Number ${player.number} is already taken by ${p.firstName} ${p.lastName}`
+								);
+						});
+					}
+					res.locals.team.roster.push({
+						...player,
+						active: true,
+					});
+					result.added++;
+				}
+			}
+		}
+	});
+	res.locals.team.markModified('roster');
+	await res.locals.team.save();
+	result.roster = res.locals.team.roster;
+	res.status(200).json({
+		status: 'success',
+		result,
 	});
 });
 

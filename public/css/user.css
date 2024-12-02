@@ -183,6 +183,20 @@ h6 {
 	font-size: 0.9rem;
 }
 
+.upload-result {
+	display: flex;
+	flex-direction: column;
+	margin-bottom: 0.2rem;
+}
+
+.upload-result .name {
+	font-size: 0.8rem;
+}
+
+.upload-result .description {
+	font-size: 0.7rem;
+}
+
 .roster-header > th {
 	-webkit-touch-callout: none; /* iOS Safari */
 	-webkit-user-select: none; /* Safari */

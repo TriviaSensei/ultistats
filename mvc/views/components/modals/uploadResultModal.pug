@@ -1,0 +1,19 @@
+.modal.fade#upload-result-modal(tabindex="-1" aria-labelledby="upload-result-label" aria-hidden="true")
+    .modal-dialog.modal-dialog-centered
+        .modal-content#upload-result-modal-content
+            .modal-header
+                h5.modal-title#upload-result-label Upload Results
+            .modal-body.text-start
+                h6 ℹ️ #[span#rows-processed 0] rows read 
+                ul.border-bottom.border-dark.mb-2
+                    li #[span#players-added 0] players added 
+                    li #[span#players-modified 0] players modified 
+                    li #[span#players-unchanged 0] players matched existing data 
+                #upload-errors.mb-2.d-none.border-bottom.border-dark
+                    h6 ❌ Errors - #[span#upload-error-count 0]
+                    #upload-error-list.d-flex.flex-column
+                #upload-warnings.d-none
+                    h6 ⚠️ Warnings - #[span#upload-warning-count 0]
+                    #upload-warning-list.d-flex.flex-column
+            .modal-footer
+                button.btn.btn-primary#confirm-upload-result(type="button" data-bs-dismiss="modal") Close

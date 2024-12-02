@@ -50,54 +50,94 @@
         h2.accordion-header#team-roster-header
             button.accordion-button.collapsed(type="button" data-bs-toggle="collapse" data-bs-target="#team-roster" aria-expanded="false" aria-controls="team-roster") Roster
         #team-roster.accordion-collapse.collapse(aria-labelled-by="team-roster-header" data-bs-parent="#team-accordion")
-            form#roster-form.my-3(autocomplete="off")
-                .input-group-f 
-                    label.form-label Roster (#[span#roster-size 0]/#[span#roster-limit= rosterLimit]&nbsp;used)
-                .input-group-h.w-100.mb-3
-                    .input-group-f.input-group-1
-                        label.form-label(for="first-name") First name:
-                        .input-group
-                            input#first-name.form-control(type="text" placeholder="First Name" required)
-                    .input-group-f.input-group-1
-                        label.form-label(for="last-name") Last name:
-                        .input-group
-                            input#last-name.form-control(type="text" placeholder="Last Name" required)
-                .input-group-h.w-100.mb-3
-                    .input-group-f.input-group-3
-                        label.form-label(for="display-name") Display name:
-                        .input-group
-                            input#display-name.form-control(type="text" placeholder="Display Name")
-                    .input-group-f.input-group-1
-                        label.form-label(for="number") Number:
-                        .input-group
-                            input#number.form-control(type="text" placeholder="##" size="2" pattern="[0-9]{1,2}" maxlength="2")
-                .input-group-h.w-100.mb-3
-                    #gender-match.input-group-f.input-group-1.d-none
-                        label.form-label Gender match:
-                        .input-group
-                            input#gen-m.me-2(type="radio" name="gender-match" value="M" checked) 
-                            label.me-2(for='gen-m') Male
-                        .input-group
-                            input#gen-f.me-2(type="radio" name="gender-match" value="F")
-                            label(for='gen-f') Female
-                    .input-group-f.input-group-1
-                        label.form-label Primary Line:
-                        .input-group
-                            input#line-d.me-2(type="radio" name="line" value="D") 
-                            label.me-2(for='line-d') Defense
-                        .input-group
-                            input#line-o.me-2(type="radio" name="line" value="O")
-                            label(for='line-o') Offense
-                    .input-group-f.input-group-1
-                        label.form-label Position:
-                        .input-group
-                            select#position
-                                option(value="-") None
-                                option(value="H") Handler
-                                option(value="C") Cutter 
-                                option(value="Hy") Hybrid
-                .d-grid.gap-2.mb-3  
-                    button.btn.btn-primary(type="submit") Add Player
+            .input-group-f.my-2
+                label.form-label Roster (#[span#roster-size 0]/#[span#roster-limit= rosterLimit]&nbsp;used)
+            ul.nav.nav-tabs.nav-fill.mb-3#add-player-tabs(role="tablist")
+                li.nav-item(role="presentation")
+                    button.nav-link.active#add-single-tab(data-bs-toggle="tab" data-bs-target="#add-single-div" type="button" role="tab" aria-controls="add-single-div" aria-selected="true") Add Single
+                li.nav-item(role="presentation")
+                    button.nav-link#add-bulk-tab(data-bs-toggle="tab" data-bs-target="#add-bulk-div" type="button" role="tab" aria-controls="add-bulk-div" aria-selected="false") Add Bulk (.csv)
+            .tab-content#add-player-tab-content
+                #add-single-div.tab-pane.fade.show.active(role="tabpanel" aria-labelledby="add-single-tab" tabindex="0")
+                    .tab-inner.flex-col.ai-c
+                        form#roster-form.my-3(autocomplete="off")
+                            .input-group-h.w-100.mb-3
+                                .input-group-f.input-group-1
+                                    label.form-label(for="first-name") First name:
+                                    .input-group
+                                        input#first-name.form-control(type="text" placeholder="First Name" required)
+                                .input-group-f.input-group-1
+                                    label.form-label(for="last-name") Last name:
+                                    .input-group
+                                        input#last-name.form-control(type="text" placeholder="Last Name" required)
+                            .input-group-h.w-100.mb-3
+                                .input-group-f.input-group-3
+                                    label.form-label(for="display-name") Display name:
+                                    .input-group
+                                        input#display-name.form-control(type="text" placeholder="Display Name")
+                                .input-group-f.input-group-1
+                                    label.form-label(for="number") Number:
+                                    .input-group
+                                        input#number.form-control(type="text" placeholder="##" size="2" pattern="[0-9]{1,2}" maxlength="2")
+                            .input-group-h.w-100.mb-3
+                                #gender-match.input-group-f.input-group-1.d-none
+                                    label.form-label Gender match:
+                                    .input-group
+                                        input#gen-m.me-2(type="radio" name="gender-match" value="M" checked) 
+                                        label.me-2(for='gen-m') Male
+                                    .input-group
+                                        input#gen-f.me-2(type="radio" name="gender-match" value="F")
+                                        label(for='gen-f') Female
+                                .input-group-f.input-group-1
+                                    label.form-label Primary Line:
+                                    .input-group
+                                        input#line-d.me-2(type="radio" name="line" value="D") 
+                                        label.me-2(for='line-d') Defense
+                                    .input-group
+                                        input#line-o.me-2(type="radio" name="line" value="O")
+                                        label(for='line-o') Offense
+                                .input-group-f.input-group-1
+                                    label.form-label Position:
+                                    .input-group
+                                        select#position
+                                            option(value="-") None
+                                            option(value="H") Handler
+                                            option(value="C") Cutter 
+                                            option(value="Hy") Hybrid
+                            .d-grid.gap-2.mb-3.w-100
+                                button.btn.btn-primary(type="submit") Add Player
+                #add-bulk-div.tab-pane.fade(role="tabpanel" aria-labelledby="add-bulk-tab" tabindex="0")
+                    .tab-inner.flex-col.ai-c.w-100
+                        p.w-100.text-start Use this tab to add multiple players at once by uploading a .CSV file. 
+                        #download-template-mw.text-start.w-100 
+                            p.w-100.text-start If you are creating your own CSV file, for Men's and Women's division teams, the columns required (in order) are: 
+                            ul 
+                                li First Name
+                                li Last Name
+                                li Display Name
+                                li Number
+                                li Line (O/D)
+                                li Position (H/C/Hy)
+                            p.w-100.text-start You may also #[a(href="/files/template_MW.csv") download the template CSV (Men's and Women's divisions)], populate it, and upload it. 
+                        #download-template-x.text-start.w-100.d-none
+                            p.w-100.text-start If you are creating your own CSV file, for Mixed division teams, the columns required (in order) are: 
+                            ul 
+                                li First Name
+                                li Last Name
+                                li Display Name
+                                li Number (0-99, including 00)
+                                li Line (O/D)
+                                li Position (H/C/Hy)
+                                li Gender Match (M/F)
+                            p You may also #[a(href="/files/template_X.csv") download the template CSV (Mixed division)], populate it, and upload it below:
+                        form#upload-roster-form
+                            .input-group.mb-2
+                                input#csv-upload(type="file" accept=".csv")  
+                            .input-group.mb-2
+                                input#toggle-header-row.me-2(type="checkbox" name="hasHeader" checked) 
+                                label(for="toggle-header-row") Data has header row
+                            .d-grid.gap-2.mb-3.w-100
+                                button.btn.btn-primary(type="submit") Upload   
             .table-container
                 table#main-roster-table.roster-table.mb-3
                     thead 

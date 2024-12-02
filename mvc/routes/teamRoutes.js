@@ -9,6 +9,11 @@ router.post('/', teamController.createTeam);
 
 router.use('/*/:id', teamController.verifyOwnership);
 
+router.patch(
+	'/upload/:id',
+	teamController.handleUpload,
+	teamController.uploadRoster
+);
 router.patch('/addPlayer/:id', teamController.addPlayer);
 router.patch('/removePlayer/:id', teamController.removePlayer);
 router.patch('/editPlayer/:id', teamController.editPlayer);
