@@ -126,7 +126,9 @@ exports.addPlayer = catchAsync(async (req, res, next) => {
 		if (
 			p.active &&
 			p.firstName.toLowerCase() === req.body.firstName.toLowerCase() &&
-			p.lastName.toLowerCase() === req.body.lastName.toLowerCase()
+			p.lastName.toLowerCase() === req.body.lastName.toLowerCase() &&
+			p.displayName.trim().toLowerCase() ===
+				req.body.displayName.trim().toLowerCase()
 		) {
 			pushIt = false;
 			status = 'fail';
@@ -134,7 +136,9 @@ exports.addPlayer = catchAsync(async (req, res, next) => {
 			return true;
 		} else if (
 			p.firstName.toLowerCase() === req.body.firstName.toLowerCase() &&
-			p.lastName.toLowerCase() === req.body.lastName.toLowerCase()
+			p.lastName.toLowerCase() === req.body.lastName.toLowerCase() &&
+			p.displayName.trim().toLowerCase() ===
+				req.body.displayName.trim().toLowerCase()
 		) {
 			message = `Player ${p.firstName} ${p.lastName} has been reinstated to the roster.`;
 			p.active = true;
@@ -273,7 +277,10 @@ exports.uploadRoster = catchAsync(async (req, res, next) => {
 			return (
 				p.firstName.trim().toLowerCase() ===
 					player.firstName.trim().toLowerCase() &&
-				p.lastName.trim().toLowerCase() === player.lastName.trim().toLowerCase()
+				p.lastName.trim().toLowerCase() ===
+					player.lastName.trim().toLowerCase() &&
+				p.displayName.trim().toLowerCase() ===
+					player.displayName.trim().toLowerCase()
 			);
 		});
 		const rowNumber = (req.body.hasHeader === 'on' ? 0 : 1) + i;
@@ -292,7 +299,9 @@ exports.uploadRoster = catchAsync(async (req, res, next) => {
 					p.firstName.trim().toLowerCase() ===
 						player.firstName.trim().toLowerCase() &&
 					p.lastName.trim().toLowerCase() ===
-						player.lastName.trim().toLowerCase()
+						player.lastName.trim().toLowerCase() &&
+					p.displayName.trim().toLowerCase() ===
+						player.displayName.trim().toLowerCase()
 				) {
 					let edited = false;
 					attributes.forEach((a) => {
@@ -413,10 +422,12 @@ exports.editPlayer = catchAsync(async (req, res, next) => {
 					(req.body.firstName || p.firstName).toLowerCase() ===
 						p2.firstName.toLowerCase() &&
 					(req.body.lastName || p.lastName).toLowerCase() ===
-						p2.lastName.toLowerCase()
+						p2.lastName.toLowerCase() &&
+					(req.body.displayName || p.displayName).toLowerCase() ===
+						p2.displayName.toLowerCase()
 				) {
 					status = 'error';
-					message = `A player with that name (${req.body.lastName}, ${req.body.firstName}) is already on your team.`;
+					message = `A player with that name (${req.body.firstName} ${req.body.lastName} "${req.body.displayName}") is already on your team.`;
 					return true;
 				} else if (
 					(req.body.number || p.number) &&
