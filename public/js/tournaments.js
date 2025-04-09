@@ -1464,7 +1464,7 @@ const handleDeleteLine = (e) => {
 };
 
 const handleNewPlayer = (e) => {
-	if (teamSelect.value === e.detail.team) {
+	if (teamSelect.value === e.detail.team && e.detail.player) {
 		roster.push({
 			...e.detail.player,
 			name: `${e.detail.player.lastName}, ${e.detail.player.firstName}`,

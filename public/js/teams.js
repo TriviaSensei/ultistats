@@ -371,10 +371,12 @@ const addPlayer = (player) => {
 		if (status === 'error') {
 			return showMessage(status, message, 2000);
 		}
-		roster.push(toPush);
-		addPlayerRow(toPush);
-		updateRosterSize();
-		showMessage(status, message, status === 'info' ? 500 : 2000);
+		if (toPush) {
+			roster.push(toPush);
+			addPlayerRow(toPush);
+			updateRosterSize();
+			showMessage(status, message, status === 'info' ? 500 : 2000);
+		}
 	} else {
 		const str = `/api/v1/teams/addPlayer/${teamSelect.value}`;
 		const handler = (res) => {

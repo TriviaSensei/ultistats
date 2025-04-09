@@ -339,6 +339,7 @@ exports.uploadRoster = catchAsync(async (req, res, next) => {
 			if (!existing) {
 				if (
 					res.locals.team.roster.reduce((p, c) => {
+						if (!c) return p;
 						if (c.active) return p + 1;
 						return p;
 					}, 0) >= rosterLimit
