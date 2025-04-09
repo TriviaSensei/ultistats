@@ -106,9 +106,12 @@ exports.addPlayer = catchAsync(async (req, res, next) => {
 	const team = await Team.findById(req.params.id);
 	if (!team) return next(new AppError('Team ID not found.', 404));
 
+	team.roster = team.roster.filter((p) => p !== null);
+
 	//verify that the roster limit has not been reached.
 	if (
 		team.roster.reduce((p, c) => {
+			if (!c) return p;
 			if (c.active) return p + 1;
 			return p;
 		}, 0) >= rosterLimit
@@ -123,6 +126,7 @@ exports.addPlayer = catchAsync(async (req, res, next) => {
 	let toPush;
 
 	const existingPlayer = team.roster.find((p, i) => {
+		if (!p) return false;
 		if (
 			p.active &&
 			p.firstName.toLowerCase() === req.body.firstName.toLowerCase() &&
