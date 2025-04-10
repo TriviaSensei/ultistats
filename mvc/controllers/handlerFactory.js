@@ -7,6 +7,7 @@ const Tournament = require('../models/tournamentModel');
 const Team = require('../models/teamModel');
 const Game = require('../models/gameModel');
 const Format = require('../models/formatModel');
+const User = require('../models/userModel');
 const Subscription = require('../models/subscriptionModel');
 const stripe = require('stripe')(
 	process.env.NODE_ENV === 'dev'
@@ -250,6 +251,7 @@ exports.getOne = (Model, popOptions) =>
 					},
 				},
 			]);
+			console.log(doc.managers);
 
 			// .populate({
 			// 	path: 'requestedManagers',
@@ -279,12 +281,14 @@ exports.getOne = (Model, popOptions) =>
 
 			let toReturn;
 			if (doc.subscription) {
+				let manager = await User.findById(doc.subscription.user);
+				if (!manager) manager = { firstName: 'Unknown', lastName: '' };
 				toReturn = {
 					...doc.toJSON(),
 					isMe:
 						doc.subscription.user._id.toString() ===
 						res.locals.user._id.toString(),
-					currentManager: `${doc.subscription.user.firstName} ${doc.subscription.user.lastName}`,
+					currentManager: `${manager.firstName} ${manager.lastName}`,
 				};
 			} else {
 				toReturn = doc.toJSON();

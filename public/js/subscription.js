@@ -40,7 +40,6 @@ const tooltipList = [...tooltipTriggerList].map(
  */
 const handleSubscriptionArea = (e) => {
 	currentMembership = e.detail.subscription;
-
 	//try to find the current membership
 	//no subscription - show every option
 	if (!e.detail.subscription) {

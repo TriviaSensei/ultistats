@@ -731,6 +731,7 @@ const createTeam = () => {
 };
 
 const saveTeam = () => {
+	if (!teamSelect.value) return;
 	const body = {
 		name: teamName.value,
 		division: division.value,
@@ -783,7 +784,6 @@ const setDisplayName = (e) => {
 };
 
 const handleDivisionChange = (e) => {
-	if (!e) return;
 	const gm = document.querySelector('#gender-match');
 	const egm = document.querySelector('#edit-gender-match');
 	if (division.value === 'Mixed') {
@@ -807,7 +807,7 @@ const handleDivisionChange = (e) => {
 			el.checked = el.value === checkedGen;
 		});
 	}
-	saveTeam();
+	if (e) saveTeam();
 };
 
 const handleRequestManager = () => {
