@@ -278,6 +278,7 @@ exports.uploadRoster = catchAsync(async (req, res, next) => {
 
 		const val = validateNewPlayer(player);
 		const existingPlayer = res.locals.team.roster.find((p) => {
+			if (!p) return false;
 			return (
 				p.firstName.trim().toLowerCase() ===
 					player.firstName.trim().toLowerCase() &&
@@ -332,7 +333,11 @@ exports.uploadRoster = catchAsync(async (req, res, next) => {
 						}
 					});
 					if (edited) result.modified++;
-					else result.noChange++;
+					else {
+						//the player was not changed, but set them to active if they aren't already.
+						p.active = true;
+						result.noChange++;
+					}
 					return true;
 				}
 			});
