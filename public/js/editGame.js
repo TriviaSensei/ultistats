@@ -296,7 +296,7 @@ const updateCounts = () => {
 	if (lc !== state.format.players) lineWarning.classList.remove('d-none');
 	else lineWarning.classList.add('d-none');
 
-	if (lc <= state.format.players) startPoint.disabled = false;
+	if (!state.format || lc <= state.format.players) startPoint.disabled = false;
 	else startPoint.disabled = true;
 
 	if (state.division.toLowerCase() === 'mixed') {

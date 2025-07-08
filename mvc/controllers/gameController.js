@@ -179,9 +179,11 @@ exports.startPoint = catchAsync(async (req, res, next) => {
 	//make sure each player in the lineup is registered to the team
 	if (
 		!req.body.lineup.every((p) => {
-			return res.locals.team.roster.some((t) => {
+			const valid = res.locals.team.roster.some((t) => {
 				return t.id === p;
 			});
+			if (!valid) console.log(p);
+			return valid;
 		})
 	)
 		return next(new AppError(`Invalid player found in lineup.`, 400));

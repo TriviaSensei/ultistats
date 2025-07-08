@@ -65,7 +65,6 @@ exports.verifyOwnership = catchAsync(async (req, res, next) => {
 			}
 		} catch (err) {
 			console.log('Subscription could not be found');
-			console.log(err);
 			if (subObj.name === 'Plus' && subObj.expires > Date.now()) {
 				res.locals.membership = {
 					...plusMembership,

@@ -273,14 +273,16 @@ exports.getGame = catchAsync(async (req, res, next) => {
 	const game = await Game.findById(req.params.id).populate([
 		{
 			path: 'tournament',
-			populate: {
-				path: 'team',
-				select: 'name division',
-			},
-		},
-		{
-			path: 'format',
-			populate: 'allowPeriodEnd players periods genderMax',
+			populate: [
+				{
+					path: 'team',
+					select: 'name division',
+				},
+				{
+					path: 'format',
+					populate: 'allowPeriodEnd players periods genderMax',
+				},
+			],
 		},
 	]);
 
@@ -291,7 +293,7 @@ exports.getGame = catchAsync(async (req, res, next) => {
 	const gameData = {
 		...game.toJSON(),
 		startSettings: game.startSettings,
-		tournament: undefined,
+		format: game.tournament.format,
 	};
 	res.status(200).render('game', {
 		title: 'Enter game',
@@ -313,7 +315,7 @@ exports.getGame = catchAsync(async (req, res, next) => {
 			division,
 			genderRule: game.tournament.genderRule,
 			format: {
-				...gameData.format,
+				...gameData.format._doc,
 			},
 			roster: game.tournament.roster.filter((p) => {
 				return p.active;
