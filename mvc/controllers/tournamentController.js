@@ -6,11 +6,11 @@ const Team = require('../models/teamModel');
 const Game = require('../models/gameModel');
 const Format = require('../models/formatModel');
 const { v4: uuidV4 } = require('uuid');
-const stripe = require('stripe')(
-	process.env.NODE_ENV === 'dev'
-		? process.env.STRIPE_SECRET_TEST_KEY
-		: process.env.STRIPE_SECRET_KEY
-);
+// const stripe = require('stripe')(
+// 	process.env.NODE_ENV === 'dev'
+// 		? process.env.STRIPE_SECRET_TEST_KEY
+// 		: process.env.STRIPE_SECRET_KEY
+// );
 const { freeMembership, plusMembership } = require('../../utils/settings');
 
 exports.verifyOwnership = catchAsync(async (req, res, next) => {
@@ -48,34 +48,35 @@ exports.verifyOwnership = catchAsync(async (req, res, next) => {
 	}
 
 	//todo: check the membership and expiration
-	res.locals.membership = freeMembership;
-	const subObj = res.locals.team.subscription;
-	if (subObj && !subObj.testMode) {
-		let stripeSub;
-		try {
-			stripeSub = await stripe.subscriptions.retrieve(subObj.subscriptionId);
-			if (stripeSub) {
-				const product = await stripe.products.retrieve(
-					stripeSub.items.data[0].price.product
-				);
-				res.locals.membership = {
-					...product.metadata,
-					maxLines: parseInt(product.metadata.maxLines),
-				};
-			}
-		} catch (err) {
-			console.log('Subscription could not be found');
-			if (subObj.name === 'Plus' && subObj.expires > Date.now()) {
-				res.locals.membership = {
-					...plusMembership,
-				};
-			} else {
-				res.locals.membership = {
-					...freeMembership,
-				};
-			}
-		}
-	}
+	// res.locals.membership = freeMembership;
+	res.locals.membership = plusMembership;
+	// const subObj = res.locals.team.subscription;
+	// if (subObj && !subObj.testMode) {
+	// 	let stripeSub;
+	// 	try {
+	// 		stripeSub = await stripe.subscriptions.retrieve(subObj.subscriptionId);
+	// 		if (stripeSub) {
+	// 			const product = await stripe.products.retrieve(
+	// 				stripeSub.items.data[0].price.product
+	// 			);
+	// 			res.locals.membership = {
+	// 				...product.metadata,
+	// 				maxLines: parseInt(product.metadata.maxLines),
+	// 			};
+	// 		}
+	// 	} catch (err) {
+	// 		console.log('Subscription could not be found');
+	// 		if (subObj.name === 'Plus' && subObj.expires > Date.now()) {
+	// 			res.locals.membership = {
+	// 				...plusMembership,
+	// 			};
+	// 		} else {
+	// 			res.locals.membership = {
+	// 				...freeMembership,
+	// 			};
+	// 		}
+	// 	}
+	// }
 
 	next();
 });

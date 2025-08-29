@@ -172,90 +172,90 @@
                         input#new-manager-email.form-control(type="email" placeholder="E-mail")
                 .d-grid.gap-2.mb-3 
                     button#add-manager.btn.btn-primary(type="button" disabled) Request Add Manager
-    #subscription-item.accordion-item.d-none
-        h2.accordion-header#subscription-header
-            button.accordion-button(type="button" data-bs-toggle="collapse" data-bs-target="#subscription-info" aria-expanded="false" aria-controls="subscription-info") Subscription
-        #subscription-info.accordion-collapse.collapse(aria-labelled-by="subscription-header" data-bs-parent="#team-accordion")
-            form#membership-form.my-3.w-100
-                .input-group-h.w-100.mb-2
-                    .input-group-f.input-group-1
-                        .form-label Current membership: 
-                        div(style="text-align:left") #[span#current-membership Free] #[a#cancel-membership-link.d-none (Modify)]
-                    .input-group-f.input-group-1
-                        #mem-end.form-label Renews: 
-                        div(style="text-align:left") #[span#current-membership-expires Never]
-                    .input-group-f.input-group-1 
-                        .form-label Managed by: 
-                        div(style="text-align:left") #[span#current-manager So-and-so]
-                #upgrade-membership.input-group-f.w-100.mb-2
-                    #mem-features.w-100.collapse
-                        table.feature-table.m-2
-                            thead 
-                                th Membership Feature 
-                                th Free
-                                each m in memberships
-                                    th= m.name  
-                            tbody 
-                                tr 
-                                    td O/D lines 
-                                    td ✓
-                                    each m in memberships 
-                                        td ✓
-                                tr 
-                                    td Points played
-                                    td ✓
-                                    each m in memberships 
-                                        td ✓
-                                tr 
-                                    td Goals and Assists
-                                    td ✓
-                                    each m in memberships 
-                                        td ✓
-                                tr 
-                                    td Turns and Blocks
-                                    td ✓
-                                    each m in memberships 
-                                        td ✓
-                                tr 
-                                    td Total Touches
-                                    td ✓
-                                    each m in memberships 
-                                        td ✓
-                                tr 
-                                    td Offensive/Defensive Efficiency
-                                    td ✓
-                                    each m in memberships 
-                                        td= `${m.efficiency ? '✓' : ''}`
-                                tr 
-                                    td Passing and Receiving Yards
-                                    td
-                                    each m in memberships 
-                                        td= `${m.yards ? '✓' : ''}`
-                                tr 
-                                    td Plus/Minus
-                                    td
-                                    each m in memberships 
-                                        td= `${m.plusMinus ? '✓' : ''}`
-                                tr 
-                                    td Graphical Reports and Visual Statistics
-                                    td
-                                    each m in memberships 
-                                        td= `${m.heatmaps ? '✓' : ''}`
-                                tr
-                                    td Maximum preset lines 
-                                    td 0
-                                    each m in memberships
-                                        td= m.maxLines 
-                                tr
-                                    td Cost (per team)
-                                    td Free
-                                    each m in memberships
-                                        td= `${m.cost === 0 ? 'Free' : '$' + m.cost + '/yr'}` 
-                    .d-flex
-                        button#feature-toggle.btn.btn-primary.btn-sm.w-25.mb-3.me-3(type="button" data-bs-toggle="collapse" data-bs-target="#mem-features" aria-expanded="false" aria-controls="mem-features") View features
-                        button#checkout.btn.btn-primary.btn-sm.w-25.mb-3(type="button" data-value=`${memberships[0].id}`) Upgrade ($20.00)
-                        button#cancel.btn.btn-primary.btn-sm.w-25.mb-3.d-none(type="button" data-bs-toggle="modal" data-bs-target="#confirm-cancel-membership-modal") Cancel
-                        button#reactivate.btn.btn-primary.btn-sm.w-25.mb-3.d-none(type="button" data-bs-toggle="modal" data-bs-target="#confirm-reactivate-membership-modal") Reactivate
+    //- #subscription-item.accordion-item.d-none
+    //-     h2.accordion-header#subscription-header
+    //-         button.accordion-button(type="button" data-bs-toggle="collapse" data-bs-target="#subscription-info" aria-expanded="false" aria-controls="subscription-info") Subscription
+    //-     #subscription-info.accordion-collapse.collapse(aria-labelled-by="subscription-header" data-bs-parent="#team-accordion")
+    //-         form#membership-form.my-3.w-100
+    //-             .input-group-h.w-100.mb-2
+    //-                 .input-group-f.input-group-1
+    //-                     .form-label Current membership: 
+    //-                     div(style="text-align:left") #[span#current-membership Free] #[a#cancel-membership-link.d-none (Modify)]
+    //-                 .input-group-f.input-group-1
+    //-                     #mem-end.form-label Renews: 
+    //-                     div(style="text-align:left") #[span#current-membership-expires Never]
+    //-                 .input-group-f.input-group-1 
+    //-                     .form-label Managed by: 
+    //-                     div(style="text-align:left") #[span#current-manager So-and-so]
+    //-             #upgrade-membership.input-group-f.w-100.mb-2
+    //-                 #mem-features.w-100.collapse
+    //-                     table.feature-table.m-2
+    //-                         thead 
+    //-                             th Membership Feature 
+    //-                             th Free
+    //-                             each m in memberships
+    //-                                 th= m.name  
+    //-                         tbody 
+    //-                             tr 
+    //-                                 td O/D lines 
+    //-                                 td ✓
+    //-                                 each m in memberships 
+    //-                                     td ✓
+    //-                             tr 
+    //-                                 td Points played
+    //-                                 td ✓
+    //-                                 each m in memberships 
+    //-                                     td ✓
+    //-                             tr 
+    //-                                 td Goals and Assists
+    //-                                 td ✓
+    //-                                 each m in memberships 
+    //-                                     td ✓
+    //-                             tr 
+    //-                                 td Turns and Blocks
+    //-                                 td ✓
+    //-                                 each m in memberships 
+    //-                                     td ✓
+    //-                             tr 
+    //-                                 td Total Touches
+    //-                                 td ✓
+    //-                                 each m in memberships 
+    //-                                     td ✓
+    //-                             tr 
+    //-                                 td Offensive/Defensive Efficiency
+    //-                                 td ✓
+    //-                                 each m in memberships 
+    //-                                     td= `${m.efficiency ? '✓' : ''}`
+    //-                             tr 
+    //-                                 td Passing and Receiving Yards
+    //-                                 td
+    //-                                 each m in memberships 
+    //-                                     td= `${m.yards ? '✓' : ''}`
+    //-                             tr 
+    //-                                 td Plus/Minus
+    //-                                 td
+    //-                                 each m in memberships 
+    //-                                     td= `${m.plusMinus ? '✓' : ''}`
+    //-                             tr 
+    //-                                 td Graphical Reports and Visual Statistics
+    //-                                 td
+    //-                                 each m in memberships 
+    //-                                     td= `${m.heatmaps ? '✓' : ''}`
+    //-                             tr
+    //-                                 td Maximum preset lines 
+    //-                                 td 0
+    //-                                 each m in memberships
+    //-                                     td= m.maxLines 
+    //-                             tr
+    //-                                 td Cost (per team)
+    //-                                 td Free
+    //-                                 each m in memberships
+    //-                                     td= `${m.cost === 0 ? 'Free' : '$' + m.cost + '/yr'}` 
+    //-                 .d-flex
+    //-                     button#feature-toggle.btn.btn-primary.btn-sm.w-25.mb-3.me-3(type="button" data-bs-toggle="collapse" data-bs-target="#mem-features" aria-expanded="false" aria-controls="mem-features") View features
+    //-                     button#checkout.btn.btn-primary.btn-sm.w-25.mb-3(type="button" data-value=`${memberships[0].id}`) Upgrade ($20.00)
+    //-                     button#cancel.btn.btn-primary.btn-sm.w-25.mb-3.d-none(type="button" data-bs-toggle="modal" data-bs-target="#confirm-cancel-membership-modal") Cancel
+    //-                     button#reactivate.btn.btn-primary.btn-sm.w-25.mb-3.d-none(type="button" data-bs-toggle="modal" data-bs-target="#confirm-reactivate-membership-modal") Reactivate
 
 .w-100.d-grid.gap-2.my-3
     button.btn.btn-primary(type="submit" form="team-form") Save Team

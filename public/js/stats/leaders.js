@@ -241,15 +241,16 @@ sh.addWatcher(leaders, (e) => {
 				if (typeof d[s] === 'string') value = d[s];
 				else value = Math.floor(d[s]);
 			} else if ((typeof s).toLowerCase() === 'object') {
-				value = s.sub
-					? state.subscription
-						? s.calc
-							? s.calc(d)
-							: d[s.name]
-						: ''
-					: s.calc
-					? s.calc(d)
-					: d[s.name];
+				// value = s.sub
+				// 	? state.subscription
+				// 		? s.calc
+				// 			? s.calc(d)
+				// 			: d[s.name]
+				// 		: ''
+				// 	: s.calc
+				// 	? s.calc(d)
+				// 	: d[s.name];
+				value = s.calc ? s.calc(d) : d[s.name];
 			}
 			const c = createCell(classes, value);
 			newRow.appendChild(c);
@@ -444,26 +445,24 @@ overview.addEventListener('data-update', (e) => {
 	}
 
 	//send the array to the graphical widgets
-	if (e.detail.subscription === 'Plus') {
-		// const evt = new CustomEvent('data-update', {
-		// 	detail: passes,
-		// });
-		const evt2 = new CustomEvent('data-update', {
-			detail: {
-				passes,
-				tournaments: e.detail.data,
-			},
-		});
-		//send the array to the graphics widgets
-		if (fieldUsage) fieldUsage.dispatchEvent(evt2);
-		if (passChart) passChart.dispatchEvent(evt2);
-		if (connections) connections.dispatchEvent(evt2);
+	// if (e.detail.subscription === 'Plus') {
 
-		const carouselItems = getElementArray(document, '.carousel-item');
-		const slides = getElementArray(document, '.slide-contents');
+	const evt2 = new CustomEvent('data-update', {
+		detail: {
+			passes,
+			tournaments: e.detail.data,
+		},
+	});
+	//send the array to the graphics widgets
+	if (fieldUsage) fieldUsage.dispatchEvent(evt2);
+	if (passChart) passChart.dispatchEvent(evt2);
+	if (connections) connections.dispatchEvent(evt2);
 
-		slides.forEach((s, i) => {
-			if (carouselItems.length > i) carouselItems[i].appendChild(s);
-		});
-	}
+	const carouselItems = getElementArray(document, '.carousel-item');
+	const slides = getElementArray(document, '.slide-contents');
+
+	slides.forEach((s, i) => {
+		if (carouselItems.length > i) carouselItems[i].appendChild(s);
+	});
+	// }
 });

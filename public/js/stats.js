@@ -175,7 +175,8 @@ const getTournaments = (e) => {
 			data.date = JSON.parse(JSON.stringify(allData));
 			data.tournament = JSON.parse(JSON.stringify(allData));
 			data.reportData = JSON.parse(JSON.stringify(allData));
-			data.subscription = res.subscription || null;
+			// data.subscription = res.subscription || null;
+			data.subscription = 'Plus';
 			if (data.subscription)
 				document.body.classList.add(data.subscription.toLowerCase());
 			if (allData.length > 0) {

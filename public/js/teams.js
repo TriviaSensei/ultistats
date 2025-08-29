@@ -102,8 +102,8 @@ const editNumber = document.querySelector('#edit-number');
 const editPosition = document.querySelector('#edit-position');
 
 //subscription accordion
-const subInfo = new bootstrap.Collapse('#subscription-info');
-const subItem = document.querySelector('#subscription-item');
+// const subInfo = new bootstrap.Collapse('#subscription-info');
+// const subItem = document.querySelector('#subscription-item');
 
 //other
 const tourneyTeamSelect = document.querySelector('#tourney-team-select');
@@ -576,7 +576,7 @@ const getTeam = (e) => {
 	//if "create new team" is selected
 	if (!teamSelect.value) {
 		managerItem.classList.add('d-none');
-		subItem.classList.add('d-none');
+		// subItem.classList.add('d-none');
 		addManagerButton.disabled = true;
 		rosterSize.innerHTML = 0;
 		//reset the color values
@@ -617,7 +617,7 @@ const getTeam = (e) => {
 			populateForm(teamForm, res.data);
 			handleColorChange({ target: color1 });
 			managerItem.classList.remove('d-none');
-			subItem.classList.remove('d-none');
+			// subItem.classList.remove('d-none');
 
 			addManagerButton.disabled = false;
 			getElementArray(division, 'option').some((op, i) => {

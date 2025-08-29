@@ -16,8 +16,8 @@ const teamRouter = require('./mvc/routes/teamRoutes');
 const tournamentRouter = require('./mvc/routes/tournamentRoutes');
 const userRouter = require('./mvc/routes/userRoutes');
 const viewRouter = require('./mvc/routes/viewRoutes');
-const subscriptionRouter = require('./mvc/routes/subscriptionRoutes');
-const subscriptionController = require('./mvc/controllers/subscriptionController');
+// const subscriptionRouter = require('./mvc/routes/subscriptionRoutes');
+// const subscriptionController = require('./mvc/controllers/subscriptionController');
 
 // const viewRouter = require('./routes/viewRoutes');
 
@@ -34,11 +34,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 //development logging
 app.use(morgan('dev'));
 
-app.post(
-	'/webhook-checkout',
-	express.raw({ type: 'application/json' }),
-	subscriptionController.webhookCheckout
-);
+// app.post(
+// 	'/webhook-checkout',
+// 	express.raw({ type: 'application/json' }),
+// 	subscriptionController.webhookCheckout
+// );
 
 //body parser, read data from body to req.body
 app.use(
@@ -68,7 +68,7 @@ app.use('/api/v1/games/', gameRouter);
 app.use('/api/v1/teams/', teamRouter);
 app.use('/api/v1/tournaments/', tournamentRouter);
 app.use('/api/v1/users/', userRouter);
-app.use('/api/v1/subscriptions/', subscriptionRouter);
+// app.use('/api/v1/subscriptions/', subscriptionRouter);
 
 const limiter = rateLimit({
 	max: 3,

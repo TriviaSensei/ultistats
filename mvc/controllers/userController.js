@@ -4,6 +4,12 @@ const factory = require('./handlerFactory');
 const catchAsync = require('../../utils/catchAsync');
 const AppError = require('../../utils/appError');
 
+// const getUserEmails = async () => {
+// 	const users = await User.find();
+// 	users.forEach((u) => console.log(`${u.email},`));
+// };
+// getUserEmails();
+
 const filterObj = (obj, ...allowedFields) => {
 	const newObj = {};
 	Object.keys(obj).forEach((el) => {
